@@ -1,0 +1,27 @@
+import { Injectable } from '@angular/core';
+import Dexie from 'dexie';
+
+/**
+ * Base de datos local de la aplicacion (IndexedDB).
+ *
+ * Cada feature declara aqui su tabla, con la propiedad tipada y el indice
+ * correspondiente:
+ *
+ * ```ts
+ * declare fincas: Table<Finca, Id>;
+ * // ...
+ * this.version(2).stores({ fincas: 'id, municipio, creadoEn' });
+ * ```
+ *
+ * Para cambiar el esquema se agrega una nueva llamada a `version(n).stores(...)`
+ * sin modificar las anteriores: Dexie las aplica en orden y migra los datos que
+ * el usuario ya tenga guardados en su navegador.
+ */
+@Injectable({ providedIn: 'root' })
+export class OrigenDirectoDb extends Dexie {
+  constructor() {
+    super('origen-directo');
+
+    this.version(1).stores({});
+  }
+}
