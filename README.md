@@ -87,6 +87,27 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Despliegue en AWS Amplify
+
+El build lo define [`amplify.yml`](amplify.yml), no la deteccion automatica de la consola.
+Dos puntos que hay que respetar:
+
+- La imagen de build de Amplify trae una version de Node anterior a la que exige el CLI de
+  Angular, por eso el `preBuild` hace `nvm install $(cat .nvmrc)`. Para cambiar la version
+  de Node del pipeline basta con editar `.nvmrc`.
+- Los artefactos salen en `dist/origen-directo/browser`, con la subcarpeta `browser` que
+  genera Angular. Apuntar a `dist/origen-directo` publica un sitio vacio.
+
+Como es una SPA, hay que agregar una regla de rewrite en la consola de Amplify
+(Hosting > Rewrites and redirects), o cualquier ruta abierta en forma directa respondera 404:
+
+| Source | Target | Type |
+| --- | --- | --- |
+| `</^[^.]+$\|\.(?!(css\|gif\|ico\|jpg\|js\|png\|txt\|svg\|woff\|woff2\|ttf\|map\|json\|webp)$)([^.]+$)/>` | `/index.html` | 200 (Rewrite) |
+
+La expresion excluye las extensiones de los archivos estaticos para que solo las rutas de
+navegacion caigan en `index.html`.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
