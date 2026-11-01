@@ -8,7 +8,14 @@ Generado con [Angular CLI](https://github.com/angular/angular-cli) 22.2.5.
 
 ## Requisitos
 
-Node 22.22.3+, 24.15.0+ o 26+ (ver `.nvmrc`). Instalar dependencias con `npm install`.
+Node 22.23.4, la version fijada en `.nvmrc` y en `engines`. Se usa la linea 22 porque los
+binarios de Node 24 y superiores dependen de `libatomic`, que no esta en la imagen de build
+de AWS Amplify.
+
+```bash
+nvm install 22.23.4 && nvm use 22.23.4   # en Windows hay que indicar la version, nvm-windows no lee .nvmrc
+npm ci
+```
 
 ## Arquitectura
 
@@ -94,7 +101,9 @@ Dos puntos que hay que respetar:
 
 - La imagen de build de Amplify trae una version de Node anterior a la que exige el CLI de
   Angular, por eso el `preBuild` hace `nvm install $(cat .nvmrc)`. Para cambiar la version
-  de Node del pipeline basta con editar `.nvmrc`.
+  de Node del pipeline basta con editar `.nvmrc`, pero hay que quedarse en la linea 22: los
+  binarios de Node 24 y superiores fallan en esa imagen con
+  `error while loading shared libraries: libatomic.so.1`.
 - Los artefactos salen en `dist/origen-directo/browser`, con la subcarpeta `browser` que
   genera Angular. Apuntar a `dist/origen-directo` publica un sitio vacio.
 

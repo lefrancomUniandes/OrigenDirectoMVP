@@ -5,7 +5,9 @@ frontend:
       commands:
         # La imagen de build de Amplify trae una version de Node anterior a la que
         # exige el CLI de Angular, asi que se fuerza la del .nvmrc del repositorio.
-        - nvm install $(cat .nvmrc)
+        # --skip-default-packages evita que nvm reinstale los globales de la imagen
+        # (cypress, hugo, yarn...), que no usamos y alargan cada build.
+        - nvm install --skip-default-packages $(cat .nvmrc)
         - nvm use $(cat .nvmrc)
         - node -v && npm -v
         - npm ci
