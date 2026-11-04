@@ -45,7 +45,12 @@
     <button type="button" (click)="cancel()">Cancelar</button>
     <button
       type="button"
-      [disabled]="farmName().trim() === '' || department() === '' || municipality() === ''"
+      [disabled]="
+        farmName().trim() === '' ||
+        department() === '' ||
+        municipality() === '' ||
+        varieties().length === 0
+      "
     >
       Continuar
     </button>

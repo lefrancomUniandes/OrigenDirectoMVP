@@ -17,6 +17,7 @@ export class Shell {
   readonly farmName = signal('');
   readonly department = signal('');
   readonly municipality = signal('');
+  readonly varieties = signal<readonly string[]>([]);
   readonly municipalities = computed(
     () => MUNICIPALITIES_BY_DEPARTMENT[this.department()] ?? [],
   );
@@ -41,6 +42,7 @@ export class Shell {
     this.farmName.set('');
     this.department.set('');
     this.municipality.set('');
+    this.varieties.set([]);
     this.formOpen.set(false);
   }
 }

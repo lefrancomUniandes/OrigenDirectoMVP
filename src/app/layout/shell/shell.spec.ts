@@ -220,4 +220,13 @@ describe('Shell', () => {
 
     expect(button('Continuar').disabled).toBe(true);
   });
+
+  it('Continuar permanece deshabilitado si no hay variedades', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+
+    expect(button('Continuar').disabled).toBe(true);
+  });
 });
