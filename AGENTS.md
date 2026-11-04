@@ -50,4 +50,5 @@ cada caficultor tiene su pagina y existe un feed con lo que van publicando.
 - Reglas de capas y dependencias: `.cursor/rules/arquitectura.mdc`
 - Estructura de una feature: `src/app/features/README.md`
 - Esquema de la base: `src/app/core/db/origen-directo.db.ts`
+- Catalogos estaticos (departamentos, variedades): `src/app/core/catalogs/`
 - Build y despliegue: `amplify.yml` y la seccion de Amplify del `README.md`
