@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Origen Directo · Registrar finca (HU001 Mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<!--
+  MOCKUP HU001 — Formulario de registro Caficultor (OD-1)
+  Consolidado: toda la experiencia en un solo archivo.
+  Estructura de diseño: se conserva únicamente la estructura de colores
+  (paleta cálida y terrosa); sin contornos gruesos, sombras duras ni
+  estilo de ilustración con trazos.
+
+  Pensado para migrar a Angular:
+  - Cada bloque <section data-ng-component="..."> = un componente Angular standalone.
+      app-header, app-registro-modal (stepper), app-paso-finca, app-paso-usuario,
+      app-paso-documentos, app-resumen-modal, app-exito-modal
+  - Validadores en el objeto `Validators` -> migrar a ValidatorFn de Reactive Forms.
+  - `CATALOGOS` -> servicio CatalogosService (departamentos/municipios via API).
+  - Tokens de diseño en :root -> styles.scss global (solo colores).
+-->
+<style>
+:root{
+  /* Estructura de colores (lo único que se conserva del sistema visual) */
+  --cafe-900:#3b2416; --cafe-700:#5a3825; --cafe-500:#8a5a3b;
+  --crema:#f7efdf; --crema-2:#fffaf0; --oliva:#6b7a3a; --oliva-claro:#a3ad6b;
+  --ocre:#c98a2e; --mostaza:#e0b13c; --terracota:#c8735a; --error:#b5452f;
+  /* Superficie neutra (no hace parte de la paleta, solo apoya formularios) */
+  --linea:#e8dcc4; --blanco:#ffffff;
+  --radio:14px;
+  --sombra:0 2px 10px rgba(59,36,22,.08);
+  --sombra-modal:0 24px 60px rgba(59,36,22,.18);
+  --font:'Nunito Sans',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:var(--crema);color:var(--cafe-900)}
+button{font-family:inherit;cursor:pointer}
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:center;padding:16px 40px;border-bottom:1px solid var(--linea);background:var(--crema-2)}
+.brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}
+.btn{border:1px solid transparent;border-radius:12px;padding:11px 22px;font-weight:700;font-size:15px;box-shadow:var(--sombra);transition:filter .15s, box-shadow .15s, transform .15s;display:inline-flex;align-items:center;gap:8px;background:var(--blanco);color:var(--cafe-900)}
+.btn:hover:not(:disabled){box-shadow:0 4px 14px rgba(59,36,22,.14);transform:translateY(-1px)}
+.btn:active:not(:disabled){transform:translateY(0);box-shadow:var(--sombra)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn--primario{background:var(--oliva);color:var(--crema-2)}
+.btn--acento{background:var(--mostaza);color:var(--cafe-900)}
+.btn--secundario{background:var(--crema-2);border-color:var(--linea);color:var(--cafe-900)}
+.btn--peligro{background:transparent;color:var(--terracota);border-color:var(--terracota);box-shadow:none}
+/* Hero */
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;max-width:1180px;margin:0 auto;padding:64px 40px}
+.hero h1{font-size:46px;line-height:1.08;margin:0 0 18px;font-weight:800}
+.hero h1 span{color:var(--terracota)}
+.hero p{font-size:18px;line-height:1.6;color:var(--cafe-700);max-width:520px}
+.hero__art{background:var(--crema-2);border:1px solid var(--linea);border-radius:24px;box-shadow:var(--sombra);padding:24px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:1180px;margin:0 auto 80px;padding:0 40px}
+.feature{background:var(--crema-2);border:1px solid var(--linea);border-radius:var(--radio);padding:22px;box-shadow:var(--sombra)}
+.feature h3{margin:12px 0 6px;font-weight:800}
+.feature p{margin:0;color:var(--cafe-700)}
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(59,36,22,.45);display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow:auto;z-index:10}
+.overlay.is-open{display:flex}
+.modal{background:var(--crema-2);border-radius:20px;box-shadow:var(--sombra-modal);width:100%;max-width:820px}
+.modal--sm{max-width:520px;text-align:center;padding:36px;margin-top:8vh}
+.modal__head{padding:24px 32px;border-bottom:1px solid var(--linea);display:flex;justify-content:space-between;align-items:center;gap:16px}
+.modal__head h2{margin:0;font-size:26px;font-weight:800}
+.modal__body{padding:28px 32px}
+.modal__foot{padding:20px 32px;border-top:1px solid var(--linea);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.modal__foot .group{display:flex;gap:12px}
+/* Stepper */
+.stepper{display:flex;gap:0;padding:22px 32px 0}
+.step{flex:1;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--cafe-500)}
+.step__dot{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--crema);color:var(--cafe-500);flex-shrink:0;font-weight:800}
+.step__line{flex:1;height:2px;background:var(--linea);margin:0 10px}
+.step.is-active{color:var(--cafe-900)} .step.is-active .step__dot{background:var(--mostaza);color:var(--cafe-900)}
+.step.is-done .step__dot{background:var(--oliva);color:var(--crema-2)}
+.step.is-done{color:var(--cafe-900)}
+/* Form */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 22px}
+.full{grid-column:1/-1}
+.field label,.field .label{display:block;font-weight:700;margin-bottom:6px;font-size:14px}
+.req{color:var(--terracota)}
+.input,select.input,textarea.input{width:100%;padding:11px 14px;border:1.5px solid var(--linea);border-radius:10px;background:var(--blanco);font:inherit;color:var(--cafe-900)}
+.input:focus{outline:3px solid rgba(224,177,60,.4);outline-offset:1px;border-color:var(--ocre)}
+.input.is-invalid{border-color:var(--error);background:#fdf0ec}
+.hint{display:flex;justify-content:space-between;font-size:12px;color:var(--cafe-500);margin-top:4px;min-height:16px}
+.err{color:var(--error);font-weight:700}
+.row{display:flex;gap:8px}
+.row .input:first-child{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{border:1.5px solid var(--linea);border-radius:999px;padding:8px 16px;background:var(--blanco);font-weight:700;user-select:none}
+.chip input{display:none}
+.chip.is-on{background:var(--ocre);border-color:var(--ocre);color:var(--crema-2)}
+.section-title{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:800;margin:0 0 18px}
+/* Upload */
+.drop{border:2px dashed #d9c8a6;border-radius:var(--radio);padding:26px;text-align:center;background:var(--crema);cursor:pointer;transition:background .15s}
+.drop:hover{background:#f2e8d2}
+.thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px}
+.thumb{position:relative;border:1px solid var(--linea);border-radius:12px;overflow:hidden;aspect-ratio:1;background:var(--blanco)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb__actions{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(59,36,22,.82)}
+.thumb__actions button{flex:1;border:0;background:none;color:var(--crema-2);font-size:12px;font-weight:700;padding:6px}
+.alert{border:1px solid var(--error);background:#fdf0ec;color:var(--error);border-radius:10px;padding:10px 14px;font-weight:700;margin-top:12px;display:none}
+.alert.is-on{display:block}
+.pdf-file{display:flex;align-items:center;gap:10px;margin-top:10px;font-weight:700}
+/* Resumen */
+.summary h4{font-size:19px;font-weight:800;margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.summary dl{display:grid;grid-template-columns:220px 1fr;gap:8px 16px;margin:0 0 24px;background:var(--crema);border:1px solid var(--linea);border-radius:12px;padding:16px}
+.summary dt{font-weight:700;color:var(--cafe-700)} .summary dd{margin:0;font-weight:600;word-break:break-word}
+.ticket{font-size:32px;font-weight:800;background:var(--mostaza);border-radius:12px;display:inline-block;padding:8px 24px;margin:14px 0;box-shadow:var(--sombra)}
+@media(max-width:760px){.hero,.features,.grid{grid-template-columns:1fr}.hero h1{font-size:34px}.thumbs{grid-template-columns:repeat(3,1fr)}.step span.lbl{display:none}.summary dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ====== Iconos SVG (formas sólidas, solo colores de la paleta) -> IconComponent ====== -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-grano" viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="14" ry="19" transform="rotate(25 24 24)" fill="#8a5a3b"/><path d="M17 10c8 7 6 21 14 28" fill="none" stroke="#f7efdf" stroke-width="3" stroke-linecap="round"/></symbol>
+    <symbol id="i-finca" viewBox="0 0 48 48"><path d="M4 40c8-10 14-14 20-14s12 4 20 14z" fill="#a3ad6b"/><path d="M12 26v-9l10-8 10 8v9z" fill="#c8735a"/><rect x="19" y="18" width="7" height="8" fill="#e0b13c"/><circle cx="37" cy="11" r="5" fill="#e0b13c"/></symbol>
+    <symbol id="i-user" viewBox="0 0 48 48"><circle cx="24" cy="17" r="9" fill="#e0b13c"/><path d="M8 42c2-10 8-14 16-14s14 4 16 14z" fill="#6b7a3a"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 48 48"><path d="M11 5h18l9 9v29H11z" fill="#fffaf0"/><path d="M29 5v9h9" fill="#e0b13c"/><rect x="16" y="23" width="16" height="12" rx="2" fill="#a3ad6b"/><circle cx="21" cy="27" r="2.5" fill="#e0b13c"/><path d="M19 31h10" stroke="#fffaf0" stroke-width="1.6"/></symbol>
+    <symbol id="i-hoja" viewBox="0 0 48 48"><path d="M8 40C8 20 20 8 40 8c0 20-12 32-32 32z" fill="#6b7a3a"/><path d="M10 38L32 16" stroke="#f7efdf" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-taza" viewBox="0 0 48 48"><path d="M7 18h28v10a12 12 0 0 1-12 12h-4A12 12 0 0 1 7 28z" fill="#c8735a"/><path d="M35 21h3a5 5 0 0 1 0 10h-4" fill="none" stroke="#c8735a" stroke-width="3.5"/><path d="M15 6c-2 3 2 5 0 8M23 6c-2 3 2 5 0 8" fill="none" stroke="#8a5a3b" stroke-width="3" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#6b7a3a"/><path d="M15 25l6 6 12-13" fill="none" stroke="#fffaf0" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 48 48"><path d="M8 30v10h32V30" fill="none" stroke="#c98a2e" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 32V8M14 18l10-10 10 10" fill="none" stroke="#c98a2e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pdf" viewBox="0 0 48 48"><path d="M11 5h18l9 9v29H11z" fill="#c8735a"/><text x="24" y="34" font-size="10" font-weight="800" text-anchor="middle" fill="#fffaf0" font-family="sans-serif">PDF</text></symbol>
+  </defs>
+</svg>
+
+<!-- app-header -->
+<header class="header" data-ng-component="app-header">
+  <div class="brand"><svg width="38" height="38"><use href="#i-grano"/></svg> Origen Directo</div>
+  <button class="btn btn--acento" id="btnRegistrar"><svg width="22" height="22"><use href="#i-finca"/></svg> Registrar finca</button>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <h1>Del cultivo <span>a tu taza</span>, sin intermediarios.</h1>
+      <p>Registra el perfil de tu finca, cuenta tu historia cafetera y da a conocer tus productos en la plataforma en solo 3 pasos.</p>
+      <button class="btn btn--primario" onclick="App.abrir()">Comenzar registro →</button>
+    </div>
+    <div class="hero__art">
+      <svg viewBox="0 0 400 280" width="100%">
+        <rect width="400" height="280" rx="18" fill="#f7efdf"/>
+        <circle cx="320" cy="70" r="36" fill="#e0b13c"/>
+        <path d="M0 210c70-70 130-90 200-60s130 10 200-40v170H0z" fill="#a3ad6b"/>
+        <path d="M0 240c90-50 170-50 250-20s110 0 150-20v80H0z" fill="#6b7a3a"/>
+        <path d="M110 160v-50l45-35 45 35v50z" fill="#c8735a"/>
+        <rect x="140" y="125" width="30" height="35" fill="#e0b13c"/>
+        <circle cx="60" cy="235" r="9" fill="#c8735a"/><circle cx="80" cy="245" r="9" fill="#c8735a"/><circle cx="300" cy="230" r="9" fill="#c8735a"/><circle cx="320" cy="242" r="9" fill="#c98a2e"/>
+      </svg>
+    </div>
+  </section>
+  <section class="features">
+    <div class="feature"><svg width="50" height="50"><use href="#i-finca"/></svg><h3>1. Tu finca</h3><p>Ubicación, área, altitud y variedades.</p></div>
+    <div class="feature"><svg width="50" height="50"><use href="#i-user"/></svg><h3>2. Tus datos</h3><p>Identificación, contacto e historia cafetera.</p></div>
+    <div class="feature"><svg width="50" height="50"><use href="#i-doc"/></svg><h3>3. Documentos</h3><p>Fotografías de la finca y RUT/NIT si aplica.</p></div>
+  </section>
+</main>
+
+<!-- app-registro-modal (stepper) -->
+<div class="overlay" id="ovForm" data-ng-component="app-registro-modal">
+  <div class="modal" role="dialog" aria-labelledby="tituloForm">
+    <div class="modal__head"><h2 id="tituloForm">Registrar finca</h2><svg width="42" height="42"><use href="#i-taza"/></svg></div>
+    <div class="stepper" id="stepper"></div>
+    <form class="modal__body" id="form" novalidate>
+
+      <!-- app-paso-finca -->
+      <section data-step="1" data-ng-component="app-paso-finca">
+        <h3 class="section-title"><svg width="32" height="32"><use href="#i-finca"/></svg> Datos básicos de la finca</h3>
+        <div class="grid">
+          <div class="field full"><label for="nombreFinca">Nombre de la finca <span class="req">*</span></label>
+            <input class="input" id="nombreFinca" maxlength="120" placeholder="Ej. Finca La Esperanza"/>
+            <div class="hint"><span class="err" data-err="nombreFinca"></span><span data-count="nombreFinca">0/120</span></div></div>
+          <div class="field"><label for="departamento">Departamento <span class="req">*</span></label>
+            <select class="input" id="departamento"><option value="">Selecciona…</option></select>
+            <div class="hint"><span class="err" data-err="departamento"></span></div></div>
+          <div class="field"><label for="municipio">Municipio <span class="req">*</span></label>
+            <select class="input" id="municipio" disabled><option value="">Selecciona un departamento</option></select>
+            <div class="hint"><span class="err" data-err="municipio"></span></div></div>
+          <div class="field"><label for="vereda">Vereda o corregimiento</label>
+            <input class="input" id="vereda" maxlength="100" placeholder="Opcional"/>
+            <div class="hint"><span class="err" data-err="vereda"></span><span data-count="vereda">0/100</span></div></div>
+          <div class="field"><label for="area">Extensión o área total</label>
+            <div class="row"><input class="input" id="area" inputmode="numeric" placeholder="Ej. 12"/>
+              <select class="input" id="unidad" style="width:140px"><option>Hectáreas</option><option>Fanegadas</option></select></div>
+            <div class="hint"><span class="err" data-err="area"></span></div></div>
+          <div class="field full"><span class="label">Variedades de café cultivadas <span class="req">*</span></span>
+            <div class="chips" id="variedades"></div>
+            <div id="otraWrap" style="display:none;margin-top:10px"><input class="input" id="otraVariedad" maxlength="50" placeholder="¿Cuál otra variedad?"/>
+              <div class="hint"><span class="err" data-err="otraVariedad"></span><span data-count="otraVariedad">0/50</span></div></div>
+            <div class="hint"><span class="err" data-err="variedades"></span></div></div>
+          <div class="field"><label for="altitud">Altitud promedio (m.s.n.m.)</label>
+            <input class="input" id="altitud" inputmode="numeric" placeholder="500 – 2500"/>
+            <div class="hint"><span class="err" data-err="altitud"></span></div></div>
+        </div>
+      </section>
+
+      <!-- app-paso-usuario -->
+      <section data-step="2" data-ng-component="app-paso-usuario" hidden>
+        <h3 class="section-title"><svg width="32" height="32"><use href="#i-user"/></svg> Datos básicos del usuario</h3>
+        <div class="grid">
+          <div class="field full"><label for="nombreUsuario">Nombre completo / Razón social <span class="req">*</span></label>
+            <input class="input" id="nombreUsuario" maxlength="120"/>
+            <div class="hint"><span class="err" data-err="nombreUsuario"></span><span data-count="nombreUsuario">0/120</span></div></div>
+          <div class="field"><label for="tipoDoc">Tipo de documento <span class="req">*</span></label>
+            <select class="input" id="tipoDoc"><option value="">Selecciona…</option><option>NIT</option><option>RUT</option><option>Cédula de ciudadanía</option><option>Cédula de extranjería</option><option>Pasaporte</option></select>
+            <div class="hint"><span class="err" data-err="tipoDoc"></span></div></div>
+          <div class="field"><label for="numDoc">Número de documento <span class="req">*</span></label>
+            <input class="input" id="numDoc" maxlength="20"/>
+            <div class="hint"><span class="err" data-err="numDoc"></span></div></div>
+          <div class="field full"><label for="correo">Correo electrónico <span class="req">*</span></label>
+            <input class="input" id="correo" type="email" placeholder="nombre@dominio.com"/>
+            <div class="hint"><span class="err" data-err="correo"></span></div></div>
+          <div class="field"><label>Celular</label>
+            <div class="row"><select class="input" id="indPais" style="width:110px"><option>+57</option><option>+1</option><option>+34</option><option>+52</option><option>+593</option></select>
+              <input class="input" id="celular" inputmode="numeric" maxlength="12" placeholder="3001234567"/></div>
+            <div class="hint"><span class="err" data-err="celular"></span></div></div>
+          <div class="field"><label>Teléfono fijo</label>
+            <div class="row"><input class="input" id="indMun" inputmode="numeric" maxlength="3" style="width:90px" placeholder="604"/>
+              <input class="input" id="telefono" inputmode="numeric" maxlength="10" placeholder="1234567"/></div>
+            <div class="hint"><span class="err" data-err="telefono"></span></div></div>
+          <div class="field full"><label for="bio">Breve biografía o historia cafetera</label>
+            <textarea class="input" id="bio" rows="4" maxlength="500" placeholder="Cuéntanos tu trayectoria (recomendado 150 a 500 caracteres)"></textarea>
+            <div class="hint"><span class="err" data-err="bio"></span><span data-count="bio">0/500</span></div></div>
+          <div class="field"><label for="experiencia">Años de experiencia en caficultura</label>
+            <input class="input" id="experiencia" type="number" min="0" step="1"/>
+            <div class="hint"><span class="err" data-err="experiencia"></span></div></div>
+        </div>
+      </section>
+
+      <!-- app-paso-documentos -->
+      <section data-step="3" data-ng-component="app-paso-documentos" hidden>
+        <h3 class="section-title"><svg width="32" height="32"><use href="#i-doc"/></svg> Documentación</h3>
+        <span class="label" style="font-weight:700">Fotografías de la finca <span class="req">*</span> <small style="font-weight:600;color:var(--cafe-500)">(mín. 1, máx. 5 · .jpg .jpeg .png · 5 MB c/u)</small></span>
+        <div class="drop" id="drop" style="margin-top:8px"><svg width="44" height="44"><use href="#i-upload"/></svg><div style="font-weight:700">Haz clic o arrastra tus fotos aquí</div><small id="fotoCount">0 de 5 fotos</small></div>
+        <input type="file" id="fotos" accept=".jpg,.jpeg,.png" multiple hidden/>
+        <input type="file" id="fotoReemplazo" accept=".jpg,.jpeg,.png" hidden/>
+        <div class="alert" id="alertFotos"></div>
+        <div class="thumbs" id="thumbs"></div>
+        <div id="rutWrap" style="display:none;margin-top:26px">
+          <span class="label" style="font-weight:700">Formato <span id="rutTipo">RUT</span> vigente (PDF, máx. 5 MB) <span class="req">*</span></span>
+          <div class="drop" id="dropPdf" style="margin-top:8px;padding:18px"><svg width="38" height="38"><use href="#i-pdf"/></svg><div style="font-weight:700">Adjuntar PDF</div></div>
+          <input type="file" id="pdf" accept="application/pdf,.pdf" hidden/>
+          <div class="alert" id="alertPdf"></div>
+          <div id="pdfInfo"></div>
+        </div>
+      </section>
+    </form>
+    <div class="modal__foot">
+      <button class="btn btn--peligro" id="btnCancelar" type="button">Cancelar</button>
+      <div class="group">
+        <button class="btn btn--secundario" id="btnAtras" type="button">← Atrás</button>
+        <button class="btn btn--primario" id="btnContinuar" type="button" disabled>Continuar →</button>
+        <button class="btn btn--acento" id="btnEnviar" type="button" disabled>Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- app-resumen-modal -->
+<div class="overlay" id="ovResumen" data-ng-component="app-resumen-modal">
+  <div class="modal" role="dialog">
+    <div class="modal__head"><h2>Verifica tu información</h2><svg width="38" height="38"><use href="#i-hoja"/></svg></div>
+    <div class="modal__body summary" id="resumen"></div>
+    <div class="modal__foot"><button class="btn btn--secundario" id="btnRegresar">← Regresar al formulario</button><button class="btn btn--primario" id="btnFinalizar">Finalizar ✓</button></div>
+  </div>
+</div>
+
+<!-- app-exito-modal -->
+<div class="overlay" id="ovExito" data-ng-component="app-exito-modal">
+  <div class="modal modal--sm" role="alertdialog">
+    <svg width="80" height="80"><use href="#i-check"/></svg>
+    <h2 style="font-size:28px;font-weight:800;margin:10px 0 0">¡Solicitud enviada!</h2>
+    <p>Tu número de solicitud es</p>
+    <div class="ticket" id="ticket">OD-000000</div>
+    <p style="color:var(--cafe-700)">En un máximo de <b>8 días hábiles</b> recibirás respuesta de la revisión de tu solicitud.</p>
+    <button class="btn btn--primario" id="btnCerrarExito" style="margin-top:10px">Entendido</button>
+  </div>
+</div>
+
+<script>
+/* ===== CatalogosService (mock) ===== */
+const CATALOGOS = {
+  variedades:['Castillo','Caturra','Geisha','Bourbon','Tabi','Árabe/Typica','Otro'],
+  departamentos:{
+    'Amazonas':['Leticia','Puerto Nariño'],'Antioquia':['Medellín','Andes','Jardín','Ciudad Bolívar','Betania','Fredonia'],
+    'Arauca':['Arauca','Saravena'],'Atlántico':['Barranquilla','Soledad'],'Bogotá D.C.':['Bogotá D.C.'],
+    'Bolívar':['Cartagena','Magangué'],'Boyacá':['Tunja','Moniquirá','Miraflores'],'Caldas':['Manizales','Chinchiná','Aguadas','Riosucio'],
+    'Caquetá':['Florencia','Belén de los Andaquíes'],'Casanare':['Yopal','Támara'],'Cauca':['Popayán','Inzá','Piendamó','Timbío'],
+    'Cesar':['Valledupar','Pueblo Bello'],'Chocó':['Quibdó'],'Córdoba':['Montería'],'Cundinamarca':['Fusagasugá','La Vega','Viotá','Silvania'],
+    'Guainía':['Inírida'],'Guaviare':['San José del Guaviare'],'Huila':['Neiva','Pitalito','Garzón','La Plata','Acevedo'],
+    'La Guajira':['Riohacha','San Juan del Cesar'],'Magdalena':['Santa Marta','Ciénaga'],'Meta':['Villavicencio','Lejanías'],
+    'Nariño':['Pasto','Buesaco','La Unión','Sandoná'],'Norte de Santander':['Cúcuta','Salazar','Ocaña'],'Putumayo':['Mocoa'],
+    'Quindío':['Armenia','Salento','Calarcá','Filandia'],'Risaralda':['Pereira','Santa Rosa de Cabal','Belén de Umbría'],
+    'San Andrés y Providencia':['San Andrés'],'Santander':['Bucaramanga','San Gil','Socorro'],'Sucre':['Sincelejo'],
+    'Tolima':['Ibagué','Planadas','Chaparral','Líbano'],'Valle del Cauca':['Cali','Trujillo','Sevilla','Caicedonia'],
+    'Vaupés':['Mitú'],'Vichada':['Puerto Carreño']
+  }
+};
+
+/* ===== Validators (-> Angular ValidatorFn) ===== */
+const V = {
+  required:v=>v!=null&&String(v).trim()!==''?null:'Este campo es obligatorio',
+  notOnlySpaces:v=>v&&v.trim()===''?'No puede contener solo espacios':null,
+  max:n=>v=>v&&v.length>n?`Máximo ${n} caracteres`:null,
+  intPositive:v=>!v?null:(/^[1-9]\d*$/.test(v)?null:'Solo números enteros positivos, sin espacios ni decimales'),
+  range:(a,b)=>v=>!v?null:(/^\d+$/.test(v)&&+v>=a&&+v<=b?null:`Debe ser un entero entre ${a} y ${b}`),
+  noDigits:v=>/\d/.test(v||'')?'No se permiten caracteres numéricos':null,
+  email:v=>!v?null:(/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(v)?null:'Ingresa un correo con dominio válido'),
+  numeric:v=>!v?null:(/^\d+$/.test(v)?null:'Solo valores numéricos'),
+};
+const $=id=>document.getElementById(id);
+const val=id=>$(id).value;
+
+const State={paso:1,variedades:new Set(),fotos:[],pdf:null,touched:new Set(),reemplazoIdx:null};
+
+const reglas={
+  nombreFinca:()=>[V.required,V.notOnlySpaces,V.max(120)],
+  departamento:()=>[V.required], municipio:()=>[V.required],
+  vereda:()=>[V.max(100)], area:()=>[V.intPositive], altitud:()=>[V.range(500,2500)],
+  otraVariedad:()=>State.variedades.has('Otro')?[V.required,V.notOnlySpaces,V.max(50)]:[],
+  nombreUsuario:()=>[V.required,V.notOnlySpaces,V.noDigits,V.max(120)],
+  tipoDoc:()=>[V.required],
+  numDoc:()=>[V.required,v=>{ if(!v) return null; return val('tipoDoc')==='Pasaporte'
+      ? (/^[A-Za-z0-9]+$/.test(v)?null:'Solo letras y números, sin espacios')
+      : (/^\d+$/.test(v)?null:'Solo números, sin espacios, decimales ni negativos');}],
+  correo:()=>[V.required,V.email], celular:()=>[V.numeric], indMun:()=>[V.numeric], telefono:()=>[V.numeric],
+  bio:()=>[V.max(500)], experiencia:()=>[v=>!v?null:(/^\d+$/.test(v)?null:'Debe ser un entero positivo')],
+};
+const camposPaso={1:['nombreFinca','departamento','municipio','vereda','area','otraVariedad','altitud'],
+  2:['nombreUsuario','tipoDoc','numDoc','correo','celular','indMun','telefono','bio','experiencia']};
+
+function errorDe(id){for(const fn of reglas[id]()){const e=fn(val(id));if(e)return e;}return null;}
+function errorVariedades(){return State.variedades.size?null:'Selecciona al menos una variedad';}
+function requiereRut(){return ['NIT','RUT'].includes(val('tipoDoc'));}
+
+function pasoValido(p){
+  if(p===1) return camposPaso[1].every(id=>!errorDe(id)) && !errorVariedades();
+  if(p===2) return camposPaso[2].every(id=>!errorDe(id));
+  if(p===3) return State.fotos.length>=1 && (!requiereRut()||State.pdf);
+}
+
+function pintarErrores(){
+  [...camposPaso[1],...camposPaso[2]].forEach(id=>{
+    const e=State.touched.has(id)?errorDe(id):null;
+    $(id).classList.toggle('is-invalid',!!e);
+    const el=document.querySelector(`[data-err="${id}"]`); if(el) el.textContent=e||'';
+  });
+  document.querySelector('[data-err="variedades"]').textContent=State.touched.has('variedades')?(errorVariedades()||''):'';
+  const b=val('bio').length, bioEl=document.querySelector('[data-err="bio"]');
+  if(!bioEl.textContent && b>0 && b<150){bioEl.textContent='Recomendado mínimo 150 caracteres';bioEl.style.color='var(--ocre)';} else bioEl.style.color='';
+  document.querySelectorAll('[data-count]').forEach(c=>{const id=c.dataset.count;c.textContent=`${val(id).length}/${$(id).maxLength}`;});
+}
+
+function render(){
+  const p=State.paso;
+  document.querySelectorAll('[data-step]').forEach(s=>s.hidden=+s.dataset.step!==p);
+  const nombres=['Finca','Usuario','Documentos'];
+  $('stepper').innerHTML=nombres.map((n,i)=>{const k=i+1,c=k<p?'is-done':k===p?'is-active':'';
+    return `<div class="step ${c}"><div class="step__dot">${k<p?'✓':k}</div><span class="lbl">${n}</span>${k<3?'<div class="step__line"></div>':''}</div>`}).join('');
+  $('btnAtras').style.display=p>1?'':'none';
+  $('btnContinuar').style.display=p<3?'':'none';
+  $('btnEnviar').style.display=p===3?'':'none';
+  $('btnContinuar').disabled=!pasoValido(p);
+  $('btnEnviar').disabled=!pasoValido(3);
+  $('rutWrap').style.display=requiereRut()?'':'none';
+  $('rutTipo').textContent=val('tipoDoc')||'RUT';
+  pintarErrores();
+}
+
+/* ===== Init ===== */
+Object.keys(CATALOGOS.departamentos).forEach(d=>$('departamento').add(new Option(d,d)));
+$('departamento').addEventListener('change',()=>{
+  const m=$('municipio'); m.innerHTML='<option value="">Selecciona…</option>';
+  (CATALOGOS.departamentos[val('departamento')]||[]).forEach(x=>m.add(new Option(x,x)));
+  m.disabled=!val('departamento'); render();
+});
+$('variedades').innerHTML=CATALOGOS.variedades.map(v=>`<label class="chip"><input type="checkbox" value="${v}">${v}</label>`).join('');
+$('variedades').addEventListener('change',e=>{
+  const v=e.target.value; e.target.checked?State.variedades.add(v):State.variedades.delete(v);
+  e.target.parentElement.classList.toggle('is-on',e.target.checked);
+  $('otraWrap').style.display=State.variedades.has('Otro')?'':'none';
+  State.touched.add('variedades'); render();
+});
+// Filtrado en vivo para campos numéricos sin espacios
+['area','altitud','celular','indMun','telefono'].forEach(id=>$(id).addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'')));
+$('numDoc').addEventListener('input',e=>{e.target.value=val('tipoDoc')==='Pasaporte'?e.target.value.replace(/[^A-Za-z0-9]/g,''):e.target.value.replace(/\D/g,'');});
+$('form').addEventListener('input',e=>{if(e.target.id)State.touched.add(e.target.id);render();});
+$('form').addEventListener('change',e=>{if(e.target.id)State.touched.add(e.target.id);render();});
+$('form').addEventListener('focusout',e=>{if(e.target.id){State.touched.add(e.target.id);render();}});
+
+/* ===== Fotos ===== */
+const MB5=5*1024*1024, FORMATOS=['image/jpeg','image/png'];
+function validarImg(f){
+  if(!FORMATOS.includes(f.type)||!/\.(jpe?g|png)$/i.test(f.name)) return `"${f.name}" tiene un formato no soportado. Usa .jpg, .jpeg o .png.`;
+  if(f.size>MB5) return `"${f.name}" supera el peso máximo de 5 MB.`;
+  return null;
+}
+function alerta(id,msg){$(id).textContent=msg||'';$(id).classList.toggle('is-on',!!msg);}
+function agregarFotos(files){
+  const errs=[];
+  for(const f of files){
+    if(State.fotos.length>=5){errs.push('Solo puedes cargar un máximo de 5 fotografías.');break;}
+    const e=validarImg(f); if(e){errs.push(e);continue;}
+    State.fotos.push({file:f,url:URL.createObjectURL(f)});
+  }
+  alerta('alertFotos',errs.join(' ')); pintarFotos();
+}
+function pintarFotos(){
+  $('thumbs').innerHTML=State.fotos.map((f,i)=>`<div class="thumb"><img src="${f.url}" alt="Foto ${i+1}"><div class="thumb__actions"><button type="button" data-cambiar="${i}">Cambiar</button><button type="button" data-eliminar="${i}">Eliminar</button></div></div>`).join('');
+  $('fotoCount').textContent=`${State.fotos.length} de 5 fotos`; render();
+}
+$('drop').onclick=()=>$('fotos').click();
+$('fotos').onchange=e=>{agregarFotos([...e.target.files]);e.target.value='';};
+['dragover','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();if(ev==='drop')agregarFotos([...e.dataTransfer.files]);}));
+$('thumbs').onclick=e=>{
+  const d=e.target.dataset;
+  if(d.eliminar!=null){State.fotos.splice(+d.eliminar,1);alerta('alertFotos');pintarFotos();}
+  if(d.cambiar!=null){State.reemplazoIdx=+d.cambiar;$('fotoReemplazo').click();}
+};
+$('fotoReemplazo').onchange=e=>{const f=e.target.files[0];if(!f)return;const err=validarImg(f);
+  if(err)alerta('alertFotos',err);else{State.fotos[State.reemplazoIdx]={file:f,url:URL.createObjectURL(f)};alerta('alertFotos');pintarFotos();}e.target.value='';};
+$('dropPdf').onclick=()=>$('pdf').click();
+$('pdf').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name))alerta('alertPdf','El archivo debe estar en formato PDF.');
+  else if(f.size>MB5)alerta('alertPdf','El PDF supera el peso máximo de 5 MB.');
+  else{State.pdf=f;alerta('alertPdf');}
+  $('pdfInfo').innerHTML=State.pdf?`<div class="pdf-file"><svg width="26" height="26"><use href="#i-pdf"/></svg>${State.pdf.name} <button type="button" class="btn btn--peligro" style="padding:4px 12px" id="quitarPdf">Quitar</button></div>`:'';
+  e.target.value='';render();};
+$('pdfInfo').onclick=e=>{if(e.target.id==='quitarPdf'){State.pdf=null;$('pdfInfo').innerHTML='';render();}};
+
+/* ===== Navegación ===== */
+const App={
+  abrir(){$('ovForm').classList.add('is-open');render();},
+  reset(){$('form').reset();State.paso=1;State.variedades.clear();State.fotos=[];State.pdf=null;State.touched.clear();
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('is-on'));$('otraWrap').style.display='none';
+    $('municipio').innerHTML='<option value="">Selecciona un departamento</option>';$('municipio').disabled=true;
+    $('thumbs').innerHTML='';$('pdfInfo').innerHTML='';alerta('alertFotos');alerta('alertPdf');$('fotoCount').textContent='0 de 5 fotos';},
+};
+$('btnRegistrar').onclick=App.abrir;
+$('btnCancelar').onclick=()=>{if(confirm('¿Deseas cancelar el registro? Se perderá la información diligenciada.')){App.reset();$('ovForm').classList.remove('is-open');}};
+$('btnAtras').onclick=()=>{State.paso--;render();};
+$('btnContinuar').onclick=()=>{if(pasoValido(State.paso)){State.paso++;render();}};
+$('btnEnviar').onclick=()=>{
+  const fila=(k,v)=>`<dt>${k}</dt><dd>${v&&String(v).trim()?v:'<span style="color:var(--cafe-500)">—</span>'}</dd>`;
+  const vars=[...State.variedades].map(v=>v==='Otro'?`Otro: ${val('otraVariedad')}`:v).join(', ');
+  $('resumen').innerHTML=`
+   <h4><svg width="26" height="26"><use href="#i-finca"/></svg>Paso 1 · Datos de la finca</h4><dl>
+    ${fila('Nombre de la finca',val('nombreFinca'))}${fila('Departamento',val('departamento'))}${fila('Municipio',val('municipio'))}
+    ${fila('Vereda / corregimiento',val('vereda'))}${fila('Área total',val('area')?val('area')+' '+val('unidad'):'')}
+    ${fila('Variedades',vars)}${fila('Altitud promedio',val('altitud')?val('altitud')+' m.s.n.m.':'')}</dl>
+   <h4><svg width="26" height="26"><use href="#i-user"/></svg>Paso 2 · Datos del usuario</h4><dl>
+    ${fila('Nombre / Razón social',val('nombreUsuario'))}${fila('Documento',val('tipoDoc')+' '+val('numDoc'))}
+    ${fila('Correo',val('correo'))}${fila('Celular',val('celular')?val('indPais')+' '+val('celular'):'')}
+    ${fila('Teléfono',val('telefono')?'('+val('indMun')+') '+val('telefono'):'')}${fila('Biografía',val('bio'))}
+    ${fila('Años de experiencia',val('experiencia'))}</dl>`;
+  $('ovResumen').classList.add('is-open');
+};
+$('btnRegresar').onclick=()=>$('ovResumen').classList.remove('is-open');
+$('btnFinalizar').onclick=()=>{
+  // Angular: this.registroService.crear(payload).subscribe(res => this.mostrarExito(res.numeroSolicitud))
+  const n='OD-'+new Date().getFullYear()+'-'+String(Math.floor(Math.random()*900000)+100000);
+  $('ticket').textContent=n;
+  $('ovResumen').classList.remove('is-open');$('ovForm').classList.remove('is-open');$('ovExito').classList.add('is-open');
+};
+$('btnCerrarExito').onclick=()=>{$('ovExito').classList.remove('is-open');App.reset();};
+render();
+</script>
+</body>
+</html>

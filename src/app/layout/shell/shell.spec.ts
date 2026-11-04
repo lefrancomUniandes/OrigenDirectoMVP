@@ -16,4 +16,13 @@ describe('Shell', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.shell__brand')?.textContent).toContain('OrigenDirecto');
   });
+
+  it('muestra el botón Registrar finca en la barra', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const toolbar = fixture.nativeElement.querySelector('.shell__toolbar') as HTMLElement;
+    const button = toolbar.querySelector('button');
+
+    expect(button?.textContent).toContain('Registrar finca');
+  });
 });
