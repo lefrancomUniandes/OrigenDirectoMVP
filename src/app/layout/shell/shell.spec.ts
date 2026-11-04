@@ -58,6 +58,15 @@ describe('Shell', () => {
     return input;
   }
 
+  async function typeArea(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#area') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   function departmentSelect(): HTMLSelectElement {
     return compiled.querySelector('#department') as HTMLSelectElement;
   }
@@ -280,5 +289,38 @@ describe('Shell', () => {
 
     expect(dialog.textContent).toContain('4/100');
     expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Área vacía es válida; 0, decimales o texto no habilitan Continuar', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeArea('0');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeArea('12.5');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeArea('abc');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeArea('12');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('el selector de unidad ofrece Hectáreas y Fanegadas', async () => {
+    await openForm();
+
+    const options = [...compiled.querySelectorAll('#areaUnit option')].map((option) =>
+      option.textContent?.trim(),
+    );
+
+    expect(options).toContain('Hectáreas');
+    expect(options).toContain('Fanegadas');
   });
 });

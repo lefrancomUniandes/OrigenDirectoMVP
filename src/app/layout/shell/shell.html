@@ -39,8 +39,11 @@
     <input id="village" maxlength="100" [value]="village()" (input)="onVillageInput($event)" />
     <span>{{ village().length }}/100</span>
     <label for="area">Extensión o área total</label>
-    <input id="area" />
-    <select id="areaUnit"></select>
+    <input id="area" [value]="area()" (input)="onAreaInput($event)" />
+    <select id="areaUnit">
+      <option>Hectáreas</option>
+      <option>Fanegadas</option>
+    </select>
     <span>Variedades de café cultivadas</span>
     @for (variety of coffeeVarieties; track variety) {
       <label>
@@ -62,7 +65,8 @@
         farmName().trim() === '' ||
         department() === '' ||
         municipality() === '' ||
-        varieties().length === 0
+        varieties().length === 0 ||
+        !areaValid()
       "
     >
       Continuar
