@@ -14,7 +14,7 @@
   <div role="dialog">
     <h3>Datos básicos de la finca</h3>
     <label for="nombreFinca">Nombre de la finca</label>
-    <input id="nombreFinca" />
-    <button type="button" disabled>Continuar</button>
+    <input id="nombreFinca" [value]="nombreFinca()" (input)="nombreIngresado($event)" />
+    <button type="button" [disabled]="nombreFinca().trim() === ''">Continuar</button>
   </div>
 }

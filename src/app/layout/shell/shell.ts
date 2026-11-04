@@ -10,4 +10,9 @@ import { RouterOutlet } from '@angular/router';
 })
 export class Shell {
   readonly formularioAbierto = signal(false);
+  readonly nombreFinca = signal('');
+
+  nombreIngresado(evento: Event): void {
+    this.nombreFinca.set((evento.target as HTMLInputElement).value);
+  }
 }

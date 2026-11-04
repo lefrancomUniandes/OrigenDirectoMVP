@@ -90,4 +90,48 @@ describe('Shell', () => {
 
     expect(continuar?.disabled).toBe(true);
   });
+
+  it('Continuar permanece deshabilitado si el nombre es solo espacios', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const nombre = compiled.querySelector('[role="dialog"] input') as HTMLInputElement;
+    nombre.value = '   ';
+    nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const continuar = [...compiled.querySelectorAll('[role="dialog"] button')].find((el) =>
+      el.textContent?.includes('Continuar'),
+    ) as HTMLButtonElement | undefined;
+
+    expect(continuar?.disabled).toBe(true);
+  });
+
+  it('Continuar se habilita cuando el nombre tiene texto válido', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const nombre = compiled.querySelector('[role="dialog"] input') as HTMLInputElement;
+    nombre.value = 'Finca La Esperanza';
+    nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const continuar = [...compiled.querySelectorAll('[role="dialog"] button')].find((el) =>
+      el.textContent?.includes('Continuar'),
+    ) as HTMLButtonElement | undefined;
+
+    expect(continuar?.disabled).toBe(false);
+  });
 });
