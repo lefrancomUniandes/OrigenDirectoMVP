@@ -1,6 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterOutlet } from '@angular/router';
+
+const MUNICIPALITIES_BY_DEPARTMENT: Record<string, readonly string[]> = {
+  Huila: ['Pitalito'],
+};
 
 @Component({
   imports: [MatToolbarModule, RouterOutlet],
@@ -12,6 +16,9 @@ export class Shell {
   readonly formOpen = signal(false);
   readonly farmName = signal('');
   readonly department = signal('');
+  readonly municipalities = computed(
+    () => MUNICIPALITIES_BY_DEPARTMENT[this.department()] ?? [],
+  );
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);

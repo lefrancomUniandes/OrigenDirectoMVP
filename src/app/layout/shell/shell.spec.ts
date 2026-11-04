@@ -41,12 +41,38 @@ describe('Shell', () => {
   }
 
   async function typeFarmName(value: string): Promise<HTMLInputElement> {
-    const input = compiled.querySelector('[role="dialog"] input') as HTMLInputElement;
+    const input = compiled.querySelector('#farmName') as HTMLInputElement;
     input.value = value;
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     await fixture.whenStable();
     return input;
+  }
+
+  function departmentSelect(): HTMLSelectElement {
+    return compiled.querySelector('#department') as HTMLSelectElement;
+  }
+
+  function municipalitySelect(): HTMLSelectElement {
+    return compiled.querySelector('#municipality') as HTMLSelectElement;
+  }
+
+  async function chooseDepartment(value: string): Promise<HTMLSelectElement> {
+    const department = departmentSelect();
+    department.value = value;
+    department.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return department;
+  }
+
+  async function chooseMunicipality(value: string): Promise<HTMLSelectElement> {
+    const municipality = municipalitySelect();
+    municipality.value = value;
+    municipality.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return municipality;
   }
 
   it('muestra el botón Registrar finca en la barra', async () => {
@@ -174,16 +200,20 @@ describe('Shell', () => {
   it('Municipio está deshabilitado hasta elegir departamento', async () => {
     await openForm();
 
-    const municipality = compiled.querySelector('#municipality') as HTMLSelectElement;
-    const department = compiled.querySelector('#department') as HTMLSelectElement;
+    expect(municipalitySelect().disabled).toBe(true);
 
-    expect(municipality.disabled).toBe(true);
+    await chooseDepartment('Huila');
 
-    department.value = 'Huila';
-    department.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
+    expect(municipalitySelect().disabled).toBe(false);
+  });
 
-    expect(municipality.disabled).toBe(false);
+  it('al elegir un departamento, municipio solo lista los de ese departamento', async () => {
+    await openForm();
+    await chooseDepartment('Huila');
+
+    const options = [...municipalitySelect().options].map((option) => option.textContent?.trim());
+
+    expect(options).toContain('Pitalito');
+    expect(options).not.toContain('Medellín');
   });
 });
