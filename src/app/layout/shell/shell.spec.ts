@@ -150,4 +150,40 @@ describe('Shell', () => {
     expect(dialog).toBeTruthy();
     expect(inputAfterReject.value).toBe('Finca La Esperanza');
   });
+
+  it('el paso 1 muestra departamento, municipio, vereda, área con unidad, variedades y altitud', async () => {
+    await openForm();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.querySelector('label[for="department"]')?.textContent).toContain('Departamento');
+    expect(dialog.querySelector('select#department')).toBeTruthy();
+    expect(dialog.querySelector('label[for="municipality"]')?.textContent).toContain('Municipio');
+    expect(dialog.querySelector('select#municipality')).toBeTruthy();
+    expect(dialog.querySelector('label[for="village"]')?.textContent).toContain('Vereda o corregimiento');
+    expect(dialog.querySelector('input#village')).toBeTruthy();
+    expect(dialog.querySelector('label[for="area"]')?.textContent).toContain('Extensión o área total');
+    expect(dialog.querySelector('input#area')).toBeTruthy();
+    expect(dialog.querySelector('select#areaUnit')).toBeTruthy();
+    expect(dialog.textContent).toContain('Variedades de café cultivadas');
+    expect(dialog.querySelectorAll('input[type="checkbox"]').length).toBeGreaterThan(0);
+    expect(dialog.querySelector('label[for="altitude"]')?.textContent).toContain('Altitud promedio');
+    expect(dialog.querySelector('input#altitude')).toBeTruthy();
+  });
+
+  it('Municipio está deshabilitado hasta elegir departamento', async () => {
+    await openForm();
+
+    const municipality = compiled.querySelector('#municipality') as HTMLSelectElement;
+    const department = compiled.querySelector('#department') as HTMLSelectElement;
+
+    expect(municipality.disabled).toBe(true);
+
+    department.value = 'Huila';
+    department.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(municipality.disabled).toBe(false);
+  });
 });

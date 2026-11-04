@@ -16,6 +16,19 @@
     <label for="farmName">Nombre de la finca</label>
     <input id="farmName" maxlength="120" [value]="farmName()" (input)="onFarmNameInput($event)" />
     <span>{{ farmName().length }}/120</span>
+    <label for="department">Departamento</label>
+    <select id="department"></select>
+    <label for="municipality">Municipio</label>
+    <select id="municipality"></select>
+    <label for="village">Vereda o corregimiento</label>
+    <input id="village" />
+    <label for="area">Extensión o área total</label>
+    <input id="area" />
+    <select id="areaUnit"></select>
+    <span>Variedades de café cultivadas</span>
+    <input type="checkbox" />
+    <label for="altitude">Altitud promedio</label>
+    <input id="altitude" />
     <button type="button" (click)="cancel()">Cancelar</button>
     <button type="button" [disabled]="farmName().trim() === ''">Continuar</button>
   </div>
