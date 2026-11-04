@@ -9,18 +9,18 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './shell.html',
 })
 export class Shell {
-  readonly formularioAbierto = signal(false);
-  readonly nombreFinca = signal('');
+  readonly formOpen = signal(false);
+  readonly farmName = signal('');
 
-  nombreIngresado(evento: Event): void {
-    this.nombreFinca.set((evento.target as HTMLInputElement).value);
+  onFarmNameInput(event: Event): void {
+    this.farmName.set((event.target as HTMLInputElement).value);
   }
 
-  cancelar(): void {
+  cancel(): void {
     if (!confirm('¿Deseas cancelar el registro? Se perderá la información diligenciada.')) {
       return;
     }
-    this.nombreFinca.set('');
-    this.formularioAbierto.set(false);
+    this.farmName.set('');
+    this.formOpen.set(false);
   }
 }

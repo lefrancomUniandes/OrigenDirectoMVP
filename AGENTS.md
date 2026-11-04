@@ -32,6 +32,9 @@ cada caficultor tiene su pagina y existe un feed con lo que van publicando.
   trae `ng new`.
 - **Nada de pantallas ni entidades "de base".** El scaffold se dejo vacio a proposito; cada
   feature trae lo suyo cuando se construye.
+- **Identificadores en ingles.** Clases, metodos, signals e ids van en ingles para
+  alinearlos con el stack. Los textos de la interfaz y los nombres de las pruebas van en
+  espanol, que es el idioma del producto y de los criterios.
 
 ## Como trabajamos
 

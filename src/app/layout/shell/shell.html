@@ -1,22 +1,22 @@
 <mat-toolbar class="shell__toolbar">
   <span class="shell__brand">OrigenDirecto</span>
-  <button type="button" (click)="formularioAbierto.set(true)">Registrar finca</button>
+  <button type="button" (click)="formOpen.set(true)">Registrar finca</button>
 </mat-toolbar>
 
 <main class="shell__content">
   <router-outlet />
   <section class="hero">
-    <button type="button" (click)="formularioAbierto.set(true)">Comenzar registro</button>
+    <button type="button" (click)="formOpen.set(true)">Comenzar registro</button>
   </section>
 </main>
 
-@if (formularioAbierto()) {
+@if (formOpen()) {
   <div role="dialog">
     <h3>Datos básicos de la finca</h3>
-    <label for="nombreFinca">Nombre de la finca</label>
-    <input id="nombreFinca" maxlength="120" [value]="nombreFinca()" (input)="nombreIngresado($event)" />
-    <span>{{ nombreFinca().length }}/120</span>
-    <button type="button" (click)="cancelar()">Cancelar</button>
-    <button type="button" [disabled]="nombreFinca().trim() === ''">Continuar</button>
+    <label for="farmName">Nombre de la finca</label>
+    <input id="farmName" maxlength="120" [value]="farmName()" (input)="onFarmNameInput($event)" />
+    <span>{{ farmName().length }}/120</span>
+    <button type="button" (click)="cancel()">Cancelar</button>
+    <button type="button" [disabled]="farmName().trim() === ''">Continuar</button>
   </div>
 }
