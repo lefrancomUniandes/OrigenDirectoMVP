@@ -190,4 +190,35 @@ describe('Shell', () => {
 
     vi.restoreAllMocks();
   });
+
+  it('si se rechaza la confirmación de Cancelar, el modal sigue abierto con el nombre escrito', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const nombre = compiled.querySelector('[role="dialog"] input') as HTMLInputElement;
+    nombre.value = 'Finca La Esperanza';
+    nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const cancelar = [...compiled.querySelectorAll('[role="dialog"] button')].find((el) =>
+      el.textContent?.includes('Cancelar'),
+    ) as HTMLButtonElement;
+    cancelar.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]');
+    const nombreTrasRechazo = dialog?.querySelector('input') as HTMLInputElement;
+
+    expect(dialog).toBeTruthy();
+    expect(nombreTrasRechazo.value).toBe('Finca La Esperanza');
+
+    vi.restoreAllMocks();
+  });
 });
