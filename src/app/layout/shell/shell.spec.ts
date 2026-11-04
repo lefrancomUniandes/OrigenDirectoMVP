@@ -134,4 +134,27 @@ describe('Shell', () => {
 
     expect(continuar?.disabled).toBe(false);
   });
+
+  it('el contador refleja la longitud del nombre sobre 120 y el campo no acepta más de 120 caracteres', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const nombre = dialog.querySelector('input') as HTMLInputElement;
+
+    expect(dialog.textContent).toContain('0/120');
+    expect(nombre.maxLength).toBe(120);
+
+    nombre.value = 'Finca';
+    nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(dialog.textContent).toContain('5/120');
+  });
 });
