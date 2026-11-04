@@ -123,13 +123,6 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
   });
 
-  it('Continuar se habilita cuando el nombre tiene texto válido', async () => {
-    await openForm();
-    await typeFarmName('Finca La Esperanza');
-
-    expect(button('Continuar').disabled).toBe(false);
-  });
-
   it('el contador refleja la longitud del nombre sobre 120 y el campo no acepta más de 120 caracteres', async () => {
     await openForm();
 
@@ -215,5 +208,16 @@ describe('Shell', () => {
 
     expect(options).toContain('Pitalito');
     expect(options).not.toContain('Medellín');
+  });
+
+  it('Continuar permanece deshabilitado si faltan departamento o municipio', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+
+    expect(button('Continuar').disabled).toBe(true);
+
+    await chooseDepartment('Huila');
+
+    expect(button('Continuar').disabled).toBe(true);
   });
 });

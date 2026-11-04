@@ -22,7 +22,12 @@
       <option value="Huila">Huila</option>
     </select>
     <label for="municipality">Municipio</label>
-    <select id="municipality" [disabled]="department() === ''">
+    <select
+      id="municipality"
+      [disabled]="department() === ''"
+      [value]="municipality()"
+      (change)="onMunicipalityChange($event)"
+    >
       <option value="">Selecciona…</option>
       @for (name of municipalities(); track name) {
         <option [value]="name">{{ name }}</option>
@@ -38,6 +43,11 @@
     <label for="altitude">Altitud promedio</label>
     <input id="altitude" />
     <button type="button" (click)="cancel()">Cancelar</button>
-    <button type="button" [disabled]="farmName().trim() === ''">Continuar</button>
+    <button
+      type="button"
+      [disabled]="farmName().trim() === '' || department() === '' || municipality() === ''"
+    >
+      Continuar
+    </button>
   </div>
 }
