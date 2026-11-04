@@ -1,10 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterOutlet } from '@angular/router';
-
-const MUNICIPALITIES_BY_DEPARTMENT: Record<string, readonly string[]> = {
-  Huila: ['Pitalito'],
-};
+import { coffeeVarieties } from '../../core/catalogs/coffee-varieties';
+import { departments, municipalitiesByDepartment } from '../../core/catalogs/colombia';
 
 @Component({
   imports: [MatToolbarModule, RouterOutlet],
@@ -18,8 +16,10 @@ export class Shell {
   readonly department = signal('');
   readonly municipality = signal('');
   readonly varieties = signal<readonly string[]>([]);
+  readonly coffeeVarieties = coffeeVarieties;
+  readonly departments = departments;
   readonly municipalities = computed(
-    () => MUNICIPALITIES_BY_DEPARTMENT[this.department()] ?? [],
+    () => municipalitiesByDepartment[this.department()] ?? [],
   );
 
   onFarmNameInput(event: Event): void {
@@ -33,6 +33,14 @@ export class Shell {
 
   onMunicipalityChange(event: Event): void {
     this.municipality.set((event.target as HTMLSelectElement).value);
+  }
+
+  onVarietyChange(name: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const current = this.varieties();
+    this.varieties.set(
+      checked ? [...current, name] : current.filter((variety) => variety !== name),
+    );
   }
 
   cancel(): void {

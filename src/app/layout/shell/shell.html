@@ -19,7 +19,9 @@
     <label for="department">Departamento</label>
     <select id="department" [value]="department()" (change)="onDepartmentChange($event)">
       <option value="">Selecciona…</option>
-      <option value="Huila">Huila</option>
+      @for (name of departments; track name) {
+        <option [value]="name">{{ name }}</option>
+      }
     </select>
     <label for="municipality">Municipio</label>
     <select
@@ -39,7 +41,17 @@
     <input id="area" />
     <select id="areaUnit"></select>
     <span>Variedades de café cultivadas</span>
-    <input type="checkbox" />
+    @for (variety of coffeeVarieties; track variety) {
+      <label>
+        <input
+          type="checkbox"
+          [value]="variety"
+          [checked]="varieties().includes(variety)"
+          (change)="onVarietyChange(variety, $event)"
+        />
+        {{ variety }}
+      </label>
+    }
     <label for="altitude">Altitud promedio</label>
     <input id="altitude" />
     <button type="button" (click)="cancel()">Cancelar</button>

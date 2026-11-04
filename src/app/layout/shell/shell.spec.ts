@@ -75,6 +75,19 @@ describe('Shell', () => {
     return municipality;
   }
 
+  async function chooseVariety(name: string): Promise<void> {
+    const checkbox = compiled.querySelector(
+      `input[type="checkbox"][value="${name}"]`,
+    ) as HTMLInputElement | null;
+    if (!checkbox) {
+      throw new Error(`Variety "${name}" not found`);
+    }
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
   it('muestra el botón Registrar finca en la barra', async () => {
     const toolbar = compiled.querySelector('.shell__toolbar') as HTMLElement;
 
@@ -228,5 +241,15 @@ describe('Shell', () => {
     await chooseMunicipality('Pitalito');
 
     expect(button('Continuar').disabled).toBe(true);
+  });
+
+  it('Continuar se habilita con nombre, departamento, municipio y al menos una variedad', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+
+    expect(button('Continuar').disabled).toBe(false);
   });
 });
