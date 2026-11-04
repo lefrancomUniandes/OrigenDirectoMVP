@@ -36,7 +36,8 @@
       }
     </select>
     <label for="village">Vereda o corregimiento</label>
-    <input id="village" />
+    <input id="village" maxlength="100" [value]="village()" (input)="onVillageInput($event)" />
+    <span>{{ village().length }}/100</span>
     <label for="area">Extensión o área total</label>
     <input id="area" />
     <select id="areaUnit"></select>

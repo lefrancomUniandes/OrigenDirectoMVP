@@ -49,6 +49,15 @@ describe('Shell', () => {
     return input;
   }
 
+  async function typeVillage(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#village') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   function departmentSelect(): HTMLSelectElement {
     return compiled.querySelector('#department') as HTMLSelectElement;
   }
@@ -250,6 +259,26 @@ describe('Shell', () => {
     await chooseMunicipality('Pitalito');
     await chooseVariety('Castillo');
 
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Vereda es opcional, máximo 100 caracteres, con contador', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+
+    const village = compiled.querySelector('#village') as HTMLInputElement;
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(button('Continuar').disabled).toBe(false);
+    expect(village.maxLength).toBe(100);
+    expect(dialog.textContent).toContain('0/100');
+
+    await typeVillage('Alto');
+
+    expect(dialog.textContent).toContain('4/100');
     expect(button('Continuar').disabled).toBe(false);
   });
 });

@@ -15,6 +15,7 @@ export class Shell {
   readonly farmName = signal('');
   readonly department = signal('');
   readonly municipality = signal('');
+  readonly village = signal('');
   readonly varieties = signal<readonly string[]>([]);
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
@@ -24,6 +25,10 @@ export class Shell {
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
+  }
+
+  onVillageInput(event: Event): void {
+    this.village.set((event.target as HTMLInputElement).value);
   }
 
   onDepartmentChange(event: Event): void {
@@ -50,6 +55,7 @@ export class Shell {
     this.farmName.set('');
     this.department.set('');
     this.municipality.set('');
+    this.village.set('');
     this.varieties.set([]);
     this.formOpen.set(false);
   }
