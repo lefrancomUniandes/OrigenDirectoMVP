@@ -15,4 +15,12 @@ export class Shell {
   nombreIngresado(evento: Event): void {
     this.nombreFinca.set((evento.target as HTMLInputElement).value);
   }
+
+  cancelar(): void {
+    if (!confirm('¿Deseas cancelar el registro? Se perderá la información diligenciada.')) {
+      return;
+    }
+    this.nombreFinca.set('');
+    this.formularioAbierto.set(false);
+  }
 }

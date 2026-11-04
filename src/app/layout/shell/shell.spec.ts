@@ -157,4 +157,37 @@ describe('Shell', () => {
 
     expect(dialog.textContent).toContain('5/120');
   });
+
+  it('si se confirma Cancelar, el modal se cierra y al volver a abrirlo el nombre está vacío', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const nombre = compiled.querySelector('[role="dialog"] input') as HTMLInputElement;
+    nombre.value = 'Finca La Esperanza';
+    nombre.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const cancelar = [...compiled.querySelectorAll('[role="dialog"] button')].find((el) =>
+      el.textContent?.includes('Cancelar'),
+    ) as HTMLButtonElement;
+    cancelar.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(compiled.querySelector('[role="dialog"]')).toBeNull();
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const nombreAlReabrir = compiled.querySelector('[role="dialog"] input') as HTMLInputElement;
+    expect(nombreAlReabrir.value).toBe('');
+
+    vi.restoreAllMocks();
+  });
 });

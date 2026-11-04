@@ -16,6 +16,7 @@
     <label for="nombreFinca">Nombre de la finca</label>
     <input id="nombreFinca" maxlength="120" [value]="nombreFinca()" (input)="nombreIngresado($event)" />
     <span>{{ nombreFinca().length }}/120</span>
+    <button type="button" (click)="cancelar()">Cancelar</button>
     <button type="button" [disabled]="nombreFinca().trim() === ''">Continuar</button>
   </div>
 }
