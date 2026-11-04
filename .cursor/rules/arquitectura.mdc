@@ -1,0 +1,41 @@
+---
+description: Reglas de capas y manejo del esquema de Dexie en la aplicacion Angular
+globs: src/app/**
+alwaysApply: false
+---
+
+# Capas
+
+El flujo va en una sola direccion: componente -> servicio de la feature -> `CrudRepository`
+-> Dexie.
+
+- Un componente no inyecta `OrigenDirectoDb` ni un repositorio. Lee signals del servicio de
+  su feature.
+- Una feature no importa de otra feature. Lo que se comparte sube a `shared/` si es UI sin
+  estado, o a `core/` si es acceso a datos.
+- `shared/` no conoce `features/` ni toca la base: recibe todo por `input()`.
+
+# Repositorios
+
+Cada feature extiende `DexieRepository` en vez de implementar `CrudRepository` a mano:
+
+```ts
+@Injectable({ providedIn: 'root' })
+export class FincaRepository extends DexieRepository<Finca> {
+  constructor() {
+    super(inject(OrigenDirectoDb).fincas);
+  }
+}
+```
+
+# Esquema de la base
+
+Para agregar o cambiar tablas se **anade** una `version(n).stores({...})` nueva en
+`core/db/origen-directo.db.ts`. Nunca editar una `version()` ya existente: los usuarios
+tienen datos en su navegador y Dexie necesita la cadena completa de versiones para
+migrarlos.
+
+# Lecturas
+
+Leer con `liveQuerySignal()`. No usar `resource()` ni `toSignal()` sobre una promesa suelta:
+se pierde el refresco automatico cuando otra parte de la app escribe en la tabla.
