@@ -25,4 +25,17 @@ describe('Shell', () => {
 
     expect(button?.textContent).toContain('Registrar finca');
   });
+
+  it('muestra el hero con el botón Comenzar registro', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const hero = compiled.querySelector('.hero');
+    const button = [...(hero?.querySelectorAll('button') ?? [])].find((el) =>
+      el.textContent?.includes('Comenzar registro'),
+    );
+
+    expect(hero).toBeTruthy();
+    expect(button).toBeTruthy();
+  });
 });
