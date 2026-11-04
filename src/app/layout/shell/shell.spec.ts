@@ -74,4 +74,20 @@ describe('Shell', () => {
     expect(dialog?.textContent).toContain('Nombre de la finca');
     expect(dialog?.querySelector('input')).toBeTruthy();
   });
+
+  it('Continuar permanece deshabilitado si el nombre está vacío', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const continuar = [...compiled.querySelectorAll('[role="dialog"] button')].find((el) =>
+      el.textContent?.includes('Continuar'),
+    ) as HTMLButtonElement | undefined;
+
+    expect(continuar?.disabled).toBe(true);
+  });
 });
