@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterOutlet } from '@angular/router';
 
@@ -8,4 +8,6 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './shell.scss',
   templateUrl: './shell.html',
 })
-export class Shell {}
+export class Shell {
+  readonly formularioAbierto = signal(false);
+}

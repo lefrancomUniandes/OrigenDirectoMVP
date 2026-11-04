@@ -38,4 +38,40 @@ describe('Shell', () => {
     expect(hero).toBeTruthy();
     expect(button).toBeTruthy();
   });
+
+  it('Registrar finca abre el modal del paso 1 con el campo nombre de la finca', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const registrar = compiled.querySelector('.shell__toolbar button') as HTMLButtonElement;
+
+    registrar.click();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]');
+
+    expect(dialog).toBeTruthy();
+    expect(dialog?.textContent).toContain('Datos básicos de la finca');
+    expect(dialog?.textContent).toContain('Nombre de la finca');
+    expect(dialog?.querySelector('input')).toBeTruthy();
+  });
+
+  it('Comenzar registro abre el mismo modal', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const comenzar = [...compiled.querySelectorAll('.hero button')].find((el) =>
+      el.textContent?.includes('Comenzar registro'),
+    ) as HTMLButtonElement;
+
+    comenzar.click();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]');
+
+    expect(dialog).toBeTruthy();
+    expect(dialog?.textContent).toContain('Datos básicos de la finca');
+    expect(dialog?.textContent).toContain('Nombre de la finca');
+    expect(dialog?.querySelector('input')).toBeTruthy();
+  });
 });

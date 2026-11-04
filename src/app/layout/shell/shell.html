@@ -1,11 +1,19 @@
 <mat-toolbar class="shell__toolbar">
   <span class="shell__brand">OrigenDirecto</span>
-  <button type="button">Registrar finca</button>
+  <button type="button" (click)="formularioAbierto.set(true)">Registrar finca</button>
 </mat-toolbar>
 
 <main class="shell__content">
   <router-outlet />
   <section class="hero">
-    <button type="button">Comenzar registro</button>
+    <button type="button" (click)="formularioAbierto.set(true)">Comenzar registro</button>
   </section>
 </main>
+
+@if (formularioAbierto()) {
+  <div role="dialog">
+    <h3>Datos básicos de la finca</h3>
+    <label for="nombreFinca">Nombre de la finca</label>
+    <input id="nombreFinca" />
+  </div>
+}
