@@ -17,9 +17,12 @@
     <input id="farmName" maxlength="120" [value]="farmName()" (input)="onFarmNameInput($event)" />
     <span>{{ farmName().length }}/120</span>
     <label for="department">Departamento</label>
-    <select id="department"></select>
+    <select id="department" [value]="department()" (change)="onDepartmentChange($event)">
+      <option value="">Selecciona…</option>
+      <option value="Huila">Huila</option>
+    </select>
     <label for="municipality">Municipio</label>
-    <select id="municipality"></select>
+    <select id="municipality" [disabled]="department() === ''"></select>
     <label for="village">Vereda o corregimiento</label>
     <input id="village" />
     <label for="area">Extensión o área total</label>

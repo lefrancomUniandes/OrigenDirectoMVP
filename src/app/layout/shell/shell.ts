@@ -11,9 +11,14 @@ import { RouterOutlet } from '@angular/router';
 export class Shell {
   readonly formOpen = signal(false);
   readonly farmName = signal('');
+  readonly department = signal('');
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
+  }
+
+  onDepartmentChange(event: Event): void {
+    this.department.set((event.target as HTMLSelectElement).value);
   }
 
   cancel(): void {
