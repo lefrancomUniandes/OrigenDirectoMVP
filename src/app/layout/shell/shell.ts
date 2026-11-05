@@ -25,6 +25,11 @@ export class Shell {
   readonly documentType = signal('');
   readonly documentNumber = signal('');
   readonly email = signal('');
+  readonly mobile = signal('');
+  readonly phoneAreaCode = signal('');
+  readonly landline = signal('');
+  readonly bio = signal('');
+  readonly experience = signal('');
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
   readonly municipalities = computed(
@@ -76,12 +81,36 @@ export class Shell {
   readonly emailValid = computed(() =>
     /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(this.email()),
   );
+  readonly mobileValid = computed(() => {
+    const value = this.mobile();
+    return value === '' || /^\d+$/.test(value);
+  });
+  readonly phoneAreaCodeValid = computed(() => {
+    const value = this.phoneAreaCode();
+    return value === '' || /^\d+$/.test(value);
+  });
+  readonly landlineValid = computed(() => {
+    const value = this.landline();
+    return value === '' || /^\d+$/.test(value);
+  });
+  readonly bioHintVisible = computed(() => {
+    const length = this.bio().length;
+    return length > 0 && length < 150;
+  });
+  readonly experienceValid = computed(() => {
+    const value = this.experience();
+    return value === '' || /^\d+$/.test(value);
+  });
   readonly step2Valid = computed(
     () =>
       this.ownerNameValid() &&
       this.documentType() !== '' &&
       this.documentNumberValid() &&
-      this.emailValid(),
+      this.emailValid() &&
+      this.mobileValid() &&
+      this.phoneAreaCodeValid() &&
+      this.landlineValid() &&
+      this.experienceValid(),
   );
   readonly canContinue = computed(() =>
     this.step() === 1 ? this.step1Valid() : this.step2Valid(),
@@ -105,6 +134,26 @@ export class Shell {
 
   onEmailInput(event: Event): void {
     this.email.set((event.target as HTMLInputElement).value);
+  }
+
+  onMobileInput(event: Event): void {
+    this.mobile.set((event.target as HTMLInputElement).value);
+  }
+
+  onPhoneAreaCodeInput(event: Event): void {
+    this.phoneAreaCode.set((event.target as HTMLInputElement).value);
+  }
+
+  onLandlineInput(event: Event): void {
+    this.landline.set((event.target as HTMLInputElement).value);
+  }
+
+  onBioInput(event: Event): void {
+    this.bio.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  onExperienceInput(event: Event): void {
+    this.experience.set((event.target as HTMLInputElement).value);
   }
 
   onVillageInput(event: Event): void {
@@ -164,6 +213,11 @@ export class Shell {
     this.documentType.set('');
     this.documentNumber.set('');
     this.email.set('');
+    this.mobile.set('');
+    this.phoneAreaCode.set('');
+    this.landline.set('');
+    this.bio.set('');
+    this.experience.set('');
     this.step.set(1);
     this.formOpen.set(false);
   }

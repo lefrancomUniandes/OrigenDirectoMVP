@@ -174,6 +174,58 @@ describe('Shell', () => {
     await fixture.whenStable();
   }
 
+  async function fillStep2Required(): Promise<void> {
+    await typeOwnerName('Ana');
+    await chooseDocumentType('Cédula de ciudadanía');
+    await typeDocumentNumber('123');
+    await typeEmail('ana@finca.com');
+  }
+
+  async function typeMobile(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#mobile') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  async function typePhoneAreaCode(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#phoneAreaCode') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  async function typeLandline(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#landline') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  async function typeBio(value: string): Promise<HTMLTextAreaElement> {
+    const input = compiled.querySelector('#bio') as HTMLTextAreaElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  async function typeExperience(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#experience') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   it('muestra el botón Registrar finca en la barra', async () => {
     const toolbar = compiled.querySelector('.shell__toolbar') as HTMLElement;
 
@@ -540,6 +592,74 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
 
     await typeEmail('ana@finca.com');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Celular vacío es válido; si se diligencia, solo numérico', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeMobile('abc');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeMobile('3001234567');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Indicativo municipal y teléfono vacíos son válidos; si se diligencian, solo numéricos', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typePhoneAreaCode('60a');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typePhoneAreaCode('604');
+    await typeLandline('abc');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeLandline('1234567');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Biografía opcional: menos de 150 caracteres muestra la recomendación y no bloquea; máximo 500', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    const bio = compiled.querySelector('#bio') as HTMLTextAreaElement;
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(bio.maxLength).toBe(500);
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeBio('Historia');
+    expect(dialog.textContent).toContain('Recomendado mínimo 150 caracteres');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Años de experiencia vacíos son válidos; si se diligencian, entero ≥ 0', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeExperience('1.5');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeExperience('abc');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeExperience('-1');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeExperience('8');
     expect(button('Continuar').disabled).toBe(false);
   });
 });

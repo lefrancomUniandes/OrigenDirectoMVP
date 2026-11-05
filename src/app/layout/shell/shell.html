@@ -100,6 +100,23 @@
       />
       <label for="email">Correo electrónico</label>
       <input id="email" type="email" [value]="email()" (input)="onEmailInput($event)" />
+      <label for="mobile">Celular</label>
+      <input id="mobile" [value]="mobile()" (input)="onMobileInput($event)" />
+      <label for="phoneAreaCode">Indicativo municipal</label>
+      <input
+        id="phoneAreaCode"
+        [value]="phoneAreaCode()"
+        (input)="onPhoneAreaCodeInput($event)"
+      />
+      <label for="landline">Teléfono fijo</label>
+      <input id="landline" [value]="landline()" (input)="onLandlineInput($event)" />
+      <label for="bio">Breve biografía o historia cafetera</label>
+      <textarea id="bio" maxlength="500" [value]="bio()" (input)="onBioInput($event)"></textarea>
+      @if (bioHintVisible()) {
+        <span>Recomendado mínimo 150 caracteres</span>
+      }
+      <label for="experience">Años de experiencia en caficultura</label>
+      <input id="experience" [value]="experience()" (input)="onExperienceInput($event)" />
     }
     <button type="button" (click)="cancel()">Cancelar</button>
     @if (step() > 1) {
