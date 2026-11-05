@@ -932,4 +932,43 @@ describe('Shell', () => {
     expect(dialog.textContent).not.toContain('rut-vigente.pdf');
     expect(button('Enviar').disabled).toBe(true);
   });
+
+  it('Enviar con el paso 3 válido abre el resumen de solo lectura, sin campos editables', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const summary = compiled.querySelector('#summary') as HTMLElement;
+
+    expect(summary).toBeTruthy();
+    expect(summary.textContent).toContain('Verifica tu información');
+    expect(summary.textContent).toContain('Datos de la finca');
+    expect(summary.textContent).toContain('Datos del usuario');
+    expect(summary.querySelector('input')).toBeNull();
+    expect(summary.querySelector('textarea')).toBeNull();
+    expect(summary.querySelector('select')).toBeNull();
+    expect(button('Regresar al formulario')).toBeTruthy();
+    expect(button('Finalizar')).toBeTruthy();
+  });
+
+  it('el resumen muestra los datos diligenciados de finca, municipio, dueño y correo', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const summary = compiled.querySelector('#summary') as HTMLElement;
+
+    expect(summary.textContent).toContain('Finca La Esperanza');
+    expect(summary.textContent).toContain('Pitalito');
+    expect(summary.textContent).toContain('Ana');
+    expect(summary.textContent).toContain('ana@finca.com');
+  });
 });

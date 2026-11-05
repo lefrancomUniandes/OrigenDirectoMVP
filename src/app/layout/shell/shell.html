@@ -160,7 +160,28 @@
       <button type="button" [disabled]="!canContinue()" (click)="goNext()">Continuar</button>
     }
     @if (step() === 3) {
-      <button type="button" [disabled]="!canSubmit()">Enviar</button>
+      <button type="button" [disabled]="!canSubmit()" (click)="submit()">Enviar</button>
     }
+  </div>
+}
+@if (summaryOpen()) {
+  <div id="summary" role="dialog">
+    <h2>Verifica tu información</h2>
+    <h4>Datos de la finca</h4>
+    <dl>
+      <dt>Nombre de la finca</dt>
+      <dd>{{ farmName() }}</dd>
+      <dt>Municipio</dt>
+      <dd>{{ municipality() }}</dd>
+    </dl>
+    <h4>Datos del usuario</h4>
+    <dl>
+      <dt>Nombre / Razón social</dt>
+      <dd>{{ ownerName() }}</dd>
+      <dt>Correo</dt>
+      <dd>{{ email() }}</dd>
+    </dl>
+    <button type="button">Regresar al formulario</button>
+    <button type="button">Finalizar</button>
   </div>
 }

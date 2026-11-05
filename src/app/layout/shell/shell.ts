@@ -12,6 +12,7 @@ import { departments, municipalitiesByDepartment } from '../../core/catalogs/col
 })
 export class Shell {
   readonly formOpen = signal(false);
+  readonly summaryOpen = signal(false);
   readonly step = signal(1);
   readonly farmName = signal('');
   readonly department = signal('');
@@ -293,6 +294,10 @@ export class Shell {
 
   goNext(): void {
     this.step.update((step) => step + 1);
+  }
+
+  submit(): void {
+    this.summaryOpen.set(true);
   }
 
   goBack(): void {
