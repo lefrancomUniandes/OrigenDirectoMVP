@@ -21,6 +21,10 @@ export class Shell {
   readonly altitude = signal('');
   readonly varieties = signal<readonly string[]>([]);
   readonly otherVariety = signal('');
+  readonly ownerName = signal('');
+  readonly documentType = signal('');
+  readonly documentNumber = signal('');
+  readonly email = signal('');
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
   readonly municipalities = computed(
@@ -45,7 +49,11 @@ export class Shell {
   readonly otherVarietyValid = computed(
     () => !this.otherVarietySelected() || this.otherVariety().trim() !== '',
   );
-  readonly canContinue = computed(
+  readonly ownerNameValid = computed(() => {
+    const value = this.ownerName();
+    return value.trim() !== '' && !/\d/.test(value);
+  });
+  readonly step1Valid = computed(
     () =>
       this.farmName().trim() !== '' &&
       this.department() !== '' &&
@@ -55,9 +63,48 @@ export class Shell {
       this.altitudeValid() &&
       this.otherVarietyValid(),
   );
+  readonly documentNumberValid = computed(() => {
+    const value = this.documentNumber();
+    if (value === '') {
+      return false;
+    }
+    if (this.documentType() === 'Pasaporte') {
+      return /^[A-Za-z0-9]+$/.test(value);
+    }
+    return /^\d+$/.test(value);
+  });
+  readonly emailValid = computed(() =>
+    /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(this.email()),
+  );
+  readonly step2Valid = computed(
+    () =>
+      this.ownerNameValid() &&
+      this.documentType() !== '' &&
+      this.documentNumberValid() &&
+      this.emailValid(),
+  );
+  readonly canContinue = computed(() =>
+    this.step() === 1 ? this.step1Valid() : this.step2Valid(),
+  );
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
+  }
+
+  onOwnerNameInput(event: Event): void {
+    this.ownerName.set((event.target as HTMLInputElement).value);
+  }
+
+  onDocumentTypeChange(event: Event): void {
+    this.documentType.set((event.target as HTMLSelectElement).value);
+  }
+
+  onDocumentNumberInput(event: Event): void {
+    this.documentNumber.set((event.target as HTMLInputElement).value);
+  }
+
+  onEmailInput(event: Event): void {
+    this.email.set((event.target as HTMLInputElement).value);
   }
 
   onVillageInput(event: Event): void {
@@ -113,6 +160,10 @@ export class Shell {
     this.altitude.set('');
     this.varieties.set([]);
     this.otherVariety.set('');
+    this.ownerName.set('');
+    this.documentType.set('');
+    this.documentNumber.set('');
+    this.email.set('');
     this.step.set(1);
     this.formOpen.set(false);
   }

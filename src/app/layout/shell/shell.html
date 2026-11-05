@@ -19,9 +19,9 @@
     <span>{{ farmName().length }}/120</span>
     <label for="department">Departamento</label>
     <select id="department" [value]="department()" (change)="onDepartmentChange($event)">
-      <option value="">Selecciona…</option>
+      <option value="" [selected]="department() === ''">Selecciona…</option>
       @for (name of departments; track name) {
-        <option [value]="name">{{ name }}</option>
+        <option [value]="name" [selected]="department() === name">{{ name }}</option>
       }
     </select>
     <label for="municipality">Municipio</label>
@@ -31,9 +31,9 @@
       [value]="municipality()"
       (change)="onMunicipalityChange($event)"
     >
-      <option value="">Selecciona…</option>
+      <option value="" [selected]="municipality() === ''">Selecciona…</option>
       @for (name of municipalities(); track name) {
-        <option [value]="name">{{ name }}</option>
+        <option [value]="name" [selected]="municipality() === name">{{ name }}</option>
       }
     </select>
     <label for="village">Vereda o corregimiento</label>
@@ -71,6 +71,35 @@
     }
     @if (step() === 2) {
       <h3>Datos básicos del usuario</h3>
+      <label for="ownerName">Nombre completo / Razón social</label>
+      <input
+        id="ownerName"
+        maxlength="120"
+        [value]="ownerName()"
+        (input)="onOwnerNameInput($event)"
+      />
+      <span>{{ ownerName().length }}/120</span>
+      <label for="documentType">Tipo de documento</label>
+      <select
+        id="documentType"
+        [value]="documentType()"
+        (change)="onDocumentTypeChange($event)"
+      >
+        <option value="">Selecciona…</option>
+        <option value="NIT">NIT</option>
+        <option value="RUT">RUT</option>
+        <option value="Cédula de ciudadanía">Cédula de ciudadanía</option>
+        <option value="Cédula de extranjería">Cédula de extranjería</option>
+        <option value="Pasaporte">Pasaporte</option>
+      </select>
+      <label for="documentNumber">Número de documento</label>
+      <input
+        id="documentNumber"
+        [value]="documentNumber()"
+        (input)="onDocumentNumberInput($event)"
+      />
+      <label for="email">Correo electrónico</label>
+      <input id="email" type="email" [value]="email()" (input)="onEmailInput($event)" />
     }
     <button type="button" (click)="cancel()">Cancelar</button>
     @if (step() > 1) {

@@ -85,6 +85,42 @@ describe('Shell', () => {
     return input;
   }
 
+  async function typeOwnerName(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#ownerName') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  async function chooseDocumentType(value: string): Promise<HTMLSelectElement> {
+    const documentType = compiled.querySelector('#documentType') as HTMLSelectElement;
+    documentType.value = value;
+    documentType.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return documentType;
+  }
+
+  async function typeDocumentNumber(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#documentNumber') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  async function typeEmail(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#email') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   function departmentSelect(): HTMLSelectElement {
     return compiled.querySelector('#department') as HTMLSelectElement;
   }
@@ -129,6 +165,13 @@ describe('Shell', () => {
     await chooseDepartment('Huila');
     await chooseMunicipality('Pitalito');
     await chooseVariety('Castillo');
+  }
+
+  async function goToStep2(): Promise<void> {
+    await fillStep1();
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
   }
 
   it('muestra el botón Registrar finca en la barra', async () => {
@@ -409,5 +452,94 @@ describe('Shell', () => {
     expect(button('Atrás')).toBeTruthy();
     expect(button('Continuar')).toBeTruthy();
     expect(button('Cancelar')).toBeTruthy();
+  });
+
+  it('Atrás vuelve al paso 1 con los datos de la finca conservados', async () => {
+    await openForm();
+    await goToStep2();
+
+    button('Atrás').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const farmName = compiled.querySelector('#farmName') as HTMLInputElement;
+
+    expect(dialog.textContent).toContain('Datos básicos de la finca');
+    expect(farmName.value).toBe('Finca La Esperanza');
+    expect(municipalitySelect().value).toBe('Pitalito');
+  });
+
+  it('Nombre del usuario: obligatorio, no solo espacios, sin dígitos, máximo 120 con contador', async () => {
+    await openForm();
+    await goToStep2();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const ownerName = compiled.querySelector('#ownerName') as HTMLInputElement;
+
+    expect(dialog.textContent).toContain('Nombre completo / Razón social');
+    expect(ownerName.maxLength).toBe(120);
+    expect(dialog.textContent).toContain('0/120');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeOwnerName('   ');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeOwnerName('Ana2');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeOwnerName('Ana');
+    expect(dialog.textContent).toContain('3/120');
+  });
+
+  it('Tipo de documento obligatorio; opciones NIT, RUT y cédulas y Pasaporte', async () => {
+    await openForm();
+    await goToStep2();
+    await typeOwnerName('Ana');
+
+    const documentType = compiled.querySelector('#documentType') as HTMLSelectElement;
+    const options = [...documentType.options].map((option) => option.textContent?.trim());
+
+    expect(options).toContain('NIT');
+    expect(options).toContain('RUT');
+    expect(options).toContain('Cédula de ciudadanía');
+    expect(options).toContain('Cédula de extranjería');
+    expect(options).toContain('Pasaporte');
+    expect(button('Continuar').disabled).toBe(true);
+  });
+
+  it('Número de documento obligatorio; dígitos para cédula y letras y números para pasaporte', async () => {
+    await openForm();
+    await goToStep2();
+    await typeOwnerName('Ana');
+    await chooseDocumentType('Cédula de ciudadanía');
+
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeDocumentNumber('abc');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await chooseDocumentType('Pasaporte');
+    await typeDocumentNumber('AB 12');
+    expect(button('Continuar').disabled).toBe(true);
+  });
+
+  it('Correo obligatorio; sin @ o sin dominio, Continuar sigue deshabilitado', async () => {
+    await openForm();
+    await goToStep2();
+    await typeOwnerName('Ana');
+    await chooseDocumentType('Cédula de ciudadanía');
+    await typeDocumentNumber('123');
+
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeEmail('ana');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeEmail('ana@finca');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeEmail('ana@finca.com');
+    expect(button('Continuar').disabled).toBe(false);
   });
 });
