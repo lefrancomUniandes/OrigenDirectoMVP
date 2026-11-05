@@ -1,0 +1,210 @@
+@if (!form().summaryOpen && !form().successOpen) {
+  <div role="dialog">
+    @if (form().step === 1) {
+    <h3>Datos básicos de la finca</h3>
+    <label for="farmName">Nombre de la finca</label>
+    <input id="farmName" maxlength="120" [value]="form().farmName" (input)="onText('farmName', $event)" />
+    <span>{{ form().farmName.length }}/120</span>
+    <label for="department">Departamento</label>
+    <select id="department" [value]="form().department" (change)="onDepartmentChange($event)">
+      <option value="" [selected]="form().department === ''">Selecciona…</option>
+      @for (name of departments; track name) {
+        <option [value]="name" [selected]="form().department === name">{{ name }}</option>
+      }
+    </select>
+    <label for="municipality">Municipio</label>
+    <select
+      id="municipality"
+      [disabled]="form().department === ''"
+      [value]="form().municipality"
+      (change)="onMunicipalityChange($event)"
+    >
+      <option value="" [selected]="form().municipality === ''">Selecciona…</option>
+      @for (name of municipalities(); track name) {
+        <option [value]="name" [selected]="form().municipality === name">{{ name }}</option>
+      }
+    </select>
+    <label for="village">Vereda o corregimiento</label>
+    <input id="village" maxlength="100" [value]="form().village" (input)="onText('village', $event)" />
+    <span>{{ form().village.length }}/100</span>
+    <label for="area">Extensión o área total</label>
+    <input id="area" [value]="form().area" (input)="onText('area', $event)" />
+    <select id="areaUnit" [value]="form().areaUnit" (change)="onAreaUnitChange($event)">
+      <option value="Hectáreas" [selected]="form().areaUnit === 'Hectáreas'">Hectáreas</option>
+      <option value="Fanegadas" [selected]="form().areaUnit === 'Fanegadas'">Fanegadas</option>
+    </select>
+    <span>Variedades de café cultivadas</span>
+    @for (variety of coffeeVarieties; track variety) {
+      <label>
+        <input
+          type="checkbox"
+          [value]="variety"
+          [checked]="form().varieties.includes(variety)"
+          (change)="onVarietyChange(variety, $event)"
+        />
+        {{ variety }}
+      </label>
+    }
+    @if (otherVarietySelected()) {
+      <label for="otherVariety">¿Cuál otra variedad?</label>
+      <input
+        id="otherVariety"
+        maxlength="50"
+        [value]="form().otherVariety"
+        (input)="onText('otherVariety', $event)"
+      />
+    }
+    <label for="altitude">Altitud promedio</label>
+    <input id="altitude" [value]="form().altitude" (input)="onText('altitude', $event)" />
+    }
+    @if (form().step === 2) {
+      <h3>Datos básicos del usuario</h3>
+      <label for="ownerName">Nombre completo / Razón social</label>
+      <input
+        id="ownerName"
+        maxlength="120"
+        [value]="form().ownerName"
+        (input)="onText('ownerName', $event)"
+      />
+      <span>{{ form().ownerName.length }}/120</span>
+      <label for="documentType">Tipo de documento</label>
+      <select
+        id="documentType"
+        [value]="form().documentType"
+        (change)="onDocumentTypeChange($event)"
+      >
+        <option value="">Selecciona…</option>
+        <option value="NIT">NIT</option>
+        <option value="RUT">RUT</option>
+        <option value="Cédula de ciudadanía">Cédula de ciudadanía</option>
+        <option value="Cédula de extranjería">Cédula de extranjería</option>
+        <option value="Pasaporte">Pasaporte</option>
+      </select>
+      <label for="documentNumber">Número de documento</label>
+      <input
+        id="documentNumber"
+        [value]="form().documentNumber"
+        (input)="onText('documentNumber', $event)"
+      />
+      <label for="email">Correo electrónico</label>
+      <input id="email" type="email" [value]="form().email" (input)="onText('email', $event)" />
+      <label for="mobile">Celular</label>
+      <input id="mobile" [value]="form().mobile" (input)="onText('mobile', $event)" />
+      <label for="phoneAreaCode">Indicativo municipal</label>
+      <input
+        id="phoneAreaCode"
+        [value]="form().phoneAreaCode"
+        (input)="onText('phoneAreaCode', $event)"
+      />
+      <label for="landline">Teléfono fijo</label>
+      <input id="landline" [value]="form().landline" (input)="onText('landline', $event)" />
+      <label for="bio">Breve biografía o historia cafetera</label>
+      <textarea id="bio" maxlength="500" [value]="form().bio" (input)="onBioInput($event)"></textarea>
+      @if (bioHintVisible()) {
+        <span>Recomendado mínimo 150 caracteres</span>
+      }
+      <label for="experience">Años de experiencia en caficultura</label>
+      <input id="experience" [value]="form().experience" (input)="onText('experience', $event)" />
+    }
+    @if (form().step === 3) {
+      <h3>Documentación</h3>
+      <span>Fotografías de la finca</span>
+      <div
+        id="photoDrop"
+        (dragover)="onPhotoDragOver($event)"
+        (drop)="onPhotoDrop($event)"
+      >
+      <input id="photos" type="file" accept=".jpg,.jpeg,.png" multiple (change)="onPhotosChange($event)" />
+      <input
+        id="photoReplace"
+        type="file"
+        accept=".jpg,.jpeg,.png"
+        hidden
+        (change)="onPhotoReplaceChange($event)"
+      />
+      <span>{{ form().photos.length }} de 5 fotos</span>
+      @if (form().photoAlert) {
+        <span>{{ form().photoAlert }}</span>
+      }
+      <div class="thumbs">
+        @for (photo of form().photos; track $index) {
+          <img [src]="photo.url" [alt]="'Foto ' + ($index + 1)" />
+          <button type="button" (click)="startReplacePhoto($index)">Cambiar</button>
+          <button type="button" (click)="removePhoto($index)">Eliminar</button>
+        }
+      </div>
+      </div>
+      @if (pdfRequired()) {
+        <span>Formato {{ form().documentType }} vigente</span>
+        <input id="pdf" type="file" accept="application/pdf,.pdf" (change)="onPdfChange($event)" />
+        @if (form().pdfAlert) {
+          <span>{{ form().pdfAlert }}</span>
+        }
+        @if (form().pdf; as attachedPdf) {
+          <span>{{ attachedPdf.name }}</span>
+          <button type="button" (click)="removePdf()">Quitar</button>
+        }
+      }
+    }
+    <button type="button" (click)="cancel()">Cancelar</button>
+    @if (form().step > 1) {
+      <button type="button" (click)="goBack()">Atrás</button>
+    }
+    @if (form().step < 3) {
+      <button type="button" [disabled]="!canContinue()" (click)="goNext()">Continuar</button>
+    }
+    @if (form().step === 3) {
+      <button type="button" [disabled]="!canSubmit()" (click)="submit()">Enviar</button>
+    }
+  </div>
+}
+@if (form().summaryOpen) {
+  <div id="summary" role="dialog">
+    <h2>Verifica tu información</h2>
+    <h4>Paso 1 · Datos de la finca</h4>
+    <dl>
+      <dt>Nombre de la finca</dt>
+      <dd>{{ form().farmName }}</dd>
+      <dt>Departamento</dt>
+      <dd>{{ form().department }}</dd>
+      <dt>Municipio</dt>
+      <dd>{{ form().municipality }}</dd>
+      <dt>Vereda / corregimiento</dt>
+      <dd>{{ dash(form().village) }}</dd>
+      <dt>Área total</dt>
+      <dd>{{ summaryArea() }}</dd>
+      <dt>Variedades</dt>
+      <dd>{{ summaryVarieties() }}</dd>
+      <dt>Altitud promedio</dt>
+      <dd>{{ summaryAltitude() }}</dd>
+    </dl>
+    <h4>Paso 2 · Datos del usuario</h4>
+    <dl>
+      <dt>Nombre / Razón social</dt>
+      <dd>{{ form().ownerName }}</dd>
+      <dt>Documento</dt>
+      <dd>{{ summaryDocument() }}</dd>
+      <dt>Correo</dt>
+      <dd>{{ form().email }}</dd>
+      <dt>Celular</dt>
+      <dd>{{ dash(form().mobile) }}</dd>
+      <dt>Teléfono</dt>
+      <dd>{{ summaryPhone() }}</dd>
+      <dt>Biografía</dt>
+      <dd>{{ dash(form().bio) }}</dd>
+      <dt>Años de experiencia</dt>
+      <dd>{{ dash(form().experience) }}</dd>
+    </dl>
+    <button type="button" (click)="closeSummary()">Regresar al formulario</button>
+    <button type="button" (click)="finish()">Finalizar</button>
+  </div>
+}
+@if (form().successOpen) {
+  <div id="success" role="alertdialog">
+    <h2>¡Solicitud enviada!</h2>
+    <p>Tu número de solicitud es</p>
+    <p>{{ form().requestNumber }}</p>
+    <p>En un máximo de 8 días hábiles recibirás respuesta de la revisión de tu solicitud.</p>
+    <button type="button" (click)="acknowledge()">Entendido</button>
+  </div>
+}
