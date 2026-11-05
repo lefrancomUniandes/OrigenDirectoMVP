@@ -161,6 +161,10 @@ export class FarmRegistrationWizard {
     this.patch({ bio: (event.target as HTMLTextAreaElement).value });
   }
 
+  openFilePicker(id: string): void {
+    document.getElementById(id)?.click();
+  }
+
   onPhotosChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.addPhotos([...(input.files ?? [])]);

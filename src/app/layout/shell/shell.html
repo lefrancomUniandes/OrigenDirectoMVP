@@ -1,12 +1,58 @@
-<mat-toolbar class="shell__toolbar">
-  <span class="shell__brand">OrigenDirecto</span>
-  <button type="button" (click)="formOpen.set(true)">Registrar finca</button>
-</mat-toolbar>
+<header class="shell__toolbar header">
+  <div class="brand">
+    <svg width="38" height="38" aria-hidden="true"><use href="#i-grano" /></svg>
+    Origen Directo
+  </div>
+  <button type="button" class="btn btn--acento" (click)="formOpen.set(true)">
+    <svg width="22" height="22" aria-hidden="true"><use href="#i-finca" /></svg>
+    Registrar finca
+  </button>
+</header>
 
 <main class="shell__content">
   <router-outlet />
   <section class="hero">
-    <button type="button" (click)="formOpen.set(true)">Comenzar registro</button>
+    <div>
+      <h1>Del cultivo <span>a tu taza</span>, sin intermediarios.</h1>
+      <p>
+        Registra el perfil de tu finca, cuenta tu historia cafetera y da a conocer tus productos en
+        la plataforma en solo 3 pasos.
+      </p>
+      <button type="button" class="btn btn--primario" (click)="formOpen.set(true)">
+        Comenzar registro →
+      </button>
+    </div>
+    <div class="hero__art">
+      <svg viewBox="0 0 400 280" width="100%" aria-hidden="true">
+        <rect width="400" height="280" rx="18" fill="#f7efdf" />
+        <circle cx="320" cy="70" r="36" fill="#e0b13c" />
+        <path d="M0 210c70-70 130-90 200-60s130 10 200-40v170H0z" fill="#a3ad6b" />
+        <path d="M0 240c90-50 170-50 250-20s110 0 150-20v80H0z" fill="#6b7a3a" />
+        <path d="M110 160v-50l45-35 45 35v50z" fill="#c8735a" />
+        <rect x="140" y="125" width="30" height="35" fill="#e0b13c" />
+        <circle cx="60" cy="235" r="9" fill="#c8735a" />
+        <circle cx="80" cy="245" r="9" fill="#c8735a" />
+        <circle cx="300" cy="230" r="9" fill="#c8735a" />
+        <circle cx="320" cy="242" r="9" fill="#c98a2e" />
+      </svg>
+    </div>
+  </section>
+  <section class="features">
+    <div class="feature">
+      <svg width="50" height="50" aria-hidden="true"><use href="#i-finca" /></svg>
+      <h3>1. Tu finca</h3>
+      <p>Ubicación, área, altitud y variedades.</p>
+    </div>
+    <div class="feature">
+      <svg width="50" height="50" aria-hidden="true"><use href="#i-user" /></svg>
+      <h3>2. Tus datos</h3>
+      <p>Identificación, contacto e historia cafetera.</p>
+    </div>
+    <div class="feature">
+      <svg width="50" height="50" aria-hidden="true"><use href="#i-doc" /></svg>
+      <h3>3. Documentos</h3>
+      <p>Fotografías de la finca y RUT/NIT si aplica.</p>
+    </div>
   </section>
 </main>
 

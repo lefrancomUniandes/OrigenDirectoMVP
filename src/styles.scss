@@ -19,20 +19,31 @@ html {
   );
 }
 
+:root {
+  --cafe-900: #3b2416;
+  --cafe-700: #5a3825;
+  --cafe-500: #8a5a3b;
+  --crema: #f7efdf;
+  --crema-2: #fffaf0;
+  --oliva: #6b7a3a;
+  --oliva-claro: #a3ad6b;
+  --ocre: #c98a2e;
+  --mostaza: #e0b13c;
+  --terracota: #c8735a;
+  --error: #b5452f;
+  --linea: #e8dcc4;
+  --blanco: #ffffff;
+  --radio: 14px;
+  --sombra: 0 2px 10px rgb(59 36 22 / 8%);
+  --sombra-modal: 0 24px 60px rgb(59 36 22 / 18%);
+  --font: 'Nunito Sans', sans-serif;
+}
+
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  background-color: var(--crema);
+  color: var(--cafe-900);
+  font-family: var(--font);
   margin: 0;
   height: 100%;
 }
