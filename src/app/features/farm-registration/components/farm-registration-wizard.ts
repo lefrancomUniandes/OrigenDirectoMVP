@@ -1,4 +1,4 @@
-import { Component, computed, inject, output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { coffeeVarieties } from '../../../core/catalogs/coffee-varieties';
 import { departments, municipalitiesByDepartment } from '../../../core/catalogs/colombia';
 import { FarmRegistrationService } from '../services/farm-registration.service';
@@ -12,6 +12,10 @@ import { emptyWizardForm, WizardForm, WizardPhoto } from './wizard-form';
 export class FarmRegistrationWizard {
   private readonly farmRegistration = inject(FarmRegistrationService);
   readonly closed = output<void>();
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.resetForm());
+  }
   readonly form = signal<WizardForm>(emptyWizardForm);
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
@@ -307,39 +311,65 @@ export class FarmRegistrationWizard {
   }
 
   closeSummary(): void {
-    this.patch({ summaryOpen: false });
+    this.patch({ summaryOpen: false, persistError: '' });
   }
 
   async finish(): Promise<void> {
+    if (this.form().submitting) {
+      return;
+    }
+    this.patch({ submitting: true, persistError: '' });
     const current = this.form();
     const pdf = current.pdf;
-    const id = await this.farmRegistration.register({
-      farmName: current.farmName,
-      department: current.department,
-      municipality: current.municipality,
-      village: current.village,
-      area: current.area,
-      areaUnit: current.areaUnit,
-      altitude: current.altitude,
-      varieties: current.varieties,
-      otherVariety: current.otherVariety,
-      ownerName: current.ownerName,
-      documentType: current.documentType,
-      documentNumber: current.documentNumber,
-      email: current.email,
-      mobile: current.mobile,
-      phoneAreaCode: current.phoneAreaCode,
-      landline: current.landline,
-      bio: current.bio,
-      experience: current.experience,
-      photos: current.photos.map(({ file }) => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      })),
-      pdf: pdf ? { name: pdf.name, type: pdf.type, size: pdf.size } : null,
-    });
-    this.patch({ requestNumber: id, summaryOpen: false, successOpen: true });
+    try {
+      const id = await this.farmRegistration.register({
+        farmName: current.farmName,
+        department: current.department,
+        municipality: current.municipality,
+        village: current.village,
+        area: current.area,
+        areaUnit: current.areaUnit,
+        altitude: current.altitude,
+        varieties: current.varieties,
+        otherVariety: current.otherVariety,
+        ownerName: current.ownerName,
+        documentType: current.documentType,
+        documentNumber: current.documentNumber,
+        email: current.email,
+        mobile: current.mobile,
+        phoneAreaCode: current.phoneAreaCode,
+        landline: current.landline,
+        bio: current.bio,
+        experience: current.experience,
+        photos: await Promise.all(
+          current.photos.map(async ({ file }) => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            bytes: await file.arrayBuffer(),
+          })),
+        ),
+        pdf: pdf
+          ? {
+              name: pdf.name,
+              type: pdf.type,
+              size: pdf.size,
+              bytes: await pdf.arrayBuffer(),
+            }
+          : null,
+      });
+      this.patch({
+        requestNumber: id,
+        summaryOpen: false,
+        successOpen: true,
+        submitting: false,
+      });
+    } catch {
+      this.patch({
+        submitting: false,
+        persistError: 'No se pudo guardar la solicitud. Intenta de nuevo.',
+      });
+    }
   }
 
   acknowledge(): void {

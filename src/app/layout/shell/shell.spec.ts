@@ -27,11 +27,17 @@ describe('Shell', () => {
     vi.restoreAllMocks();
   });
 
-  async function confirmFinish(): Promise<void> {
-    button('Finalizar').click();
-    await Promise.resolve();
+  async function settleFinish(): Promise<void> {
+    for (let i = 0; i < 8; i++) {
+      await Promise.resolve();
+    }
     fixture.detectChanges();
     await fixture.whenStable();
+  }
+
+  async function confirmFinish(): Promise<void> {
+    button('Finalizar').click();
+    await settleFinish();
   }
 
   async function openForm(from: 'toolbar' | 'hero' = 'toolbar'): Promise<void> {
@@ -1142,10 +1148,64 @@ describe('Shell', () => {
     );
     const payload = registerFarm.mock.calls[0][0];
     expect(payload.photos).toEqual([
-      expect.objectContaining({ name: 'finca.jpg', type: 'image/jpeg' }),
+      expect.objectContaining({
+        name: 'finca.jpg',
+        type: 'image/jpeg',
+        bytes: expect.any(ArrayBuffer),
+      }),
     ]);
     expect(payload.pdf).toBeNull();
     expect(success.textContent).toContain('OD-2026-654321');
+  });
+
+  it('Finalizar no envía dos veces si se pulsa de nuevo mientras guarda', async () => {
+    let resolveRegister!: (id: string) => void;
+    registerFarm.mockReturnValue(
+      new Promise<string>((resolve) => {
+        resolveRegister = resolve;
+      }),
+    );
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    button('Finalizar').click();
+    button('Finalizar').click();
+    await settleFinish();
+
+    expect(registerFarm).toHaveBeenCalledTimes(1);
+
+    resolveRegister('OD-2026-100001');
+    await settleFinish();
+
+    expect(compiled.querySelector('#success')).toBeTruthy();
+  });
+
+  it('si guardar falla, el resumen sigue abierto con un mensaje y se puede reintentar', async () => {
+    registerFarm.mockRejectedValueOnce(new Error('quota'));
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await confirmFinish();
+
+    const summary = compiled.querySelector('#summary') as HTMLElement;
+    expect(summary).toBeTruthy();
+    expect(compiled.querySelector('#success')).toBeNull();
+    expect(summary.textContent).toContain('No se pudo guardar la solicitud. Intenta de nuevo.');
+    expect(button('Finalizar').disabled).toBe(false);
+
+    registerFarm.mockResolvedValueOnce('OD-2026-100001');
+    await confirmFinish();
+
+    expect(compiled.querySelector('#summary')).toBeNull();
+    expect(compiled.querySelector('#success')?.textContent).toContain('OD-2026-100001');
   });
 
   it('Entendido cierra el popup y el formulario', async () => {

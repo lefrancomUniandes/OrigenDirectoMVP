@@ -4,6 +4,7 @@ export interface FarmFile {
   readonly name: string;
   readonly type: string;
   readonly size: number;
+  readonly bytes: ArrayBuffer;
 }
 
 export interface Farm extends Entity {

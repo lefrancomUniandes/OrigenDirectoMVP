@@ -4,6 +4,8 @@ export interface WizardForm {
   step: number;
   summaryOpen: boolean;
   successOpen: boolean;
+  submitting: boolean;
+  persistError: string;
   requestNumber: string;
   farmName: string;
   department: string;
@@ -34,6 +36,8 @@ export const emptyWizardForm: WizardForm = {
   step: 1,
   summaryOpen: false,
   successOpen: false,
+  submitting: false,
+  persistError: '',
   requestNumber: '',
   farmName: '',
   department: '',

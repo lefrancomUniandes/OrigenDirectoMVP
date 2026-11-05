@@ -195,8 +195,11 @@
       <dt>Años de experiencia</dt>
       <dd>{{ dash(form().experience) }}</dd>
     </dl>
+    @if (form().persistError) {
+      <span>{{ form().persistError }}</span>
+    }
     <button type="button" (click)="closeSummary()">Regresar al formulario</button>
-    <button type="button" (click)="finish()">Finalizar</button>
+    <button type="button" [disabled]="form().submitting" (click)="finish()">Finalizar</button>
   </div>
 }
 @if (form().successOpen) {
