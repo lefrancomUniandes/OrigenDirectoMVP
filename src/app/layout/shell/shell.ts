@@ -1,8 +1,9 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterOutlet } from '@angular/router';
 import { coffeeVarieties } from '../../core/catalogs/coffee-varieties';
 import { departments, municipalitiesByDepartment } from '../../core/catalogs/colombia';
+import { FarmRegistrationService } from '../../features/farm-registration/services/farm-registration.service';
 
 @Component({
   imports: [MatToolbarModule, RouterOutlet],
@@ -11,6 +12,7 @@ import { departments, municipalitiesByDepartment } from '../../core/catalogs/col
   templateUrl: './shell.html',
 })
 export class Shell {
+  private readonly farmRegistration = inject(FarmRegistrationService);
   readonly formOpen = signal(false);
   readonly summaryOpen = signal(false);
   readonly successOpen = signal(false);
@@ -355,9 +357,36 @@ export class Shell {
     this.summaryOpen.set(false);
   }
 
-  finish(): void {
-    const serial = String(Math.floor(Math.random() * 900000) + 100000);
-    this.requestNumber.set(`OD-${new Date().getFullYear()}-${serial}`);
+  async finish(): Promise<void> {
+    const id = await this.farmRegistration.register({
+      farmName: this.farmName(),
+      department: this.department(),
+      municipality: this.municipality(),
+      village: this.village(),
+      area: this.area(),
+      areaUnit: this.areaUnit(),
+      altitude: this.altitude(),
+      varieties: this.varieties(),
+      otherVariety: this.otherVariety(),
+      ownerName: this.ownerName(),
+      documentType: this.documentType(),
+      documentNumber: this.documentNumber(),
+      email: this.email(),
+      mobile: this.mobile(),
+      phoneAreaCode: this.phoneAreaCode(),
+      landline: this.landline(),
+      bio: this.bio(),
+      experience: this.experience(),
+      photos: this.photos().map(({ file }) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      })),
+      pdf: this.pdf()
+        ? { name: this.pdf()!.name, type: this.pdf()!.type, size: this.pdf()!.size }
+        : null,
+    });
+    this.requestNumber.set(id);
     this.summaryOpen.set(false);
     this.formOpen.set(false);
     this.successOpen.set(true);

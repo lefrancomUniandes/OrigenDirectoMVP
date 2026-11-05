@@ -23,5 +23,6 @@ export class OrigenDirectoDb extends Dexie {
     super('origen-directo');
 
     this.version(1).stores({});
+    this.version(2).stores({ fincas: 'id, farmName' });
   }
 }

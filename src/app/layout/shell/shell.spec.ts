@@ -1,15 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { FarmRegistrationService } from '../../features/farm-registration/services/farm-registration.service';
 import { Shell } from './shell';
 
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
   let compiled: HTMLElement;
+  let registerFarm: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    registerFarm = vi.fn().mockResolvedValue('OD-2026-100001');
     await TestBed.configureTestingModule({
       imports: [Shell],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: FarmRegistrationService, useValue: { register: registerFarm } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Shell);
@@ -20,6 +26,13 @@ describe('Shell', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
+
+  async function confirmFinish(): Promise<void> {
+    button('Finalizar').click();
+    await Promise.resolve();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
 
   async function openForm(from: 'toolbar' | 'hero' = 'toolbar'): Promise<void> {
     if (from === 'hero') {
@@ -1088,9 +1101,7 @@ describe('Shell', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    button('Finalizar').click();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    await confirmFinish();
 
     const success = compiled.querySelector('#success') as HTMLElement;
 
@@ -1102,6 +1113,41 @@ describe('Shell', () => {
     expect(button('Entendido')).toBeTruthy();
   });
 
+  it('Finalizar muestra el número que devolvió el servicio', async () => {
+    registerFarm.mockResolvedValue('OD-2026-654321');
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await confirmFinish();
+
+    const success = compiled.querySelector('#success') as HTMLElement;
+
+    expect(registerFarm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        farmName: 'Finca La Esperanza',
+        department: 'Huila',
+        municipality: 'Pitalito',
+        varieties: ['Castillo'],
+        ownerName: 'Ana',
+        documentType: 'Cédula de ciudadanía',
+        documentNumber: '123',
+        email: 'ana@finca.com',
+        areaUnit: 'Hectáreas',
+      }),
+    );
+    const payload = registerFarm.mock.calls[0][0];
+    expect(payload.photos).toEqual([
+      expect.objectContaining({ name: 'finca.jpg', type: 'image/jpeg' }),
+    ]);
+    expect(payload.pdf).toBeNull();
+    expect(success.textContent).toContain('OD-2026-654321');
+  });
+
   it('Entendido cierra el popup y el formulario', async () => {
     await openForm();
     await goToStep3();
@@ -1111,9 +1157,7 @@ describe('Shell', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    button('Finalizar').click();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    await confirmFinish();
 
     button('Entendido').click();
     fixture.detectChanges();
