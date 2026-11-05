@@ -300,6 +300,10 @@ export class Shell {
     this.summaryOpen.set(true);
   }
 
+  closeSummary(): void {
+    this.summaryOpen.set(false);
+  }
+
   goBack(): void {
     this.step.update((step) => Math.max(1, step - 1));
   }

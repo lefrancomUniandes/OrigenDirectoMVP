@@ -971,4 +971,26 @@ describe('Shell', () => {
     expect(summary.textContent).toContain('Ana');
     expect(summary.textContent).toContain('ana@finca.com');
   });
+
+  it('Regresar al formulario vuelve al paso 3 con fotos y datos conservados', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    button('Regresar al formulario').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(compiled.querySelector('#summary')).toBeNull();
+    expect(dialog.textContent).toContain('Documentación');
+    expect(dialog.textContent).toContain('1 de 5 fotos');
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(1);
+    expect(button('Enviar').disabled).toBe(false);
+  });
 });
