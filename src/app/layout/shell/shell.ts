@@ -32,6 +32,15 @@ export class Shell {
   readonly otherVarietyValid = computed(
     () => !this.otherVarietySelected() || this.otherVariety().trim() !== '',
   );
+  readonly canContinue = computed(
+    () =>
+      this.farmName().trim() !== '' &&
+      this.department() !== '' &&
+      this.municipality() !== '' &&
+      this.varieties().length > 0 &&
+      this.areaValid() &&
+      this.otherVarietyValid(),
+  );
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);

@@ -68,18 +68,6 @@
     <label for="altitude">Altitud promedio</label>
     <input id="altitude" />
     <button type="button" (click)="cancel()">Cancelar</button>
-    <button
-      type="button"
-      [disabled]="
-        farmName().trim() === '' ||
-        department() === '' ||
-        municipality() === '' ||
-        varieties().length === 0 ||
-        !areaValid() ||
-        !otherVarietyValid()
-      "
-    >
-      Continuar
-    </button>
+    <button type="button" [disabled]="!canContinue()">Continuar</button>
   </div>
 }
