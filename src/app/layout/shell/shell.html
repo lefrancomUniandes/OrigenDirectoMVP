@@ -56,6 +56,15 @@
         {{ variety }}
       </label>
     }
+    @if (otherVarietySelected()) {
+      <label for="otherVariety">¿Cuál otra variedad?</label>
+      <input
+        id="otherVariety"
+        maxlength="50"
+        [value]="otherVariety()"
+        (input)="onOtherVarietyInput($event)"
+      />
+    }
     <label for="altitude">Altitud promedio</label>
     <input id="altitude" />
     <button type="button" (click)="cancel()">Cancelar</button>
@@ -66,7 +75,8 @@
         department() === '' ||
         municipality() === '' ||
         varieties().length === 0 ||
-        !areaValid()
+        !areaValid() ||
+        !otherVarietyValid()
       "
     >
       Continuar

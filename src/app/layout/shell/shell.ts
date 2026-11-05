@@ -18,6 +18,7 @@ export class Shell {
   readonly village = signal('');
   readonly area = signal('');
   readonly varieties = signal<readonly string[]>([]);
+  readonly otherVariety = signal('');
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
   readonly municipalities = computed(
@@ -27,6 +28,10 @@ export class Shell {
     const value = this.area();
     return value === '' || /^[1-9]\d*$/.test(value);
   });
+  readonly otherVarietySelected = computed(() => this.varieties().includes('Otro'));
+  readonly otherVarietyValid = computed(
+    () => !this.otherVarietySelected() || this.otherVariety().trim() !== '',
+  );
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
@@ -38,6 +43,10 @@ export class Shell {
 
   onAreaInput(event: Event): void {
     this.area.set((event.target as HTMLInputElement).value);
+  }
+
+  onOtherVarietyInput(event: Event): void {
+    this.otherVariety.set((event.target as HTMLInputElement).value);
   }
 
   onDepartmentChange(event: Event): void {
@@ -67,6 +76,7 @@ export class Shell {
     this.village.set('');
     this.area.set('');
     this.varieties.set([]);
+    this.otherVariety.set('');
     this.formOpen.set(false);
   }
 }

@@ -20,3 +20,25 @@
   flex: 1;
   padding: 1.5rem;
 }
+
+[role='dialog'] {
+  position: fixed;
+  inset: 5vh 1rem auto;
+  z-index: 20;
+  display: grid;
+  gap: 0.5rem;
+  max-width: 40rem;
+  max-height: 90vh;
+  margin-inline: auto;
+  overflow: auto;
+  padding: 1.25rem;
+  background: var(--mat-sys-surface, #fff);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
+[role='dialog'] label,
+[role='dialog'] input,
+[role='dialog'] select {
+  display: block;
+  max-width: 100%;
+}

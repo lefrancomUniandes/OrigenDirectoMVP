@@ -67,6 +67,15 @@ describe('Shell', () => {
     return input;
   }
 
+  async function typeOtherVariety(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#otherVariety') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   function departmentSelect(): HTMLSelectElement {
     return compiled.querySelector('#department') as HTMLSelectElement;
   }
@@ -322,5 +331,27 @@ describe('Shell', () => {
 
     expect(options).toContain('Hectáreas');
     expect(options).toContain('Fanegadas');
+  });
+
+  it('al marcar Otro, aparece el campo extra; vacío o solo espacios dejan Continuar deshabilitado; texto de hasta 50 lo habilita', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+
+    expect(compiled.querySelector('#otherVariety')).toBeNull();
+
+    await chooseVariety('Otro');
+
+    const otherVariety = compiled.querySelector('#otherVariety') as HTMLInputElement;
+    expect(otherVariety).toBeTruthy();
+    expect(otherVariety.maxLength).toBe(50);
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeOtherVariety('   ');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeOtherVariety('Sidra');
+    expect(button('Continuar').disabled).toBe(false);
   });
 });
