@@ -30,6 +30,9 @@ export class Shell {
   readonly landline = signal('');
   readonly bio = signal('');
   readonly experience = signal('');
+  readonly photos = signal<readonly { file: File; url: string }[]>([]);
+  readonly photoAlert = signal('');
+  readonly photoReplaceIndex = signal<number | null>(null);
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
   readonly municipalities = computed(
@@ -115,6 +118,7 @@ export class Shell {
   readonly canContinue = computed(() =>
     this.step() === 1 ? this.step1Valid() : this.step2Valid(),
   );
+  readonly canSubmit = computed(() => this.photos().length > 0);
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
@@ -154,6 +158,77 @@ export class Shell {
 
   onExperienceInput(event: Event): void {
     this.experience.set((event.target as HTMLInputElement).value);
+  }
+
+  onPhotosChange(event: Event): void {
+    this.addPhotos([...((event.target as HTMLInputElement).files ?? [])]);
+  }
+
+  onPhotoDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onPhotoDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.addPhotos([...(event.dataTransfer?.files ?? [])]);
+  }
+
+  addPhotos(files: File[]): void {
+    const errors: string[] = [];
+    const accepted: { file: File; url: string }[] = [];
+    for (const file of files) {
+      if (this.photos().length + accepted.length >= 5) {
+        errors.push('Solo puedes cargar un máximo de 5 fotografías.');
+        break;
+      }
+      if (
+        !['image/jpeg', 'image/png'].includes(file.type) ||
+        !/\.(jpe?g|png)$/i.test(file.name)
+      ) {
+        errors.push(`"${file.name}" tiene un formato no soportado. Usa .jpg, .jpeg o .png.`);
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        errors.push(`"${file.name}" supera el peso máximo de 5 MB.`);
+        continue;
+      }
+      accepted.push({ file, url: URL.createObjectURL(file) });
+    }
+    this.photoAlert.set(errors.join(' '));
+    this.photos.set([...this.photos(), ...accepted]);
+  }
+
+  removePhoto(index: number): void {
+    this.photos.set(this.photos().filter((_, current) => current !== index));
+    this.photoAlert.set('');
+  }
+
+  startReplacePhoto(index: number): void {
+    this.photoReplaceIndex.set(index);
+  }
+
+  onPhotoReplaceChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    const index = this.photoReplaceIndex();
+    if (!file || index === null) {
+      return;
+    }
+    if (
+      !['image/jpeg', 'image/png'].includes(file.type) ||
+      !/\.(jpe?g|png)$/i.test(file.name)
+    ) {
+      this.photoAlert.set(`"${file.name}" tiene un formato no soportado. Usa .jpg, .jpeg o .png.`);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.photoAlert.set(`"${file.name}" supera el peso máximo de 5 MB.`);
+      return;
+    }
+    const next = [...this.photos()];
+    next[index] = { file, url: URL.createObjectURL(file) };
+    this.photos.set(next);
+    this.photoAlert.set('');
+    this.photoReplaceIndex.set(null);
   }
 
   onVillageInput(event: Event): void {

@@ -118,10 +118,38 @@
       <label for="experience">Años de experiencia en caficultura</label>
       <input id="experience" [value]="experience()" (input)="onExperienceInput($event)" />
     }
+    @if (step() === 3) {
+      <h3>Documentación</h3>
+      <span>Fotografías de la finca</span>
+      <div
+        id="photoDrop"
+        (dragover)="onPhotoDragOver($event)"
+        (drop)="onPhotoDrop($event)"
+      >
+      <input id="photos" type="file" accept=".jpg,.jpeg,.png" multiple (change)="onPhotosChange($event)" />
+      <input id="photoReplace" type="file" accept=".jpg,.jpeg,.png" (change)="onPhotoReplaceChange($event)" />
+      <span>{{ photos().length }} de 5 fotos</span>
+      @if (photoAlert()) {
+        <span>{{ photoAlert() }}</span>
+      }
+      <div class="thumbs">
+        @for (photo of photos(); track $index) {
+          <img [src]="photo.url" [alt]="'Foto ' + ($index + 1)" />
+          <button type="button" (click)="startReplacePhoto($index)">Cambiar</button>
+          <button type="button" (click)="removePhoto($index)">Eliminar</button>
+        }
+      </div>
+      </div>
+    }
     <button type="button" (click)="cancel()">Cancelar</button>
     @if (step() > 1) {
       <button type="button" (click)="goBack()">Atrás</button>
     }
-    <button type="button" [disabled]="!canContinue()" (click)="goNext()">Continuar</button>
+    @if (step() < 3) {
+      <button type="button" [disabled]="!canContinue()" (click)="goNext()">Continuar</button>
+    }
+    @if (step() === 3) {
+      <button type="button" [disabled]="!canSubmit()">Enviar</button>
+    }
   </div>
 }

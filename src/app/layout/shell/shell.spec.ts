@@ -181,6 +181,44 @@ describe('Shell', () => {
     await typeEmail('ana@finca.com');
   }
 
+  async function goToStep3(): Promise<void> {
+    await goToStep2();
+    await fillStep2Required();
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  function photoFile(
+    name: string,
+    type = 'image/jpeg',
+    size = 1024,
+  ): File {
+    return new File([new Uint8Array(size)], name, { type });
+  }
+
+  function fileListOf(files: File[]): FileList {
+    const list = {
+      length: files.length,
+      item: (index: number) => files[index] ?? null,
+      *[Symbol.iterator]() {
+        yield* files;
+      },
+    };
+    files.forEach((file, index) => {
+      Object.assign(list, { [index]: file });
+    });
+    return list as unknown as FileList;
+  }
+
+  async function choosePhotos(files: File[], inputId = 'photos'): Promise<void> {
+    const input = compiled.querySelector(`#${inputId}`) as HTMLInputElement;
+    Object.defineProperty(input, 'files', { configurable: true, value: fileListOf(files) });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
   async function typeMobile(value: string): Promise<HTMLInputElement> {
     const input = compiled.querySelector('#mobile') as HTMLInputElement;
     input.value = value;
@@ -661,5 +699,155 @@ describe('Shell', () => {
 
     await typeExperience('8');
     expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Continuar con el paso 2 válido muestra Documentación, zona de fotos, 0 de 5 y Enviar deshabilitado', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const photos = compiled.querySelector('#photos') as HTMLInputElement;
+
+    expect(dialog.textContent).toContain('Documentación');
+    expect(dialog.textContent).toContain('Fotografías de la finca');
+    expect(dialog.textContent).toContain('0 de 5 fotos');
+    expect(photos).toBeTruthy();
+    expect(photos.accept).toBe('.jpg,.jpeg,.png');
+    expect(photos.multiple).toBe(true);
+    expect(button('Atrás')).toBeTruthy();
+    expect(button('Enviar').disabled).toBe(true);
+    expect([...dialog.querySelectorAll('button')].some((el) => el.textContent?.includes('Continuar'))).toBe(
+      false,
+    );
+  });
+
+  it('un jpg, jpeg o png de hasta 5 MB se adjunta: miniatura, 1 de 5 fotos y Enviar habilitado', async () => {
+    await openForm();
+    await goToStep3();
+
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const thumbs = compiled.querySelectorAll('.thumbs img');
+
+    expect(thumbs.length).toBe(1);
+    expect(thumbs[0].getAttribute('alt')).toBe('Foto 1');
+    expect(dialog.textContent).toContain('1 de 5 fotos');
+    expect(button('Enviar').disabled).toBe(false);
+
+    await choosePhotos([photoFile('otra.jpeg', 'image/jpeg'), photoFile('lote.png', 'image/png')]);
+
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(3);
+    expect(dialog.textContent).toContain('3 de 5 fotos');
+  });
+
+  it('un formato no soportado muestra alerta y no se adjunta', async () => {
+    await openForm();
+    await goToStep3();
+
+    await choosePhotos([photoFile('notas.gif', 'image/gif')]);
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.textContent).toContain(
+      '"notas.gif" tiene un formato no soportado. Usa .jpg, .jpeg o .png.',
+    );
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(0);
+    expect(dialog.textContent).toContain('0 de 5 fotos');
+    expect(button('Enviar').disabled).toBe(true);
+  });
+
+  it('un archivo de más de 5 MB muestra alerta y no se adjunta', async () => {
+    await openForm();
+    await goToStep3();
+
+    await choosePhotos([photoFile('grande.jpg', 'image/jpeg', 5 * 1024 * 1024 + 1)]);
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.textContent).toContain('"grande.jpg" supera el peso máximo de 5 MB.');
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(0);
+    expect(button('Enviar').disabled).toBe(true);
+  });
+
+  it('la sexta foto muestra el máximo de 5 y no se adjunta', async () => {
+    await openForm();
+    await goToStep3();
+
+    await choosePhotos([
+      photoFile('1.jpg'),
+      photoFile('2.jpg'),
+      photoFile('3.jpg'),
+      photoFile('4.jpg'),
+      photoFile('5.jpg'),
+    ]);
+    await choosePhotos([photoFile('6.jpg')]);
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.textContent).toContain('Solo puedes cargar un máximo de 5 fotografías.');
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(5);
+    expect(dialog.textContent).toContain('5 de 5 fotos');
+  });
+
+  it('Eliminar deja 0 fotos y deshabilita Enviar', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Eliminar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(0);
+    expect(dialog.textContent).toContain('0 de 5 fotos');
+    expect(button('Enviar').disabled).toBe(true);
+  });
+
+  it('Cambiar reemplaza la foto', async () => {
+    vi.spyOn(URL, 'createObjectURL').mockImplementation(
+      (blob) => `blob:${(blob as File).name}`,
+    );
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    expect(compiled.querySelector('.thumbs img')?.getAttribute('src')).toBe('blob:finca.jpg');
+
+    button('Cambiar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await choosePhotos([photoFile('nueva.png', 'image/png')], 'photoReplace');
+
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(1);
+    expect(compiled.querySelector('.thumbs img')?.getAttribute('src')).toBe('blob:nueva.png');
+    expect(button('Enviar').disabled).toBe(false);
+  });
+
+  it('arrastrar y soltar adjunta igual que el input', async () => {
+    await openForm();
+    await goToStep3();
+
+    const dropzone = compiled.querySelector('#photoDrop') as HTMLElement;
+    const drop = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(drop, 'dataTransfer', {
+      value: { files: fileListOf([photoFile('arrastre.jpg')]) },
+    });
+    dropzone.dispatchEvent(drop);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(compiled.querySelectorAll('.thumbs img').length).toBe(1);
+    expect(dialog.textContent).toContain('1 de 5 fotos');
+    expect(button('Enviar').disabled).toBe(false);
   });
 });
