@@ -17,6 +17,7 @@ export class Shell {
   readonly municipality = signal('');
   readonly village = signal('');
   readonly area = signal('');
+  readonly altitude = signal('');
   readonly varieties = signal<readonly string[]>([]);
   readonly otherVariety = signal('');
   readonly coffeeVarieties = coffeeVarieties;
@@ -27,6 +28,17 @@ export class Shell {
   readonly areaValid = computed(() => {
     const value = this.area();
     return value === '' || /^[1-9]\d*$/.test(value);
+  });
+  readonly altitudeValid = computed(() => {
+    const value = this.altitude();
+    if (value === '') {
+      return true;
+    }
+    if (!/^\d+$/.test(value)) {
+      return false;
+    }
+    const meters = Number(value);
+    return meters >= 500 && meters <= 2500;
   });
   readonly otherVarietySelected = computed(() => this.varieties().includes('Otro'));
   readonly otherVarietyValid = computed(
@@ -39,6 +51,7 @@ export class Shell {
       this.municipality() !== '' &&
       this.varieties().length > 0 &&
       this.areaValid() &&
+      this.altitudeValid() &&
       this.otherVarietyValid(),
   );
 
@@ -56,6 +69,10 @@ export class Shell {
 
   onOtherVarietyInput(event: Event): void {
     this.otherVariety.set((event.target as HTMLInputElement).value);
+  }
+
+  onAltitudeInput(event: Event): void {
+    this.altitude.set((event.target as HTMLInputElement).value);
   }
 
   onDepartmentChange(event: Event): void {
@@ -84,6 +101,7 @@ export class Shell {
     this.municipality.set('');
     this.village.set('');
     this.area.set('');
+    this.altitude.set('');
     this.varieties.set([]);
     this.otherVariety.set('');
     this.formOpen.set(false);

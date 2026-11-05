@@ -76,6 +76,15 @@ describe('Shell', () => {
     return input;
   }
 
+  async function typeAltitude(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#altitude') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   function departmentSelect(): HTMLSelectElement {
     return compiled.querySelector('#department') as HTMLSelectElement;
   }
@@ -352,6 +361,28 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
 
     await typeOtherVariety('Sidra');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Altitud vacía es válida; 499 y 2501 deshabilitan Continuar; 500 y 2500 lo dejan habilitado', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeAltitude('499');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeAltitude('500');
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeAltitude('2501');
+    expect(button('Continuar').disabled).toBe(true);
+
+    await typeAltitude('2500');
     expect(button('Continuar').disabled).toBe(false);
   });
 });
