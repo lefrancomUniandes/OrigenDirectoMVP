@@ -57,3 +57,19 @@
   height: auto;
   object-fit: cover;
 }
+
+#summary dl {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0 0 1rem;
+}
+
+#summary dt {
+  font-weight: 700;
+}
+
+#summary dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

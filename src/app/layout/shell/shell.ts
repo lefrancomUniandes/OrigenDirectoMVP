@@ -21,6 +21,7 @@ export class Shell {
   readonly municipality = signal('');
   readonly village = signal('');
   readonly area = signal('');
+  readonly areaUnit = signal('Hectáreas');
   readonly altitude = signal('');
   readonly varieties = signal<readonly string[]>([]);
   readonly otherVariety = signal('');
@@ -127,6 +128,31 @@ export class Shell {
   readonly canSubmit = computed(
     () => this.photos().length > 0 && (!this.pdfRequired() || this.pdf() !== null),
   );
+  readonly summaryVarieties = computed(() => {
+    const names = this.varieties().map((name) =>
+      name === 'Otro' ? `Otro: ${this.otherVariety()}` : name,
+    );
+    return names.join(', ') || '—';
+  });
+  readonly summaryArea = computed(() => {
+    const value = this.area().trim();
+    return value === '' ? '—' : `${value} ${this.areaUnit()}`;
+  });
+  readonly summaryAltitude = computed(() => {
+    const value = this.altitude().trim();
+    return value === '' ? '—' : `${value} m.s.n.m.`;
+  });
+  readonly summaryDocument = computed(
+    () => `${this.documentType()} ${this.documentNumber()}`.trim() || '—',
+  );
+  readonly summaryPhone = computed(() => {
+    const landline = this.landline().trim();
+    if (landline === '') {
+      return '—';
+    }
+    const code = this.phoneAreaCode().trim();
+    return code === '' ? landline : `(${code}) ${landline}`;
+  });
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
@@ -169,7 +195,9 @@ export class Shell {
   }
 
   onPhotosChange(event: Event): void {
-    this.addPhotos([...((event.target as HTMLInputElement).files ?? [])]);
+    const input = event.target as HTMLInputElement;
+    this.addPhotos([...(input.files ?? [])]);
+    input.value = '';
   }
 
   onPhotoDragOver(event: DragEvent): void {
@@ -207,12 +235,21 @@ export class Shell {
   }
 
   removePhoto(index: number): void {
-    this.photos.set(this.photos().filter((_, current) => current !== index));
+    const current = this.photos()[index];
+    if (current) {
+      URL.revokeObjectURL(current.url);
+    }
+    this.photos.set(this.photos().filter((_, position) => position !== index));
     this.photoAlert.set('');
+    const input = document.getElementById('photos') as HTMLInputElement | null;
+    if (input) {
+      input.value = '';
+    }
   }
 
   startReplacePhoto(index: number): void {
     this.photoReplaceIndex.set(index);
+    document.getElementById('photoReplace')?.click();
   }
 
   onPdfChange(event: Event): void {
@@ -255,10 +292,14 @@ export class Shell {
       return;
     }
     const next = [...this.photos()];
+    if (next[index]) {
+      URL.revokeObjectURL(next[index].url);
+    }
     next[index] = { file, url: URL.createObjectURL(file) };
     this.photos.set(next);
     this.photoAlert.set('');
     this.photoReplaceIndex.set(null);
+    (event.target as HTMLInputElement).value = '';
   }
 
   onVillageInput(event: Event): void {
@@ -267,6 +308,14 @@ export class Shell {
 
   onAreaInput(event: Event): void {
     this.area.set((event.target as HTMLInputElement).value);
+  }
+
+  onAreaUnitChange(event: Event): void {
+    this.areaUnit.set((event.target as HTMLSelectElement).value);
+  }
+
+  dash(value: string): string {
+    return value.trim() === '' ? '—' : value;
   }
 
   onOtherVarietyInput(event: Event): void {
@@ -335,6 +384,7 @@ export class Shell {
     this.municipality.set('');
     this.village.set('');
     this.area.set('');
+    this.areaUnit.set('Hectáreas');
     this.altitude.set('');
     this.varieties.set([]);
     this.otherVariety.set('');
@@ -347,6 +397,9 @@ export class Shell {
     this.landline.set('');
     this.bio.set('');
     this.experience.set('');
+    for (const photo of this.photos()) {
+      URL.revokeObjectURL(photo.url);
+    }
     this.photos.set([]);
     this.photoAlert.set('');
     this.photoReplaceIndex.set(null);

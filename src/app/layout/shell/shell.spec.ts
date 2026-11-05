@@ -147,6 +147,15 @@ describe('Shell', () => {
     return municipality;
   }
 
+  async function chooseAreaUnit(value: string): Promise<HTMLSelectElement> {
+    const areaUnit = compiled.querySelector('#areaUnit') as HTMLSelectElement;
+    areaUnit.value = value;
+    areaUnit.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return areaUnit;
+  }
+
   async function chooseVariety(name: string): Promise<void> {
     const checkbox = compiled.querySelector(
       `input[type="checkbox"][value="${name}"]`,
@@ -805,9 +814,11 @@ describe('Shell', () => {
   it('Eliminar deja 0 fotos y deshabilita Enviar', async () => {
     await openForm();
     await goToStep3();
+    const revoke = vi.spyOn(URL, 'revokeObjectURL');
     await choosePhotos([photoFile('finca.jpg')]);
 
     button('Eliminar').click();
+    expect(revoke).toHaveBeenCalled();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -828,7 +839,10 @@ describe('Shell', () => {
 
     expect(compiled.querySelector('.thumbs img')?.getAttribute('src')).toBe('blob:finca.jpg');
 
+    const replaceInput = compiled.querySelector('#photoReplace') as HTMLInputElement;
+    const openPicker = vi.spyOn(replaceInput, 'click');
     button('Cambiar').click();
+    expect(openPicker).toHaveBeenCalled();
     fixture.detectChanges();
     await fixture.whenStable();
     await choosePhotos([photoFile('nueva.png', 'image/png')], 'photoReplace');
@@ -951,11 +965,76 @@ describe('Shell', () => {
     expect(summary.querySelector('input')).toBeNull();
     expect(summary.querySelector('textarea')).toBeNull();
     expect(summary.querySelector('select')).toBeNull();
+    expect(compiled.querySelector('#photos')).toBeNull();
+    expect(compiled.querySelector('#farmName')).toBeNull();
     expect(button('Regresar al formulario')).toBeTruthy();
     expect(button('Finalizar')).toBeTruthy();
   });
 
-  it('el resumen muestra los datos diligenciados de finca, municipio, dueño y correo', async () => {
+  it('el resumen muestra los campos de finca y usuario, con — si están vacíos', async () => {
+    await openForm();
+    await fillStep1();
+    await typeVillage('Alto');
+    await typeArea('12');
+    await chooseAreaUnit('Fanegadas');
+    await typeAltitude('1600');
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await typeOwnerName('Ana');
+    await chooseDocumentType('Cédula de ciudadanía');
+    await typeDocumentNumber('123');
+    await typeEmail('ana@finca.com');
+    await typeMobile('3001234567');
+    await typePhoneAreaCode('604');
+    await typeLandline('1234567');
+    await typeBio('Historia');
+    await typeExperience('8');
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const summary = compiled.querySelector('#summary') as HTMLElement;
+    const text = summary.textContent ?? '';
+
+    expect(text).toContain('Paso 1 · Datos de la finca');
+    expect(text).toContain('Nombre de la finca');
+    expect(text).toContain('Finca La Esperanza');
+    expect(text).toContain('Departamento');
+    expect(text).toContain('Huila');
+    expect(text).toContain('Municipio');
+    expect(text).toContain('Pitalito');
+    expect(text).toContain('Vereda / corregimiento');
+    expect(text).toContain('Alto');
+    expect(text).toContain('Área total');
+    expect(text).toContain('12 Fanegadas');
+    expect(text).toContain('Variedades');
+    expect(text).toContain('Castillo');
+    expect(text).toContain('Altitud promedio');
+    expect(text).toContain('1600 m.s.n.m.');
+    expect(text).toContain('Paso 2 · Datos del usuario');
+    expect(text).toContain('Nombre / Razón social');
+    expect(text).toContain('Ana');
+    expect(text).toContain('Documento');
+    expect(text).toContain('Cédula de ciudadanía 123');
+    expect(text).toContain('Correo');
+    expect(text).toContain('ana@finca.com');
+    expect(text).toContain('Celular');
+    expect(text).toContain('3001234567');
+    expect(text).toContain('Teléfono');
+    expect(text).toContain('(604) 1234567');
+    expect(text).toContain('Biografía');
+    expect(text).toContain('Historia');
+    expect(text).toContain('Años de experiencia');
+    expect(text).toContain('8');
+  });
+
+  it('el resumen muestra — en vereda, área, altitud, celular, teléfono, biografía y experiencia si van vacíos', async () => {
     await openForm();
     await goToStep3();
     await choosePhotos([photoFile('finca.jpg')]);
@@ -964,12 +1043,18 @@ describe('Shell', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const summary = compiled.querySelector('#summary') as HTMLElement;
+    const rows = [...compiled.querySelectorAll('#summary dt')].map((dt) => ({
+      label: dt.textContent?.trim(),
+      value: dt.nextElementSibling?.textContent?.trim(),
+    }));
 
-    expect(summary.textContent).toContain('Finca La Esperanza');
-    expect(summary.textContent).toContain('Pitalito');
-    expect(summary.textContent).toContain('Ana');
-    expect(summary.textContent).toContain('ana@finca.com');
+    expect(rows).toContainEqual({ label: 'Vereda / corregimiento', value: '—' });
+    expect(rows).toContainEqual({ label: 'Área total', value: '—' });
+    expect(rows).toContainEqual({ label: 'Altitud promedio', value: '—' });
+    expect(rows).toContainEqual({ label: 'Celular', value: '—' });
+    expect(rows).toContainEqual({ label: 'Teléfono', value: '—' });
+    expect(rows).toContainEqual({ label: 'Biografía', value: '—' });
+    expect(rows).toContainEqual({ label: 'Años de experiencia', value: '—' });
   });
 
   it('Regresar al formulario vuelve al paso 3 con fotos y datos conservados', async () => {

@@ -10,7 +10,7 @@
   </section>
 </main>
 
-@if (formOpen()) {
+@if (formOpen() && !summaryOpen()) {
   <div role="dialog">
     @if (step() === 1) {
     <h3>Datos básicos de la finca</h3>
@@ -41,9 +41,9 @@
     <span>{{ village().length }}/100</span>
     <label for="area">Extensión o área total</label>
     <input id="area" [value]="area()" (input)="onAreaInput($event)" />
-    <select id="areaUnit">
-      <option>Hectáreas</option>
-      <option>Fanegadas</option>
+    <select id="areaUnit" [value]="areaUnit()" (change)="onAreaUnitChange($event)">
+      <option value="Hectáreas" [selected]="areaUnit() === 'Hectáreas'">Hectáreas</option>
+      <option value="Fanegadas" [selected]="areaUnit() === 'Fanegadas'">Fanegadas</option>
     </select>
     <span>Variedades de café cultivadas</span>
     @for (variety of coffeeVarieties; track variety) {
@@ -127,7 +127,13 @@
         (drop)="onPhotoDrop($event)"
       >
       <input id="photos" type="file" accept=".jpg,.jpeg,.png" multiple (change)="onPhotosChange($event)" />
-      <input id="photoReplace" type="file" accept=".jpg,.jpeg,.png" (change)="onPhotoReplaceChange($event)" />
+      <input
+        id="photoReplace"
+        type="file"
+        accept=".jpg,.jpeg,.png"
+        hidden
+        (change)="onPhotoReplaceChange($event)"
+      />
       <span>{{ photos().length }} de 5 fotos</span>
       @if (photoAlert()) {
         <span>{{ photoAlert() }}</span>
@@ -167,19 +173,39 @@
 @if (summaryOpen()) {
   <div id="summary" role="dialog">
     <h2>Verifica tu información</h2>
-    <h4>Datos de la finca</h4>
+    <h4>Paso 1 · Datos de la finca</h4>
     <dl>
       <dt>Nombre de la finca</dt>
       <dd>{{ farmName() }}</dd>
+      <dt>Departamento</dt>
+      <dd>{{ department() }}</dd>
       <dt>Municipio</dt>
       <dd>{{ municipality() }}</dd>
+      <dt>Vereda / corregimiento</dt>
+      <dd>{{ dash(village()) }}</dd>
+      <dt>Área total</dt>
+      <dd>{{ summaryArea() }}</dd>
+      <dt>Variedades</dt>
+      <dd>{{ summaryVarieties() }}</dd>
+      <dt>Altitud promedio</dt>
+      <dd>{{ summaryAltitude() }}</dd>
     </dl>
-    <h4>Datos del usuario</h4>
+    <h4>Paso 2 · Datos del usuario</h4>
     <dl>
       <dt>Nombre / Razón social</dt>
       <dd>{{ ownerName() }}</dd>
+      <dt>Documento</dt>
+      <dd>{{ summaryDocument() }}</dd>
       <dt>Correo</dt>
       <dd>{{ email() }}</dd>
+      <dt>Celular</dt>
+      <dd>{{ dash(mobile()) }}</dd>
+      <dt>Teléfono</dt>
+      <dd>{{ summaryPhone() }}</dd>
+      <dt>Biografía</dt>
+      <dd>{{ dash(bio()) }}</dd>
+      <dt>Años de experiencia</dt>
+      <dd>{{ dash(experience()) }}</dd>
     </dl>
     <button type="button" (click)="closeSummary()">Regresar al formulario</button>
     <button type="button" (click)="finish()">Finalizar</button>
