@@ -182,6 +182,15 @@
       <dd>{{ email() }}</dd>
     </dl>
     <button type="button" (click)="closeSummary()">Regresar al formulario</button>
-    <button type="button">Finalizar</button>
+    <button type="button" (click)="finish()">Finalizar</button>
+  </div>
+}
+@if (successOpen()) {
+  <div id="success" role="alertdialog">
+    <h2>¡Solicitud enviada!</h2>
+    <p>Tu número de solicitud es</p>
+    <p>{{ requestNumber() }}</p>
+    <p>En un máximo de 8 días hábiles recibirás respuesta de la revisión de tu solicitud.</p>
+    <button type="button" (click)="acknowledge()">Entendido</button>
   </div>
 }

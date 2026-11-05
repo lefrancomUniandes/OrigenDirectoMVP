@@ -13,6 +13,8 @@ import { departments, municipalitiesByDepartment } from '../../core/catalogs/col
 export class Shell {
   readonly formOpen = signal(false);
   readonly summaryOpen = signal(false);
+  readonly successOpen = signal(false);
+  readonly requestNumber = signal('');
   readonly step = signal(1);
   readonly farmName = signal('');
   readonly department = signal('');
@@ -304,6 +306,18 @@ export class Shell {
     this.summaryOpen.set(false);
   }
 
+  finish(): void {
+    const serial = String(Math.floor(Math.random() * 900000) + 100000);
+    this.requestNumber.set(`OD-${new Date().getFullYear()}-${serial}`);
+    this.summaryOpen.set(false);
+    this.formOpen.set(false);
+    this.successOpen.set(true);
+  }
+
+  acknowledge(): void {
+    this.resetForm();
+  }
+
   goBack(): void {
     this.step.update((step) => Math.max(1, step - 1));
   }
@@ -312,6 +326,10 @@ export class Shell {
     if (!confirm('¿Deseas cancelar el registro? Se perderá la información diligenciada.')) {
       return;
     }
+    this.resetForm();
+  }
+
+  private resetForm(): void {
     this.farmName.set('');
     this.department.set('');
     this.municipality.set('');
@@ -329,7 +347,15 @@ export class Shell {
     this.landline.set('');
     this.bio.set('');
     this.experience.set('');
+    this.photos.set([]);
+    this.photoAlert.set('');
+    this.photoReplaceIndex.set(null);
+    this.pdf.set(null);
+    this.pdfAlert.set('');
+    this.requestNumber.set('');
     this.step.set(1);
+    this.summaryOpen.set(false);
+    this.successOpen.set(false);
     this.formOpen.set(false);
   }
 }

@@ -21,7 +21,8 @@
   padding: 1.5rem;
 }
 
-[role='dialog'] {
+[role='dialog'],
+[role='alertdialog'] {
   position: fixed;
   inset: 5vh 1rem auto;
   z-index: 20;

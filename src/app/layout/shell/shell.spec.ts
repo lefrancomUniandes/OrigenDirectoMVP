@@ -993,4 +993,53 @@ describe('Shell', () => {
     expect(compiled.querySelectorAll('.thumbs img').length).toBe(1);
     expect(button('Enviar').disabled).toBe(false);
   });
+
+  it('Finalizar muestra el popup con número OD-año-###### y el texto de 8 días hábiles', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    button('Finalizar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const success = compiled.querySelector('#success') as HTMLElement;
+
+    expect(compiled.querySelector('#summary')).toBeNull();
+    expect(success).toBeTruthy();
+    expect(success.textContent).toContain('¡Solicitud enviada!');
+    expect(success.textContent).toMatch(/OD-\d{4}-\d{6}/);
+    expect(success.textContent).toContain('8 días hábiles');
+    expect(button('Entendido')).toBeTruthy();
+  });
+
+  it('Entendido cierra el popup y el formulario', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    button('Finalizar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    button('Entendido').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(compiled.querySelector('#success')).toBeNull();
+    expect(compiled.querySelector('[role="dialog"]')).toBeNull();
+
+    await openForm();
+
+    const farmName = compiled.querySelector('#farmName') as HTMLInputElement;
+    expect(farmName.value).toBe('');
+  });
 });
