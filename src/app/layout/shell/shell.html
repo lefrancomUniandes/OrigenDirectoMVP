@@ -12,6 +12,7 @@
 
 @if (formOpen()) {
   <div role="dialog">
+    @if (step() === 1) {
     <h3>Datos básicos de la finca</h3>
     <label for="farmName">Nombre de la finca</label>
     <input id="farmName" maxlength="120" [value]="farmName()" (input)="onFarmNameInput($event)" />
@@ -67,7 +68,14 @@
     }
     <label for="altitude">Altitud promedio</label>
     <input id="altitude" [value]="altitude()" (input)="onAltitudeInput($event)" />
+    }
+    @if (step() === 2) {
+      <h3>Datos básicos del usuario</h3>
+    }
     <button type="button" (click)="cancel()">Cancelar</button>
-    <button type="button" [disabled]="!canContinue()">Continuar</button>
+    @if (step() > 1) {
+      <button type="button" (click)="goBack()">Atrás</button>
+    }
+    <button type="button" [disabled]="!canContinue()" (click)="goNext()">Continuar</button>
   </div>
 }

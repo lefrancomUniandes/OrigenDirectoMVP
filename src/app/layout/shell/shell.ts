@@ -12,6 +12,7 @@ import { departments, municipalitiesByDepartment } from '../../core/catalogs/col
 })
 export class Shell {
   readonly formOpen = signal(false);
+  readonly step = signal(1);
   readonly farmName = signal('');
   readonly department = signal('');
   readonly municipality = signal('');
@@ -92,6 +93,14 @@ export class Shell {
     );
   }
 
+  goNext(): void {
+    this.step.update((step) => step + 1);
+  }
+
+  goBack(): void {
+    this.step.update((step) => Math.max(1, step - 1));
+  }
+
   cancel(): void {
     if (!confirm('¿Deseas cancelar el registro? Se perderá la información diligenciada.')) {
       return;
@@ -104,6 +113,7 @@ export class Shell {
     this.altitude.set('');
     this.varieties.set([]);
     this.otherVariety.set('');
+    this.step.set(1);
     this.formOpen.set(false);
   }
 }

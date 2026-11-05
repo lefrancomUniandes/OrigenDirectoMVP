@@ -124,6 +124,13 @@ describe('Shell', () => {
     await fixture.whenStable();
   }
 
+  async function fillStep1(): Promise<void> {
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+  }
+
   it('muestra el botón Registrar finca en la barra', async () => {
     const toolbar = compiled.querySelector('.shell__toolbar') as HTMLElement;
 
@@ -384,5 +391,23 @@ describe('Shell', () => {
 
     await typeAltitude('2500');
     expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('Continuar con el paso 1 válido muestra el paso 2 y Atrás; Cancelar sigue visible', async () => {
+    await openForm();
+    await fillStep1();
+
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.textContent).toContain('Datos básicos del usuario');
+    expect(dialog.textContent).not.toContain('Datos básicos de la finca');
+    expect(dialog.querySelector('#farmName')).toBeNull();
+    expect(button('Atrás')).toBeTruthy();
+    expect(button('Continuar')).toBeTruthy();
+    expect(button('Cancelar')).toBeTruthy();
   });
 });
