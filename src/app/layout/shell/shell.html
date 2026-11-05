@@ -140,6 +140,17 @@
         }
       </div>
       </div>
+      @if (pdfRequired()) {
+        <span>Formato {{ documentType() }} vigente</span>
+        <input id="pdf" type="file" accept="application/pdf,.pdf" (change)="onPdfChange($event)" />
+        @if (pdfAlert()) {
+          <span>{{ pdfAlert() }}</span>
+        }
+        @if (pdf(); as attachedPdf) {
+          <span>{{ attachedPdf.name }}</span>
+          <button type="button" (click)="removePdf()">Quitar</button>
+        }
+      }
     }
     <button type="button" (click)="cancel()">Cancelar</button>
     @if (step() > 1) {

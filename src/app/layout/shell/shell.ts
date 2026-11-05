@@ -33,6 +33,8 @@ export class Shell {
   readonly photos = signal<readonly { file: File; url: string }[]>([]);
   readonly photoAlert = signal('');
   readonly photoReplaceIndex = signal<number | null>(null);
+  readonly pdf = signal<File | null>(null);
+  readonly pdfAlert = signal('');
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
   readonly municipalities = computed(
@@ -118,7 +120,10 @@ export class Shell {
   readonly canContinue = computed(() =>
     this.step() === 1 ? this.step1Valid() : this.step2Valid(),
   );
-  readonly canSubmit = computed(() => this.photos().length > 0);
+  readonly pdfRequired = computed(() => ['NIT', 'RUT'].includes(this.documentType()));
+  readonly canSubmit = computed(
+    () => this.photos().length > 0 && (!this.pdfRequired() || this.pdf() !== null),
+  );
 
   onFarmNameInput(event: Event): void {
     this.farmName.set((event.target as HTMLInputElement).value);
@@ -205,6 +210,28 @@ export class Shell {
 
   startReplacePhoto(index: number): void {
     this.photoReplaceIndex.set(index);
+  }
+
+  onPdfChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) {
+      return;
+    }
+    if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) {
+      this.pdfAlert.set('El archivo debe estar en formato PDF.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.pdfAlert.set('El PDF supera el peso máximo de 5 MB.');
+      return;
+    }
+    this.pdf.set(file);
+    this.pdfAlert.set('');
+  }
+
+  removePdf(): void {
+    this.pdf.set(null);
+    this.pdfAlert.set('');
   }
 
   onPhotoReplaceChange(event: Event): void {

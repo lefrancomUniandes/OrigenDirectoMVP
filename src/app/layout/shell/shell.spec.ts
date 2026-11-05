@@ -181,9 +181,12 @@ describe('Shell', () => {
     await typeEmail('ana@finca.com');
   }
 
-  async function goToStep3(): Promise<void> {
+  async function goToStep3(documentType = 'Cédula de ciudadanía'): Promise<void> {
     await goToStep2();
-    await fillStep2Required();
+    await typeOwnerName('Ana');
+    await chooseDocumentType(documentType);
+    await typeDocumentNumber('123');
+    await typeEmail('ana@finca.com');
     button('Continuar').click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -194,6 +197,10 @@ describe('Shell', () => {
     type = 'image/jpeg',
     size = 1024,
   ): File {
+    return new File([new Uint8Array(size)], name, { type });
+  }
+
+  function pdfFile(name = 'nit.pdf', size = 1024, type = 'application/pdf'): File {
     return new File([new Uint8Array(size)], name, { type });
   }
 
@@ -849,5 +856,80 @@ describe('Shell', () => {
     expect(compiled.querySelectorAll('.thumbs img').length).toBe(1);
     expect(dialog.textContent).toContain('1 de 5 fotos');
     expect(button('Enviar').disabled).toBe(false);
+  });
+
+  it('con NIT o RUT el PDF es obligatorio: Enviar deshabilitado hasta adjuntar un PDF de ≤ 5 MB', async () => {
+    await openForm();
+    await goToStep3('NIT');
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+    const pdf = compiled.querySelector('#pdf') as HTMLInputElement;
+
+    expect(dialog.textContent).toContain('Formato NIT vigente');
+    expect(pdf).toBeTruthy();
+    expect(pdf.accept).toContain('pdf');
+    expect(button('Enviar').disabled).toBe(true);
+
+    await choosePhotos([pdfFile()], 'pdf');
+
+    expect(button('Enviar').disabled).toBe(false);
+  });
+
+  it('con cédula o pasaporte el PDF no aparece', async () => {
+    await openForm();
+    await goToStep3('Cédula de ciudadanía');
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    expect(compiled.querySelector('#pdf')).toBeNull();
+    expect(button('Enviar').disabled).toBe(false);
+
+    button('Atrás').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await chooseDocumentType('Pasaporte');
+    button('Continuar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(compiled.querySelector('#pdf')).toBeNull();
+    expect(button('Enviar').disabled).toBe(false);
+  });
+
+  it('PDF inválido (no PDF o > 5 MB) muestra alerta y no se adjunta', async () => {
+    await openForm();
+    await goToStep3('NIT');
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    await choosePhotos([photoFile('foto.jpg')], 'pdf');
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.textContent).toContain('El archivo debe estar en formato PDF.');
+    expect(button('Enviar').disabled).toBe(true);
+
+    await choosePhotos([pdfFile('grande.pdf', 5 * 1024 * 1024 + 1)], 'pdf');
+
+    expect(dialog.textContent).toContain('El PDF supera el peso máximo de 5 MB.');
+    expect(button('Enviar').disabled).toBe(true);
+  });
+
+  it('PDF válido muestra el nombre y Quitar lo quita', async () => {
+    await openForm();
+    await goToStep3('RUT');
+    await choosePhotos([photoFile('finca.jpg')]);
+    await choosePhotos([pdfFile('rut-vigente.pdf')], 'pdf');
+
+    const dialog = compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog.textContent).toContain('rut-vigente.pdf');
+    expect(button('Enviar').disabled).toBe(false);
+
+    button('Quitar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(dialog.textContent).not.toContain('rut-vigente.pdf');
+    expect(button('Enviar').disabled).toBe(true);
   });
 });
