@@ -40,12 +40,8 @@ describe('Shell', () => {
     await settleFinish();
   }
 
-  async function openForm(from: 'toolbar' | 'hero' = 'toolbar'): Promise<void> {
-    if (from === 'hero') {
-      button('Comenzar registro', compiled.querySelector('.hero') ?? compiled).click();
-    } else {
-      button('Registrar finca', compiled.querySelector('.shell__toolbar') ?? compiled).click();
-    }
+  async function openForm(): Promise<void> {
+    button('Registrar finca', compiled.querySelector('.shell__toolbar') ?? compiled).click();
     await fixture.whenStable();
   }
 
@@ -305,26 +301,8 @@ describe('Shell', () => {
     expect(button('Registrar finca', toolbar)).toBeTruthy();
   });
 
-  it('muestra el hero con el botón Comenzar registro', async () => {
-    const hero = compiled.querySelector('.hero');
-
-    expect(hero).toBeTruthy();
-    expect(button('Comenzar registro', hero ?? compiled)).toBeTruthy();
-  });
-
   it('Registrar finca abre el modal del paso 1 con el campo nombre de la finca', async () => {
     await openForm();
-
-    const dialog = compiled.querySelector('[role="dialog"]');
-
-    expect(dialog).toBeTruthy();
-    expect(dialog?.textContent).toContain('Datos básicos de la finca');
-    expect(dialog?.textContent).toContain('Nombre de la finca');
-    expect(dialog?.querySelector('input')).toBeTruthy();
-  });
-
-  it('Comenzar registro abre el mismo modal', async () => {
-    await openForm('hero');
 
     const dialog = compiled.querySelector('[role="dialog"]');
 

@@ -1,13 +1,14 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { FarmRegistrationWizard } from '../../features/farm-registration/components/farm-registration-wizard';
+import { RegistrationForm } from '../../features/farm-registration/services/registration-form';
 
 @Component({
-  imports: [RouterOutlet, FarmRegistrationWizard],
+  imports: [RouterLink, RouterOutlet, FarmRegistrationWizard],
   selector: 'app-shell',
   styleUrl: './shell.scss',
   templateUrl: './shell.html',
 })
 export class Shell {
-  readonly formOpen = signal(false);
+  readonly form = inject(RegistrationForm);
 }

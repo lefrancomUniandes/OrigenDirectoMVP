@@ -6,11 +6,14 @@ export const routes: Routes = [
     path: '',
     component: Shell,
     children: [
-      // Cada feature aporta sus rutas y se carga bajo demanda:
-      // {
-      //   path: 'fincas',
-      //   loadChildren: () => import('./features/fincas/routes').then((m) => m.routes),
-      // },
+      {
+        path: '',
+        loadChildren: () => import('./features/feed/routes').then((m) => m.routes),
+      },
+      {
+        path: 'register',
+        loadChildren: () => import('./features/farm-registration/routes').then((m) => m.routes),
+      },
     ],
   },
 ];

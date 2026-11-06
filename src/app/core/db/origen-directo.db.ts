@@ -20,9 +20,15 @@ import Dexie from 'dexie';
 @Injectable({ providedIn: 'root' })
 export class OrigenDirectoDb extends Dexie {
   constructor() {
-    super('origen-directo');
+    // The default cache clones each result and rebuilds ArrayBuffers without
+    // their bytes. Immutable keeps the photo bytes that IndexedDB returns.
+    super('origen-directo', { cache: 'immutable' });
 
     this.version(1).stores({});
     this.version(2).stores({ fincas: 'id, farmName' });
+    this.version(3).stores({
+      fincas: 'id, farmName',
+      novedades: 'id, publishedOn',
+    });
   }
 }

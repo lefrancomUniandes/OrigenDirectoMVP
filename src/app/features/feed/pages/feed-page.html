@@ -1,0 +1,29 @@
+@if (loading()) {
+  <p>Cargando</p>
+} @else {
+  @if (feed.novedades()[novedadIndex()]; as novedad) {
+    <section aria-label="Novedades">
+      <button type="button" aria-label="Anterior" (click)="previousNovedad()">‹</button>
+      <article>
+        <h2>{{ novedad.title }}</h2>
+        <p>{{ novedad.farmName }}</p>
+        <p>{{ novedad.municipality }}, {{ novedad.department }}</p>
+      </article>
+      <button type="button" aria-label="Siguiente" (click)="nextNovedad()">›</button>
+    </section>
+  }
+  @if (feed.items().length === 0) {
+    <p>Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen</p>
+  } @else {
+    @for (farm of feed.items(); track farm.id) {
+      <article>
+        <h2>{{ farm.farmName }}</h2>
+        @if (farm.photos[0]; as photo) {
+          <img [src]="photoSrc(photo)" alt="" />
+        }
+        <p>{{ farm.municipality }}, {{ farm.department }}</p>
+        <p>{{ farm.bio }}</p>
+      </article>
+    }
+  }
+}
