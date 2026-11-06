@@ -52,3 +52,14 @@ cada caficultor tiene su pagina y existe un feed con lo que van publicando.
 - Esquema de la base: `src/app/core/db/origen-directo.db.ts`
 - Catalogos estaticos (departamentos, variedades): `src/app/core/catalogs/`
 - Build y despliegue: `amplify.yml` y la seccion de Amplify del `README.md`
+
+## Deuda que se va dejando
+
+Cuando una historia deja un cabo para otra, se anota aqui con el nombre de esa historia.
+No se resuelve de paso ni se olvida.
+
+- **Perfil.** Marcar cual es la foto de perfil. El feed usa la primera foto guardada.
+- **Perfil.** Pagina de la finca: contacto, datos, lotes y volver al feed. «Visitar perfil» abre el aviso del navegador porque esa pagina sigue en proceso.
+- **Admin.** Aprobar o desaprobar fincas. El feed muestra todas las que se registran.
+- **Contenido.** Reemplazar los lotes sembrados del carrusel por las publicaciones reales de cada finca.
+- **Feed.** Cargar mas tarjetas al bajar, en lotes, con un indicador mientras llegan.
