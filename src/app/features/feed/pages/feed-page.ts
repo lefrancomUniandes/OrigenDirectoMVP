@@ -4,6 +4,7 @@ import { FeedService } from '../services/feed.service';
 
 @Component({
   selector: 'app-feed-page',
+  styleUrl: './feed-page.scss',
   templateUrl: './feed-page.html',
 })
 export class FeedPage {

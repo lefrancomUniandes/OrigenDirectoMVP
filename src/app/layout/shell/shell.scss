@@ -30,6 +30,17 @@
   gap: 16px;
 }
 
+.header__actions a {
+  color: var(--cafe-700);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header__actions a:hover {
+  color: var(--terracota);
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: 12px;

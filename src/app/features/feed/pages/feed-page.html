@@ -1,29 +1,76 @@
 @if (loading()) {
-  <p>Cargando</p>
+  <p class="feed__status" role="status">Cargando</p>
 } @else {
-  @if (feed.novedades()[novedadIndex()]; as novedad) {
-    <section aria-label="Novedades">
-      <button type="button" aria-label="Anterior" (click)="previousNovedad()">‹</button>
-      <article>
-        <h2>{{ novedad.title }}</h2>
-        <p>{{ novedad.farmName }}</p>
-        <p>{{ novedad.municipality }}, {{ novedad.department }}</p>
-      </article>
-      <button type="button" aria-label="Siguiente" (click)="nextNovedad()">›</button>
-    </section>
-  }
-  @if (feed.items().length === 0) {
-    <p>Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen</p>
-  } @else {
-    @for (farm of feed.items(); track farm.id) {
-      <article>
-        <h2>{{ farm.farmName }}</h2>
-        @if (farm.photos[0]; as photo) {
-          <img [src]="photoSrc(photo)" alt="" />
-        }
-        <p>{{ farm.municipality }}, {{ farm.department }}</p>
-        <p>{{ farm.bio }}</p>
-      </article>
+  <div class="feed">
+    @if (feed.novedades()[novedadIndex()]; as novedad) {
+      <section class="novedades" aria-label="Novedades">
+        <header class="feed__heading">
+          <h2>Novedades</h2>
+          <p>Últimos lotes publicados por los caficultores</p>
+        </header>
+        <div class="novedades__stage">
+          <button
+            type="button"
+            class="novedades__arrow"
+            aria-label="Anterior"
+            (click)="previousNovedad()"
+            [disabled]="novedadIndex() === 0"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18 9 12l6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <article class="novedad">
+            <div class="novedad__art" aria-hidden="true"></div>
+            <div class="novedad__body">
+              <p class="novedad__badge">Nuevo</p>
+              <h3>{{ novedad.title }}</h3>
+              <p class="novedad__farm">{{ novedad.farmName }}</p>
+              <p class="novedad__place">{{ novedad.municipality }}, {{ novedad.department }}</p>
+            </div>
+          </article>
+          <button
+            type="button"
+            class="novedades__arrow"
+            aria-label="Siguiente"
+            (click)="nextNovedad()"
+            [disabled]="novedadIndex() >= feed.novedades().length - 1"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 18 6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </section>
     }
-  }
+
+    <section class="fincas" aria-label="Fincas">
+      <header class="feed__heading">
+        <h2>Fincas</h2>
+      </header>
+      @if (feed.items().length === 0) {
+        <div class="feed__empty">
+          <svg width="48" height="48" aria-hidden="true"><use href="#i-grano" /></svg>
+          <p>Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen</p>
+        </div>
+      } @else {
+        <div class="fincas__grid">
+          @for (farm of feed.items(); track farm.id) {
+            <article class="finca">
+              <div class="finca__photo">
+                @if (farm.photos[0]; as photo) {
+                  <img [src]="photoSrc(photo)" alt="" />
+                }
+                <span class="finca__place">{{ farm.municipality }}, {{ farm.department }}</span>
+              </div>
+              <div class="finca__body">
+                <h3>{{ farm.farmName }}</h3>
+                <p>{{ farm.bio }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
 }
