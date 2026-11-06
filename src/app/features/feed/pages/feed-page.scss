@@ -200,6 +200,20 @@
   overflow: hidden;
 }
 
+.finca__visit {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 22px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--oliva);
+  color: var(--crema-2);
+  cursor: pointer;
+}
+
 .feed__empty {
   margin-top: 22px;
   background: var(--crema-2);

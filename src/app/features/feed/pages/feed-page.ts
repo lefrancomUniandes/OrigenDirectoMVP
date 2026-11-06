@@ -29,4 +29,8 @@ export class FeedPage {
   previousNovedad(): void {
     this.novedadIndex.update((index) => Math.max(index - 1, 0));
   }
+
+  visitProfile(): void {
+    alert('Trabajo en proceso');
+  }
 }

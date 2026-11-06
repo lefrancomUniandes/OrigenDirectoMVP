@@ -96,6 +96,17 @@ describe('Página del feed', () => {
     expect(compiled.textContent).toContain('Café de altura cultivado bajo sombra.');
   });
 
+  it('Visitar perfil avisa que la página de la finca sigue en proceso', async () => {
+    const notify = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await saveFarm();
+    await render();
+    await finishLoading();
+
+    button('Visitar perfil', compiled).click();
+
+    expect(notify).toHaveBeenCalledWith('Trabajo en proceso');
+  });
+
   it('si esa finca tiene foto, la tarjeta muestra la imagen', async () => {
     const bytes = new Uint8Array([1, 2, 3, 4]).buffer;
     await saveFarm([{ type: 'image/jpeg', bytes }]);
