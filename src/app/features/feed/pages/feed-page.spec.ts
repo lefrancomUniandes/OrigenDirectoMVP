@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
+import { installDemoAssets } from '../../../../testing/demo-assets';
 import { FeedPage } from './feed-page';
 
 Dexie.dependencies.indexedDB = indexedDB;
@@ -13,6 +14,7 @@ describe('Página del feed', () => {
   let compiled: HTMLElement;
 
   beforeEach(async () => {
+    installDemoAssets();
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
       imports: [FeedPage],
@@ -63,28 +65,40 @@ describe('Página del feed', () => {
     });
   }
 
+  async function untilText(text: string): Promise<void> {
+    for (let attempt = 0; attempt < 40 && !fincas()?.textContent?.includes(text); attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
+  }
+
+  function fincas(): HTMLElement | null {
+    return compiled.querySelector('[aria-label="Fincas"]');
+  }
+
   it('sin fincas, muestra «Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen»', async () => {
     await render();
     await finishLoading();
+    await untilText('Finca El Paraíso');
+    await TestBed.inject(OrigenDirectoDb).table('fincas').clear();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
-    expect(compiled.textContent).toContain(
+    expect(fincas()?.textContent).toContain(
       'Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen',
     );
   });
 
-  it('al entrar muestra «Cargando» y el mensaje vacío solo aparece al terminar la espera', async () => {
+  it('al entrar muestra «Cargando» y una finca sembrada al terminar la espera', async () => {
     await render();
 
     expect(compiled.textContent).toContain('Cargando');
-    expect(compiled.textContent).not.toContain(
-      'Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen',
-    );
+    expect(compiled.textContent).not.toContain('Finca El Paraíso');
 
     await finishLoading();
+    await untilText('Finca El Paraíso');
 
-    expect(compiled.textContent).toContain(
-      'Pronto encontrarás historias y fincas artesanales conectadas directamente con el origen',
-    );
+    expect(fincas()?.textContent).toContain('Finca El Paraíso');
     expect(compiled.textContent).not.toContain('Cargando');
   });
 
@@ -163,6 +177,17 @@ describe('Página del feed', () => {
     fixture.detectChanges();
 
     expect(novedad()?.textContent).toContain('Lote 1 · Caturra Honey');
+  });
+
+  it('al entrar muestra El Paraíso, Alto de los Ángeles, La Fortuna y El Roble', async () => {
+    await render();
+    await finishLoading();
+    await untilText('Finca El Roble');
+
+    expect(fincas()?.textContent).toContain('Finca El Paraíso');
+    expect(fincas()?.textContent).toContain('Finca Alto de los Ángeles');
+    expect(fincas()?.textContent).toContain('Finca La Fortuna');
+    expect(fincas()?.textContent).toContain('Finca El Roble');
   });
 });
 

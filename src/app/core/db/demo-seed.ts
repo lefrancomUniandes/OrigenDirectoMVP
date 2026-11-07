@@ -5,24 +5,21 @@ interface DemoPhoto {
   readonly bytes: ArrayBuffer;
 }
 
-async function asset(filename: string, url: URL): Promise<DemoPhoto> {
-  const node = (globalThis as { process?: { versions?: { node?: string }; cwd(): string } }).process;
-  if (node?.versions?.node) {
-    const fs = (await new Function('return import("node:fs/promises")')()) as {
-      readFile(path: string): Promise<Uint8Array>;
-    };
-    const path = (await new Function('return import("node:path")')()) as {
-      join(...parts: string[]): string;
-    };
-    const file = await fs.readFile(path.join(node.cwd(), 'src', 'assets', filename));
-    const bytes = file.buffer.slice(
-      file.byteOffset,
-      file.byteOffset + file.byteLength,
-    ) as ArrayBuffer;
-    return { type: 'image/jpeg', bytes };
-  }
+type DemoAssetLoader = (filename: string) => Promise<ArrayBuffer>;
 
-  const response = await fetch(url);
+export function installDemoAssetLoader(loader: DemoAssetLoader): void {
+  (globalThis as { __loadDemoAsset?: DemoAssetLoader }).__loadDemoAsset = loader;
+}
+
+async function asset(filename: string): Promise<DemoPhoto> {
+  const load = (globalThis as { __loadDemoAsset?: DemoAssetLoader }).__loadDemoAsset;
+  if (load) {
+    return { type: 'image/jpeg', bytes: await load(filename) };
+  }
+  const response = await fetch(`/assets/${encodeURIComponent(filename)}`);
+  if (!response.ok) {
+    throw new Error(filename);
+  }
   return { type: 'image/jpeg', bytes: await response.arrayBuffer() };
 }
 
@@ -36,26 +33,11 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
     return;
   }
 
-  const paraiso = await asset(
-    'El Paraíso, Urrao.jpg',
-    new URL('../../../assets/El Paraíso, Urrao.jpg', import.meta.url),
-  );
-  const angeles1 = await asset(
-    'Alto de los Ángeles, foto 1.jpg',
-    new URL('../../../assets/Alto de los Ángeles, foto 1.jpg', import.meta.url),
-  );
-  const angeles2 = await asset(
-    'Alto de los Ángeles, foto 2.jpg',
-    new URL('../../../assets/Alto de los Ángeles, foto 2.jpg', import.meta.url),
-  );
-  const fortuna = await asset(
-    'La Fortuna, Planadas.jpg',
-    new URL('../../../assets/La Fortuna, Planadas.jpg', import.meta.url),
-  );
-  const roble = await asset(
-    'El Roble, Pitalito.jpg',
-    new URL('../../../assets/El Roble, Pitalito.jpg', import.meta.url),
-  );
+  const paraiso = await asset('El Paraíso, Urrao.jpg');
+  const angeles1 = await asset('Alto de los Ángeles, foto 1.jpg');
+  const angeles2 = await asset('Alto de los Ángeles, foto 2.jpg');
+  const fortuna = await asset('La Fortuna, Planadas.jpg');
+  const roble = await asset('El Roble, Pitalito.jpg');
 
   const paraisoBio = 'Tercera generación cultivando café de altura.';
   const angelesBio = 'Café de montaña en las laderas de Chinchiná.';

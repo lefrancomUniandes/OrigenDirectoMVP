@@ -1,4 +1,5 @@
 import { Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { coffeeVarieties } from '../../../core/catalogs/coffee-varieties';
 import { departments, municipalitiesByDepartment } from '../../../core/catalogs/colombia';
 import { FarmRegistrationService } from '../services/farm-registration.service';
@@ -11,6 +12,7 @@ import { emptyWizardForm, WizardForm, WizardPhoto } from './wizard-form';
 })
 export class FarmRegistrationWizard {
   private readonly farmRegistration = inject(FarmRegistrationService);
+  private readonly router = inject(Router);
   readonly closed = output<void>();
 
   constructor() {
@@ -377,8 +379,10 @@ export class FarmRegistrationWizard {
   }
 
   acknowledge(): void {
+    const id = this.form().requestNumber;
     this.resetForm();
     this.closed.emit();
+    void this.router.navigate(['/perfil', id], { queryParams: { login: id } });
   }
 
   goBack(): void {

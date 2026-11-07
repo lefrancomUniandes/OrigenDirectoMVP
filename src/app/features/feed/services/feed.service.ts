@@ -1,4 +1,6 @@
 import { Injectable, inject } from '@angular/core';
+import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
+import { seedDemoIfEmpty } from '../../../core/db/demo-seed';
 import { liveQuerySignal } from '../../../core/db/live-query';
 import { FeedFarm, FeedFarmRepository } from '../data/feed-farm.repository';
 import { Novedad, NovedadRepository, SEEDED_NOVEDADES } from '../data/novedad.repository';
@@ -14,6 +16,7 @@ export class FeedService {
   }, [] as Novedad[]);
 
   constructor() {
+    void seedDemoIfEmpty(inject(OrigenDirectoDb));
     void this.novedadesRepo.seedIfEmpty(SEEDED_NOVEDADES);
   }
 }

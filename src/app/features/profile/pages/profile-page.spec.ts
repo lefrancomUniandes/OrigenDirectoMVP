@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
+import { installDemoAssets } from '../../../../testing/demo-assets';
 import { ProfilePage } from './profile-page';
 
 Dexie.dependencies.indexedDB = indexedDB;
@@ -17,6 +18,7 @@ describe('Página del perfil', () => {
   beforeEach(async () => {
     login = '';
     farmId = 'OD-2026-100001';
+    installDemoAssets();
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
       imports: [ProfilePage],

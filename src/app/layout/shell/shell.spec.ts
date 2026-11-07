@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Component } from '@angular/core';
+import { provideRouter, Router } from '@angular/router';
 import { FarmRegistrationService } from '../../features/farm-registration/services/farm-registration.service';
 import { Shell } from './shell';
+
+@Component({ template: '' })
+class PerfilPage {}
 
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
@@ -13,7 +17,7 @@ describe('Shell', () => {
     await TestBed.configureTestingModule({
       imports: [Shell],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'perfil/:id', component: PerfilPage }]),
         { provide: FarmRegistrationService, useValue: { register: registerFarm } },
       ],
     }).compileComponents();
@@ -1208,5 +1212,22 @@ describe('Shell', () => {
 
     const farmName = compiled.querySelector('#farmName') as HTMLInputElement;
     expect(farmName.value).toBe('');
+  });
+
+  it('«Entendido» abre /perfil/<número>?login=<número>', async () => {
+    await openForm();
+    await goToStep3();
+    await choosePhotos([photoFile('finca.jpg')]);
+
+    button('Enviar').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await confirmFinish();
+
+    button('Entendido').click();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/perfil/OD-2026-100001?login=OD-2026-100001');
   });
 });
