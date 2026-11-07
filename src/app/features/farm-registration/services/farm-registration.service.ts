@@ -24,6 +24,12 @@ export class FarmRegistrationService {
         photo: { type: photo.type, bytes: photo.bytes },
       });
     }
+    await this.publications.create({
+      farmId: id,
+      publishedOn,
+      text: `${draft.bio}\n${draft.email}\n${draft.mobile}\n${draft.landline}`,
+      photo: null,
+    });
     return id;
   }
 }

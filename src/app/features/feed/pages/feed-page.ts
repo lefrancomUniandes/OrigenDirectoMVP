@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { FeedPhoto } from '../data/feed-farm.repository';
 import { FeedService } from '../services/feed.service';
 
@@ -9,6 +10,7 @@ import { FeedService } from '../services/feed.service';
 })
 export class FeedPage {
   readonly feed = inject(FeedService);
+  private readonly router = inject(Router);
   readonly loading = signal(true);
   readonly novedadIndex = signal(0);
 
@@ -30,7 +32,7 @@ export class FeedPage {
     this.novedadIndex.update((index) => Math.max(index - 1, 0));
   }
 
-  visitProfile(): void {
-    alert('Trabajo en proceso');
+  visitProfile(id: string): void {
+    void this.router.navigate(['/perfil', id], { queryParamsHandling: 'preserve' });
   }
 }

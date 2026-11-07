@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
@@ -15,6 +16,7 @@ describe('Página del feed', () => {
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
       imports: [FeedPage],
+      providers: [provideRouter([{ path: '**', component: FeedPage }])],
     }).compileComponents();
   });
 
@@ -96,15 +98,17 @@ describe('Página del feed', () => {
     expect(compiled.textContent).toContain('Café de altura cultivado bajo sombra.');
   });
 
-  it('Visitar perfil avisa que la página de la finca sigue en proceso', async () => {
-    const notify = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+  it('«Visitar perfil» abre /perfil/<id> y conserva login', async () => {
     await saveFarm();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?login=OD-2026-200002');
     await render();
     await finishLoading();
 
     button('Visitar perfil', compiled).click();
+    await fixture.whenStable();
 
-    expect(notify).toHaveBeenCalledWith('Trabajo en proceso');
+    expect(router.url).toBe('/perfil/OD-2026-100001?login=OD-2026-200002');
   });
 
   it('si esa finca tiene foto, la tarjeta muestra la imagen', async () => {

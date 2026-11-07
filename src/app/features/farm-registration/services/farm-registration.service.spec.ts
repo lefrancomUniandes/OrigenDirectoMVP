@@ -98,4 +98,48 @@ describe('FarmRegistrationService', () => {
       vi.useRealTimers();
     }
   });
+
+  it('al registrar queda una publicación de presentación, sin foto, con la biografía, el correo, el celular y el fijo', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-07T15:00:00Z'));
+
+    try {
+      const created: {
+        farmId: string;
+        publishedOn: string;
+        text: string;
+        photo: { type: string; bytes: ArrayBuffer } | null;
+      }[] = [];
+      const farms = {
+        create: async (data: { id: string }) => data.id,
+      };
+      const publications = {
+        create: async (data: (typeof created)[number]) => {
+          created.push(data);
+          return 'pub';
+        },
+      };
+      const service = new FarmRegistrationService(farms as never, publications as never);
+
+      const id = await service.register(
+        emptyFarmDraft({
+          bio: 'Café de altura cultivado bajo sombra.',
+          email: 'ana@finca.com',
+          mobile: '3001234567',
+          landline: '6088765432',
+        }),
+      );
+
+      expect(created).toEqual([
+        {
+          farmId: id,
+          publishedOn: '2026-11-07',
+          text: 'Café de altura cultivado bajo sombra.\nana@finca.com\n3001234567\n6088765432',
+          photo: null,
+        },
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

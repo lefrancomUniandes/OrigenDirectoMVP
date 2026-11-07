@@ -14,6 +14,10 @@ export const routes: Routes = [
         path: 'register',
         loadChildren: () => import('./features/farm-registration/routes').then((m) => m.routes),
       },
+      {
+        path: 'perfil',
+        loadChildren: () => import('./features/profile/routes').then((m) => m.routes),
+      },
     ],
   },
 ];
