@@ -7,6 +7,7 @@ import { ProfileService } from '../services/profile.service';
   selector: 'app-profile-page',
   providers: [ProfileService],
   templateUrl: './profile-page.html',
+  styleUrl: './profile-page.scss',
 })
 export class ProfilePage {
   readonly profile = inject(ProfileService);
@@ -23,12 +24,28 @@ export class ProfilePage {
     this.openPost.set(post);
   }
 
+  close(): void {
+    this.openPost.set(null);
+  }
+
   like(): void {
     this.notice.set('Trabajo en progreso');
   }
 
   startEdit(): void {
     this.editing.set(true);
+  }
+
+  cancelEdit(): void {
+    this.editing.set(false);
+  }
+
+  filled(value: string): boolean {
+    return value.trim().length > 0;
+  }
+
+  place(farm: ProfileFarm): string {
+    return [farm.municipality, farm.department].map((part) => part.trim()).filter((part) => part).join(', ');
   }
 
   save(event: Event): void {
@@ -75,5 +92,6 @@ export class ProfilePage {
       };
     }
     await this.profile.update(changes);
+    this.editing.set(false);
   }
 }

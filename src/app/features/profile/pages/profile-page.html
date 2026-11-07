@@ -1,76 +1,202 @@
 @if (profile.farm(); as farm) {
-  <header>
+  <header class="card profile-card">
     @if (farm.photos[0]; as photo) {
-      <img [src]="photoSrc(photo)" alt="" />
+      <div class="avatar-ring">
+        <img class="avatar" [src]="photoSrc(photo)" alt="" />
+      </div>
     }
-    <h1>{{ farm.farmName }}</h1>
-    <p>{{ farm.ownerName }}</p>
-    <p>{{ farm.municipality }}, {{ farm.department }}</p>
-    <p>{{ farm.bio }}</p>
-    <p>{{ farm.experience }}</p>
-    <a [href]="'https://wa.me/' + farm.mobile" target="_blank" rel="noopener">Contactar por WhatsApp</a>
-    @if (profile.canEdit) {
-      <button type="button" (click)="startEdit()">Editar perfil</button>
+    <h1 class="title-main">{{ farm.farmName }}</h1>
+    <h2 class="title-sub">{{ farm.ownerName }}</h2>
+    @if (place(farm); as place) {
+      <p class="location">{{ place }}</p>
     }
+    @if (filled(farm.bio)) {
+      <p class="bio">{{ farm.bio }}</p>
+    }
+    @if (filled(farm.experience)) {
+      <p class="experience">{{ farm.experience }} años de experiencia</p>
+    }
+    <div class="profile-actions">
+      @if (filled(farm.mobile)) {
+        <a class="btn-wa" [href]="'https://wa.me/' + farm.mobile" target="_blank" rel="noopener">
+          Contactar por WhatsApp
+        </a>
+      }
+      @if (profile.canEdit) {
+        <button class="btn-edit" type="button" (click)="startEdit()">Editar perfil</button>
+      }
+    </div>
   </header>
+
   @if (editing()) {
-    <form>
-      <input id="farmName" name="farmName" [value]="farm.farmName" />
-      <input id="ownerName" name="ownerName" [value]="farm.ownerName" />
-      <input id="municipality" name="municipality" [value]="farm.municipality" />
-      <input id="department" name="department" [value]="farm.department" />
-      <textarea id="bio" name="bio" [value]="farm.bio"></textarea>
-      <input id="experience" name="experience" [value]="farm.experience" />
-      <input id="mobile" name="mobile" [value]="farm.mobile" />
-      <input id="village" name="village" [value]="farm.village" />
-      <input id="area" name="area" [value]="farm.area" />
-      <input id="areaUnit" name="areaUnit" [value]="farm.areaUnit" />
-      <input id="altitude" name="altitude" [value]="farm.altitude" />
-      <input id="varieties" name="varieties" [value]="farm.varieties.join(', ')" />
-      <input id="otherVariety" name="otherVariety" [value]="farm.otherVariety" />
-      <input id="email" name="email" [value]="farm.email" />
-      <input id="phoneAreaCode" name="phoneAreaCode" [value]="farm.phoneAreaCode" />
-      <input id="landline" name="landline" [value]="farm.landline" />
-      <input id="avatar" name="avatar" type="file" accept="image/*" />
-      <button type="button" (click)="save($event)">Guardar</button>
+    <form class="card section-card">
+      <h2 class="section-title">Editar perfil</h2>
+      <div class="form-grid">
+        <label class="field">
+          <span class="label">Nombre de la finca</span>
+          <input class="input" id="farmName" name="farmName" [value]="farm.farmName" />
+        </label>
+        <label class="field">
+          <span class="label">Nombre del caficultor</span>
+          <input class="input" id="ownerName" name="ownerName" [value]="farm.ownerName" />
+        </label>
+        <label class="field">
+          <span class="label">Municipio</span>
+          <input class="input" id="municipality" name="municipality" [value]="farm.municipality" />
+        </label>
+        <label class="field">
+          <span class="label">Departamento</span>
+          <input class="input" id="department" name="department" [value]="farm.department" />
+        </label>
+        <label class="field full">
+          <span class="label">Biografía</span>
+          <textarea class="textarea" id="bio" name="bio" [value]="farm.bio"></textarea>
+        </label>
+        <label class="field">
+          <span class="label">Años de experiencia</span>
+          <input class="input" id="experience" name="experience" [value]="farm.experience" />
+        </label>
+        <label class="field">
+          <span class="label">Celular</span>
+          <input class="input" id="mobile" name="mobile" [value]="farm.mobile" />
+        </label>
+        <label class="field">
+          <span class="label">Vereda</span>
+          <input class="input" id="village" name="village" [value]="farm.village" />
+        </label>
+        <label class="field">
+          <span class="label">Área</span>
+          <input class="input" id="area" name="area" [value]="farm.area" />
+        </label>
+        <label class="field">
+          <span class="label">Unidad</span>
+          <input class="input" id="areaUnit" name="areaUnit" [value]="farm.areaUnit" />
+        </label>
+        <label class="field">
+          <span class="label">Altitud</span>
+          <input class="input" id="altitude" name="altitude" [value]="farm.altitude" />
+        </label>
+        <label class="field">
+          <span class="label">Variedades</span>
+          <input class="input" id="varieties" name="varieties" [value]="farm.varieties.join(', ')" />
+        </label>
+        <label class="field">
+          <span class="label">Otra variedad</span>
+          <input class="input" id="otherVariety" name="otherVariety" [value]="farm.otherVariety" />
+        </label>
+        <label class="field">
+          <span class="label">Correo</span>
+          <input class="input" id="email" name="email" [value]="farm.email" />
+        </label>
+        <label class="field">
+          <span class="label">Indicativo</span>
+          <input class="input" id="phoneAreaCode" name="phoneAreaCode" [value]="farm.phoneAreaCode" />
+        </label>
+        <label class="field">
+          <span class="label">Fijo</span>
+          <input class="input" id="landline" name="landline" [value]="farm.landline" />
+        </label>
+        <label class="field full">
+          <span class="label">Foto</span>
+          <input class="input" id="avatar" name="avatar" type="file" accept="image/*" />
+        </label>
+        <div class="field full form-actions">
+          <button class="btn-save" type="button" (click)="save($event)">Guardar</button>
+          <button class="btn-cancel" type="button" (click)="cancelEdit()">Cancelar</button>
+        </div>
+      </div>
     </form>
   }
-  <section aria-label="La finca">
-    <h2>La finca</h2>
-    @if (farm.photos[0]; as photo) {
-      <img [src]="photoSrc(photo)" alt="" />
-    }
-    <p>{{ farm.farmName }}</p>
-    <p>{{ farm.altitude }}</p>
-    <p>{{ farm.village }}</p>
-    <p>{{ farm.area }} {{ farm.areaUnit }}</p>
-    @for (variety of farm.varieties; track variety) {
-      <p>{{ variety }}</p>
-    }
-    <p>{{ farm.otherVariety }}</p>
-    <p>{{ farm.email }}</p>
-    <p>{{ farm.mobile }}</p>
-    <p>{{ farm.phoneAreaCode }}</p>
-    <p>{{ farm.landline }}</p>
-  </section>
-  <section aria-label="Publicaciones">
-    @for (post of profile.posts(); track post.id) {
-      <article>
-        <button type="button" (click)="open(post)">{{ post.text }}</button>
-      </article>
-    }
-  </section>
-  @if (openPost(); as post) {
-    <div role="dialog">
-      @if (post.photo; as photo) {
-        <img [src]="photoSrc(photo)" alt="" />
+
+  <section class="card section-card" aria-label="La finca">
+    <h2 class="section-title">La finca</h2>
+    <div class="farm-layout">
+      @if (farm.photos[0]; as photo) {
+        <div class="farm-photo-wrap">
+          <img class="farm-photo" [src]="photoSrc(photo)" alt="" />
+        </div>
       }
-      <p>{{ post.publishedOn }}</p>
-      <p>{{ post.text }}</p>
-      <button type="button" aria-label="Me gusta" (click)="like()">♥</button>
+      <div>
+        <h3 class="farm-name">{{ farm.farmName }}</h3>
+        <div class="chips">
+          @if (filled(farm.altitude)) {
+            <span class="chip">{{ farm.altitude }} msnm</span>
+          }
+          @if (filled(farm.village)) {
+            <span class="chip">Vereda {{ farm.village }}</span>
+          }
+          @if (filled(farm.area)) {
+            <span class="chip">{{ farm.area }} {{ farm.areaUnit }}</span>
+          }
+          @for (variety of farm.varieties; track variety) {
+            @if (filled(variety)) {
+              <span class="chip">{{ variety }}</span>
+            }
+          }
+          @if (filled(farm.otherVariety)) {
+            <span class="chip">{{ farm.otherVariety }}</span>
+          }
+        </div>
+        <div class="farm-data">
+          @if (filled(farm.email)) {
+            <div><strong>Correo:</strong> {{ farm.email }}</div>
+          }
+          @if (filled(farm.mobile)) {
+            <div><strong>Celular:</strong> {{ farm.mobile }}</div>
+          }
+          @if (filled(farm.phoneAreaCode)) {
+            <div><strong>Indicativo:</strong> {{ farm.phoneAreaCode }}</div>
+          }
+          @if (filled(farm.landline)) {
+            <div><strong>Fijo:</strong> {{ farm.landline }}</div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card section-card" aria-label="Publicaciones">
+    <h2 class="section-title">Publicaciones</h2>
+    <div class="posts-grid">
+      @for (post of profile.posts(); track post.id) {
+        <button type="button" class="post" (click)="open(post)">
+          @if (post.photo; as photo) {
+            <img [src]="photoSrc(photo)" alt="" />
+            <span class="sr-only">{{ post.text }}</span>
+          } @else {
+            <span class="post-text">{{ post.text }}</span>
+          }
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (openPost(); as post) {
+    <div class="modal-backdrop" (click)="close()">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Detalle de publicación"
+        (click)="$event.stopPropagation()"
+      >
+        <button class="modal-close" type="button" aria-label="Cerrar" (click)="close()">✕</button>
+        @if (post.photo; as photo) {
+          <div class="modal-media">
+            <img [src]="photoSrc(photo)" alt="" />
+          </div>
+        } @else {
+          <div class="modal-text-media">{{ post.text }}</div>
+        }
+        <p class="modal-date">{{ post.publishedOn }}</p>
+        @if (filled(post.text)) {
+          <p class="modal-copy">{{ post.text }}</p>
+        }
+        <button class="heart-btn" type="button" aria-label="Me gusta" (click)="like()">♡</button>
+      </div>
     </div>
   }
 }
 @if (notice()) {
-  <p role="status">{{ notice() }}</p>
+  <p class="toast" role="status">{{ notice() }}</p>
 }
