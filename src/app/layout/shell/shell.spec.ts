@@ -299,6 +299,12 @@ describe('Shell', () => {
     return input;
   }
 
+  it('el ícono de Origen Directo abre el inicio', () => {
+    const brand = compiled.querySelector('.brand') as HTMLAnchorElement;
+
+    expect(brand?.getAttribute('href')).toBe('/');
+  });
+
   it('muestra el botón Registrar finca en la barra', async () => {
     const toolbar = compiled.querySelector('.shell__toolbar') as HTMLElement;
 

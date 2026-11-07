@@ -1,8 +1,8 @@
 <header class="shell__toolbar header">
-  <div class="brand">
+  <a class="brand" routerLink="/" queryParamsHandling="preserve">
     <svg width="38" height="38" aria-hidden="true"><use href="#i-grano" /></svg>
     <span class="brand__name">Origen Directo</span>
-  </div>
+  </a>
   <div class="header__actions">
     <a routerLink="/register">Cómo registrar<br class="header__break"> tu finca</a>
     <button type="button" class="btn btn--acento" (click)="form.open.set(true)">
