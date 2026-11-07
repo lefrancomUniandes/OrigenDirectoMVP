@@ -211,4 +211,76 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
       photo: null,
     },
   ]);
+
+  await db.table('lotes').bulkAdd([
+    {
+      id: 'demo-paraiso-lote',
+      farmId: 'demo-paraiso',
+      quantity: 20,
+      unit: 'sacos',
+      variety: 'Caturra',
+      altitude: 1800,
+      price: 1200000,
+      status: 'Disponible',
+      notes: 'Honey',
+      active: true,
+      publishedOn: '2026-01-03',
+    },
+    {
+      id: 'demo-angeles-lote',
+      farmId: 'demo-angeles',
+      quantity: 15,
+      unit: 'sacos',
+      variety: 'Castillo',
+      altitude: 1450,
+      price: 1100000,
+      status: 'Disponible',
+      notes: '',
+      active: true,
+      publishedOn: '2026-01-02',
+    },
+    {
+      id: 'demo-fortuna-lote',
+      farmId: 'demo-fortuna',
+      quantity: 30,
+      unit: 'kg',
+      variety: 'Tabi',
+      altitude: 1600,
+      price: 45000,
+      status: 'Disponible',
+      notes: '',
+      active: true,
+      publishedOn: '2026-01-01',
+    },
+  ]);
+
+  await db.table('novedades').bulkAdd([
+    {
+      id: 'demo-paraiso-novedad',
+      lotId: 'demo-paraiso-lote',
+      title: 'Caturra',
+      farmName: 'Finca El Paraíso',
+      municipality: 'Urrao',
+      department: 'Antioquia',
+      publishedOn: '2026-01-03',
+    },
+    {
+      id: 'demo-angeles-novedad',
+      lotId: 'demo-angeles-lote',
+      title: 'Castillo',
+      farmName: 'Finca Alto de los Ángeles',
+      municipality: 'Chinchiná',
+      department: 'Caldas',
+      publishedOn: '2026-01-02',
+    },
+    {
+      id: 'demo-fortuna-novedad',
+      lotId: 'demo-fortuna-lote',
+      title: 'Tabi',
+      farmName: 'Finca La Fortuna',
+      municipality: 'Planadas',
+      department: 'Tolima',
+      publishedOn: '2026-01-01',
+    },
+  ]);
 }

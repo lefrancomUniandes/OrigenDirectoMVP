@@ -35,5 +35,11 @@ export class OrigenDirectoDb extends Dexie {
       novedades: 'id, publishedOn',
       publicaciones: 'id, farmId, publishedOn',
     });
+    this.version(5).stores({
+      fincas: 'id, farmName',
+      novedades: 'id, publishedOn, lotId',
+      publicaciones: 'id, farmId, publishedOn',
+      lotes: 'id, farmId',
+    });
   }
 }

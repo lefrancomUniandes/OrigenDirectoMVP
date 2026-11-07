@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
 import { seedDemoIfEmpty } from '../../../core/db/demo-seed';
 import { liveQuerySignal } from '../../../core/db/live-query';
+import { Novedad, NovedadRepository } from '../../../core/data/novedad.repository';
 import { FeedFarm, FeedFarmRepository } from '../data/feed-farm.repository';
-import { Novedad, NovedadRepository, SEEDED_NOVEDADES } from '../data/novedad.repository';
 
 @Injectable({ providedIn: 'root' })
 export class FeedService {
@@ -12,11 +12,10 @@ export class FeedService {
   readonly items = liveQuerySignal(() => this.farms.getAll(), [] as FeedFarm[]);
   readonly novedades = liveQuerySignal(async () => {
     const rows = await this.novedadesRepo.getAll();
-    return [...rows].sort((a, b) => b.publishedOn.localeCompare(a.publishedOn));
+    return [...rows].sort((a, b) => b.publishedOn.localeCompare(a.publishedOn)).slice(0, 15);
   }, [] as Novedad[]);
 
   constructor() {
     void seedDemoIfEmpty(inject(OrigenDirectoDb));
-    void this.novedadesRepo.seedIfEmpty(SEEDED_NOVEDADES);
   }
 }

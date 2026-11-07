@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Origen Directo · Mis Lotes (HU Mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<!--
+  MOCKUP HU — Publicar, editar y eliminar lotes de café.
+  Pensado para migrar a Angular:
+  - data-ng-component = componente standalone:
+      app-header, app-mis-lotes (listado), app-lote-card, app-lote-form-modal
+      (publicar/editar, mismo componente con @Input modo), app-confirmar-eliminar, app-toast
+  - `LoteValidators` -> ValidatorFn de Reactive Forms.
+  - `LotesService` (store en memoria) -> servicio HTTP + estado (signals).
+  - `CATALOGO_VARIEDADES` -> CatalogosService.
+-->
+<style>
+:root{
+  --cafe-900:#3b2416; --cafe-700:#5a3825; --cafe-500:#8a5a3b;
+  --crema:#f7efdf; --crema-2:#fffaf0; --oliva:#6b7a3a; --oliva-claro:#a3ad6b;
+  --ocre:#c98a2e; --mostaza:#e0b13c; --terracota:#c8735a; --error:#b5452f;
+  --linea:#e8dcc4; --blanco:#fff; --exito:#4f7a3a;
+  --radio:14px; --sombra:0 2px 10px rgba(59,36,22,.08); --sombra-modal:0 24px 60px rgba(59,36,22,.18);
+  --font:'Nunito Sans',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:var(--crema);color:var(--cafe-900)}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.header{display:flex;justify-content:space-between;align-items:center;padding:16px 40px;border-bottom:1px solid var(--linea);background:var(--crema-2)}
+.brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}
+.brand .logo{width:34px;height:34px;border-radius:50%;background:var(--cafe-700);display:grid;place-items:center;color:var(--mostaza)}
+.nav{display:flex;gap:6px}
+.nav a{padding:8px 14px;border-radius:10px;text-decoration:none;color:var(--cafe-700);font-weight:700}
+.nav a.activo{background:var(--oliva);color:var(--crema-2)}
+.btn{border:1px solid transparent;border-radius:12px;padding:11px 20px;font-weight:700;font-size:15px;box-shadow:var(--sombra);display:inline-flex;align-items:center;gap:8px;background:var(--blanco);color:var(--cafe-900);transition:transform .15s}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn--primario{background:var(--oliva);color:var(--crema-2)}
+.btn--secundario{background:var(--crema-2);border-color:var(--linea)}
+.btn--peligro{background:var(--terracota);color:var(--crema-2)}
+.btn--icono{padding:8px 12px;font-size:14px;box-shadow:none;border-color:var(--linea);background:var(--crema-2)}
+.btn--icono.eliminar{color:var(--error);border-color:#efcbbf}
+main{max-width:1100px;margin:0 auto;padding:32px 24px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px}
+.top h1{margin:0;font-size:30px}
+.top p{margin:6px 0 0;color:var(--cafe-500)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.card{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:20px;box-shadow:var(--sombra);display:flex;flex-direction:column;gap:14px}
+.card-head{display:flex;justify-content:space-between;align-items:center}
+.card h3{margin:0;font-size:20px}
+.estado{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px}
+.estado.Disponible{background:#e6ead2;color:var(--oliva)}
+.estado.En\ pausa{background:#f8e7bd;color:#8a6212}
+.estado.Vendido{background:#f2d9cf;color:var(--terracota)}
+.datos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
+.datos div{background:var(--crema-2);border-radius:10px;padding:10px}
+.datos dt{font-size:12px;color:var(--cafe-500);font-weight:700}
+.datos dd{margin:2px 0 0;font-weight:800}
+.notas{font-size:14px;color:var(--cafe-700);margin:0}
+.acciones{display:flex;gap:8px;justify-content:flex-end}
+.vacio{text-align:center;padding:60px;background:var(--crema-2);border:1px dashed var(--linea);border-radius:var(--radio);color:var(--cafe-500)}
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(59,36,22,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.overlay.abierto{display:flex}
+.modal{background:var(--crema-2);border-radius:18px;box-shadow:var(--sombra-modal);width:100%;max-width:620px;max-height:92vh;overflow:auto}
+.modal header{padding:22px 26px;border-bottom:1px solid var(--linea)}
+.modal header h2{margin:0;font-size:22px}
+.modal header p{margin:4px 0 0;color:var(--cafe-500);font-size:14px}
+.modal .cuerpo{padding:22px 26px;display:grid;gap:16px}
+.modal footer{padding:16px 26px;border-top:1px solid var(--linea);display:flex;justify-content:flex-end;gap:10px}
+.fila{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.campo{display:flex;flex-direction:column;gap:6px}
+.campo label{font-weight:700;font-size:14px}
+.campo label .req{color:var(--terracota)}
+.campo input,.campo select,.campo textarea{border:1px solid var(--linea);border-radius:10px;padding:11px 12px;font-size:15px;background:var(--blanco);color:var(--cafe-900)}
+.campo textarea{resize:vertical;min-height:90px}
+.campo input:focus,.campo select:focus,.campo textarea:focus{outline:2px solid var(--oliva-claro);border-color:var(--oliva)}
+.campo.invalido input,.campo.invalido select,.campo.invalido textarea{border-color:var(--error)}
+.err{color:var(--error);font-size:13px;font-weight:600;min-height:0}
+.ayuda{font-size:12px;color:var(--cafe-500);display:flex;justify-content:space-between}
+.prefijo{position:relative}
+.prefijo span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--cafe-500);font-weight:700}
+.prefijo input{padding-left:28px;width:100%}
+.confirm{max-width:480px}
+.confirm .cuerpo p{margin:0;line-height:1.5}
+/* Toast */
+.toasts{position:fixed;top:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:40}
+.toast{background:var(--exito);color:#fff;padding:14px 18px;border-radius:12px;box-shadow:var(--sombra-modal);max-width:360px;font-weight:600;animation:in .25s}
+@keyframes in{from{opacity:0;transform:translateX(20px)}}
+@media(max-width:640px){.header{padding:14px 18px}.nav{display:none}.top{flex-direction:column;align-items:stretch}.fila{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<section data-ng-component="app-header" class="header">
+  <div class="brand"><span class="logo">☕</span>Origen Directo</div>
+  <nav class="nav"><a href="#">Inicio</a><a href="#" class="activo">Mis Lotes</a><a href="#">Catálogo</a></nav>
+</section>
+
+<main data-ng-component="app-mis-lotes">
+  <div class="top">
+    <div><h1>Mis Lotes</h1><p>Finca La Esperanza · gestiona tu oferta visible para compradores.</p></div>
+    <button class="btn btn--primario" id="btnNuevo">＋ Publicar nuevo lote</button>
+  </div>
+  <div id="lista" class="grid"></div>
+</main>
+
+<!-- Formulario publicar / editar -->
+<div class="overlay" id="ovForm" data-ng-component="app-lote-form-modal">
+  <form class="modal" id="form" novalidate>
+    <header><h2 id="formTitulo">Publicar nuevo lote</h2><p>Los campos con <span style="color:var(--terracota)">*</span> son obligatorios.</p></header>
+    <div class="cuerpo">
+      <div class="fila">
+        <div class="campo" data-campo="cantidad"><label>Cantidad disponible <span class="req">*</span></label>
+          <input id="cantidad" inputmode="numeric" placeholder="Ej. 20" /><div class="err"></div></div>
+        <div class="campo" data-campo="unidad"><label>Unidad <span class="req">*</span></label>
+          <select id="unidad"><option value="">Seleccione</option><option value="kg">Kilogramos (kg)</option><option value="sacos">Sacos (70kg)</option></select><div class="err"></div></div>
+      </div>
+      <div class="campo" data-campo="variedad"><label>Variedad de café <span class="req">*</span></label>
+        <select id="variedad"></select><div class="err"></div></div>
+      <div class="campo" data-campo="otra" id="campoOtra" hidden><label>¿Cuál variedad? <span class="req">*</span></label>
+        <input id="otra" maxlength="50" placeholder="Nombre de la variedad" /><div class="ayuda"><span>Máximo 50 caracteres</span><span id="cntOtra">0/50</span></div><div class="err"></div></div>
+      <div class="fila">
+        <div class="campo" data-campo="altitud"><label>Altitud del lote (m.s.n.m.) <span class="req">*</span></label>
+          <input id="altitud" inputmode="numeric" placeholder="500 – 2500" /><div class="err"></div></div>
+        <div class="campo" data-campo="precio"><label>Precio por unidad (COP) <span class="req">*</span></label>
+          <div class="prefijo"><span>$</span><input id="precio" inputmode="numeric" placeholder="0" /></div><div class="err"></div></div>
+      </div>
+      <div class="campo" data-campo="estado" id="campoEstado"><label>Estado</label>
+        <select id="estado"><option>Disponible</option><option>En pausa</option><option>Vendido</option></select></div>
+      <div class="campo" data-campo="notas"><label>Descripción o notas de cata (opcional)</label>
+        <textarea id="notas" maxlength="300" placeholder="Ej. Proceso lavado, notas a panela y cítricos…"></textarea>
+        <div class="ayuda"><span>Procesos: lavado, natural, honey…</span><span id="cntNotas">0/300</span></div></div>
+    </div>
+    <footer>
+      <button type="button" class="btn btn--secundario" id="btnCancelarForm">Cancelar</button>
+      <button type="submit" class="btn btn--primario" id="btnGuardar" disabled>Publicar lote</button>
+    </footer>
+  </form>
+</div>
+
+<!-- Confirmar eliminación -->
+<div class="overlay" id="ovDel" data-ng-component="app-confirmar-eliminar">
+  <div class="modal confirm" role="alertdialog" aria-labelledby="delTit">
+    <header><h2 id="delTit">Eliminar lote</h2></header>
+    <div class="cuerpo"><p id="delMsg"></p></div>
+    <footer>
+      <button class="btn btn--secundario" id="btnCancelarDel">Cancelar</button>
+      <button class="btn btn--peligro" id="btnConfirmarDel">Confirmar eliminación</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" data-ng-component="app-toast"></div>
+
+<script>
+const CATALOGO_VARIEDADES=['Castillo','Caturra','Geisha','Bourbon','Tabi','Árabe/Typica','Castillo Rosario','Otra'];
+
+/* LotesService — en Angular: HttpClient + signals. Eliminar = estado inactivo. */
+const LotesService={
+  seq:4,
+  lotes:[
+    {id:1,cantidad:25,unidad:'sacos',variedad:'Castillo',altitud:1750,precio:1250000,estado:'Disponible',notas:'Lavado. Notas a panela y caramelo.',activo:true},
+    {id:2,cantidad:300,unidad:'kg',variedad:'Geisha',altitud:1950,precio:85000,estado:'En pausa',notas:'Natural. Floral, jazmín y durazno.',activo:true},
+    {id:3,cantidad:10,unidad:'sacos',variedad:'Caturra',altitud:1600,precio:1180000,estado:'Vendido',notas:'',activo:true},
+  ],
+  activos(){return this.lotes.filter(l=>l.activo)},
+  crear(d){const l={...d,id:this.seq++,activo:true};this.lotes.unshift(l);return l},
+  actualizar(id,d){Object.assign(this.lotes.find(l=>l.id===id),d)},
+  eliminar(id){this.lotes.find(l=>l.id===id).activo=false},
+};
+
+/* LoteValidators — en Angular: ValidatorFn */
+const LoteValidators={
+  cantidad:v=>!v?'La cantidad es obligatoria.':!/^[1-9]\d*$/.test(v)?'Ingresa un número entero positivo, sin decimales, espacios ni caracteres especiales.':'',
+  unidad:v=>!v?'Selecciona la unidad de medida.':'',
+  variedad:v=>!v?'Selecciona una variedad.':'',
+  otra:(v,f)=>f.variedad!=='Otra'?'':!v.trim()?'Escribe el nombre de la variedad.':v.length>50?'Máximo 50 caracteres.':'',
+  altitud:v=>!v?'La altitud es obligatoria.':!/^\d+$/.test(v)?'Solo números enteros, sin decimales ni letras.':(+v<500||+v>2500)?'La altitud debe estar entre 500 y 2500 m.s.n.m.':'',
+  precio:v=>{const n=v.replace(/\./g,'');return !n?'El precio es obligatorio.':!/^\d+$/.test(n)?'Ingresa un valor en pesos (COP), sin decimales ni signos.':+n<=0?'El precio debe ser mayor a cero.':''},
+};
+
+const $=id=>document.getElementById(id);
+const cop=n=>'$'+Number(n).toLocaleString('es-CO');
+const uni=u=>u==='kg'?'kg':'sacos (70kg)';
+const nombreLote=l=>`${l.variedad} - ${l.cantidad} ${uni(l.unidad)}`;
+
+function render(){
+  const ls=LotesService.activos();
+  $('lista').innerHTML=ls.length?ls.map(l=>`
+    <article class="card" data-ng-component="app-lote-card">
+      <div class="card-head"><h3>${l.variedad}</h3><span class="estado ${l.estado}">${l.estado}</span></div>
+      <dl class="datos">
+        <div><dt>Cantidad disponible</dt><dd>${l.cantidad} ${uni(l.unidad)}</dd></div>
+        <div><dt>Altitud</dt><dd>${l.altitud.toLocaleString('es-CO')} m.s.n.m.</dd></div>
+        <div style="grid-column:span 2"><dt>Precio unitario</dt><dd>${cop(l.precio)} COP / ${l.unidad==='kg'?'kg':'saco'}</dd></div>
+      </dl>
+      ${l.notas?`<p class="notas">${esc(l.notas)}</p>`:''}
+      <div class="acciones">
+        <button class="btn btn--icono" onclick="abrirForm(${l.id})">✎ Editar</button>
+        <button class="btn btn--icono eliminar" onclick="abrirEliminar(${l.id})">🗑 Eliminar</button>
+      </div>
+    </article>`).join(''):'<div class="vacio" style="grid-column:1/-1">Aún no tienes lotes publicados. Usa “Publicar nuevo lote”.</div>';
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* Formulario */
+$('variedad').innerHTML='<option value="">Seleccione</option>'+CATALOGO_VARIEDADES.map(v=>`<option>${v}</option>`).join('');
+let editId=null, tocados=new Set();
+const campos=['cantidad','unidad','variedad','otra','altitud','precio'];
+const valores=()=>({cantidad:$('cantidad').value,unidad:$('unidad').value,variedad:$('variedad').value,otra:$('otra').value,altitud:$('altitud').value,precio:$('precio').value,estado:$('estado').value,notas:$('notas').value});
+
+function validar(){
+  const f=valores();let ok=true;
+  campos.forEach(c=>{
+    const e=LoteValidators[c](f[c],f); if(e)ok=false;
+    const box=document.querySelector(`[data-campo="${c}"]`);
+    const show=tocados.has(c)&&e;
+    box.classList.toggle('invalido',!!show); box.querySelector('.err').textContent=show?e:'';
+  });
+  $('btnGuardar').disabled=!ok;
+}
+// Filtros de entrada en vivo
+$('cantidad').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'')});
+$('altitud').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+$('precio').addEventListener('input',e=>{const d=e.target.value.replace(/\D/g,'').replace(/^0+/,'');e.target.value=d?Number(d).toLocaleString('es-CO'):''});
+$('variedad').addEventListener('change',()=>{$('campoOtra').hidden=$('variedad').value!=='Otra'});
+$('otra').addEventListener('input',()=>$('cntOtra').textContent=$('otra').value.length+'/50');
+$('notas').addEventListener('input',()=>$('cntNotas').textContent=$('notas').value.length+'/300');
+campos.forEach(c=>{const el=$(c);
+  el.addEventListener('blur',()=>{tocados.add(c);validar()});
+  el.addEventListener('input',()=>{tocados.add(c);validar()});
+  el.addEventListener('change',()=>{tocados.add(c);validar()});
+});
+
+function abrirForm(id=null){
+  editId=id; tocados=new Set(); $('form').reset();
+  const l=id?LotesService.lotes.find(x=>x.id===id):null;
+  $('formTitulo').textContent=l?'Editar lote':'Publicar nuevo lote';
+  $('btnGuardar').textContent=l?'Guardar cambios':'Publicar lote';
+  $('campoEstado').hidden=!l;
+  if(l){
+    const enCat=CATALOGO_VARIEDADES.includes(l.variedad);
+    $('cantidad').value=l.cantidad;$('unidad').value=l.unidad;
+    $('variedad').value=enCat?l.variedad:'Otra';$('otra').value=enCat?'':l.variedad;
+    $('altitud').value=l.altitud;$('precio').value=Number(l.precio).toLocaleString('es-CO');
+    $('estado').value=l.estado;$('notas').value=l.notas||'';
+  }
+  $('campoOtra').hidden=$('variedad').value!=='Otra';
+  $('cntOtra').textContent=$('otra').value.length+'/50';$('cntNotas').textContent=$('notas').value.length+'/300';
+  validar(); $('ovForm').classList.add('abierto'); $('cantidad').focus();
+}
+function cerrarForm(){$('ovForm').classList.remove('abierto');editId=null}
+$('btnNuevo').onclick=()=>abrirForm();
+$('btnCancelarForm').onclick=cerrarForm;
+$('form').addEventListener('submit',e=>{
+  e.preventDefault(); validar(); if($('btnGuardar').disabled)return;
+  const f=valores();
+  const d={cantidad:+f.cantidad,unidad:f.unidad,variedad:f.variedad==='Otra'?f.otra.trim():f.variedad,altitud:+f.altitud,precio:+f.precio.replace(/\./g,''),notas:f.notas.trim()};
+  if(editId){LotesService.actualizar(editId,{...d,estado:f.estado});toast('¡Lote Actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.')}
+  else{LotesService.crear({...d,estado:'Disponible'});toast('¡Lote Publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.')}
+  cerrarForm(); render();
+});
+
+/* Eliminar */
+let delId=null;
+function abrirEliminar(id){
+  delId=id;const l=LotesService.lotes.find(x=>x.id===id);
+  $('delMsg').innerHTML=`¿Estás seguro de que deseas eliminar el lote <strong>${esc(nombreLote(l))}</strong>? Esta acción no se puede deshacer y el lote dejará de estar visible para compradores.`;
+  $('ovDel').classList.add('abierto');
+}
+$('btnCancelarDel').onclick=()=>{$('ovDel').classList.remove('abierto');delId=null};
+$('btnConfirmarDel').onclick=()=>{LotesService.eliminar(delId);$('ovDel').classList.remove('abierto');render();toast('El lote ha sido eliminado correctamente.')};
+
+function toast(m){const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent='✓ '+m;$('toasts').appendChild(t);setTimeout(()=>t.remove(),4500)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarForm();$('ovDel').classList.remove('abierto')}});
+render();
+</script>
+</body>
+</html>

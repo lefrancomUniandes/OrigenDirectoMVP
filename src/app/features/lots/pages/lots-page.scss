@@ -1,0 +1,331 @@
+:host {
+  display: block;
+}
+
+.lots {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.lots__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.lots__top h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.lots__top p {
+  margin: 6px 0 0;
+  color: var(--cafe-500);
+}
+
+.lots__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.lot {
+  background: var(--blanco);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 20px;
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lot__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.lot__head h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.lot__status {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e6ead2;
+  color: var(--oliva);
+}
+
+.lot__status[data-status='En pausa'] {
+  background: #f8e7bd;
+  color: #8a6212;
+}
+
+.lot__status[data-status='Vendido'] {
+  background: #f2d9cf;
+  color: var(--terracota);
+}
+
+.lot__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+}
+
+.lot__facts div {
+  background: var(--crema-2);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.lot__price {
+  grid-column: span 2;
+}
+
+.lot__facts dt {
+  font-size: 12px;
+  color: var(--cafe-500);
+  font-weight: 700;
+}
+
+.lot__facts dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+}
+
+.lot__notes {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cafe-700);
+}
+
+.lot__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.lots__empty {
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--crema-2);
+  border: 1px dashed var(--linea);
+  border-radius: var(--radio);
+  color: var(--cafe-500);
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 20px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: var(--sombra);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blanco);
+  color: var(--cafe-900);
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn--primario {
+  background: var(--oliva);
+  color: var(--crema-2);
+}
+
+.btn--secundario {
+  background: var(--crema-2);
+  border-color: var(--linea);
+}
+
+.btn--peligro {
+  background: var(--terracota);
+  color: var(--crema-2);
+}
+
+.btn--icono {
+  padding: 8px 12px;
+  font-size: 14px;
+  box-shadow: none;
+  border-color: var(--linea);
+  background: var(--crema-2);
+}
+
+.btn--eliminar {
+  color: var(--error);
+  border-color: #efcbbf;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(59 36 22 / 45%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 30;
+}
+
+.modal {
+  background: var(--crema-2);
+  border-radius: 18px;
+  box-shadow: var(--sombra-modal);
+  width: 100%;
+  max-width: 620px;
+  max-height: 92vh;
+  overflow: auto;
+}
+
+.modal--confirm {
+  max-width: 480px;
+}
+
+.modal header,
+.modal footer {
+  padding: 16px 26px;
+}
+
+.modal header {
+  border-bottom: 1px solid var(--linea);
+}
+
+.modal header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.modal header p,
+.modal__body p {
+  margin: 4px 0 0;
+  color: var(--cafe-500);
+  font-size: 14px;
+}
+
+.modal__body p {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--cafe-900);
+}
+
+.modal footer {
+  border-top: 1px solid var(--linea);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal__body {
+  padding: 22px 26px;
+  display: grid;
+  gap: 16px;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.req {
+  color: var(--terracota);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 15px;
+  background: var(--blanco);
+  color: var(--cafe-900);
+}
+
+.campo textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.campo.invalido input,
+.campo.invalido select,
+.campo.invalido textarea {
+  border-color: var(--error);
+}
+
+.err {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ayuda {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cafe-500);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toasts {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 40;
+}
+
+.toast {
+  margin: 0;
+  background: #4f7a3a;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: var(--sombra-modal);
+  max-width: 360px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .lots__top,
+  .fila {
+    grid-template-columns: 1fr;
+  }
+
+  .lots__top {
+    display: grid;
+  }
+}

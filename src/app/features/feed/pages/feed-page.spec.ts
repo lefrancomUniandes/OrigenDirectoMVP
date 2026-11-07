@@ -65,6 +65,13 @@ describe('Página del feed', () => {
     });
   }
 
+  async function untilNovedad(text: string): Promise<void> {
+    for (let attempt = 0; attempt < 40 && !compiled.textContent?.includes(text); attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
+  }
+
   async function untilText(text: string): Promise<void> {
     for (let attempt = 0; attempt < 40 && !fincas()?.textContent?.includes(text); attempt++) {
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -148,35 +155,75 @@ describe('Página del feed', () => {
     expect(compiled.textContent).toContain('Pitalito, Huila');
   });
 
-  it('el carrusel muestra primero «Lote 1 · Caturra Honey» de Finca El Paraíso, en Urrao, Antioquia', async () => {
+  it('con la base vacía, el sembrado deja Caturra en El Paraíso, Castillo en Alto de los Ángeles y Tabi en La Fortuna, del más reciente al más antiguo', async () => {
     await render();
     await finishLoading();
-
-    const novedad = compiled.querySelector('[aria-label="Novedades"]');
-
-    expect(novedad?.textContent).toContain('Lote 1 · Caturra Honey');
-    expect(novedad?.textContent).toContain('Finca El Paraíso');
-    expect(novedad?.textContent).toContain('Urrao');
-    expect(novedad?.textContent).toContain('Antioquia');
-  });
-
-  it('la flecha derecha pasa a «Lote 3 · Tabi Honey» y la izquierda vuelve a «Lote 1 · Caturra Honey»', async () => {
-    await render();
-    await finishLoading();
+    await untilNovedad('Caturra');
 
     const novedad = () => compiled.querySelector('[aria-label="Novedades"]');
+    expect(novedad()?.textContent).toContain('Caturra');
+    expect(novedad()?.textContent).toContain('Finca El Paraíso');
+    expect(novedad()?.textContent).toContain('Urrao');
+    expect(novedad()?.textContent).toContain('Antioquia');
+
     button('Siguiente', compiled).click();
     fixture.detectChanges();
-
-    expect(novedad()?.textContent).toContain('Lote 3 · Tabi Honey');
+    expect(novedad()?.textContent).toContain('Castillo');
     expect(novedad()?.textContent).toContain('Finca Alto de los Ángeles');
     expect(novedad()?.textContent).toContain('Chinchiná');
     expect(novedad()?.textContent).toContain('Caldas');
 
-    button('Anterior', compiled).click();
+    button('Siguiente', compiled).click();
     fixture.detectChanges();
+    expect(novedad()?.textContent).toContain('Tabi');
+    expect(novedad()?.textContent).toContain('Finca La Fortuna');
+    expect(novedad()?.textContent).toContain('Planadas');
+    expect(novedad()?.textContent).toContain('Tolima');
 
-    expect(novedad()?.textContent).toContain('Lote 1 · Caturra Honey');
+    const lots = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
+    expect(lots).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ farmId: 'demo-paraiso', variety: 'Caturra' }),
+        expect.objectContaining({ farmId: 'demo-angeles', variety: 'Castillo' }),
+        expect.objectContaining({ farmId: 'demo-fortuna', variety: 'Tabi' }),
+      ]),
+    );
+  });
+
+  it('el carrusel muestra como máximo las 15 novedades más recientes', async () => {
+    await render();
+    await finishLoading();
+    await untilNovedad('Caturra');
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.table('novedades').clear();
+    for (let index = 1; index <= 16; index++) {
+      await db.table('novedades').add({
+        id: `n-${index}`,
+        lotId: `lot-${index}`,
+        title: `Lote ${String(index).padStart(2, '0')}`,
+        farmName: 'Finca El Paraíso',
+        municipality: 'Urrao',
+        department: 'Antioquia',
+        publishedOn: `2026-04-${String(index).padStart(2, '0')}`,
+      });
+    }
+    await untilNovedad('Lote 16');
+
+    const titles: string[] = [];
+    for (let guard = 0; guard < 20; guard++) {
+      titles.push(compiled.querySelector('[aria-label="Novedades"] h3')?.textContent?.trim() ?? '');
+      const next = button('Siguiente', compiled);
+      if (next.disabled) {
+        break;
+      }
+      next.click();
+      fixture.detectChanges();
+    }
+
+    expect(titles).toHaveLength(15);
+    expect(titles[0]).toBe('Lote 16');
+    expect(titles[14]).toBe('Lote 02');
+    expect(titles).not.toContain('Lote 01');
   });
 
   it('al entrar muestra El Paraíso, Alto de los Ángeles, La Fortuna y El Roble', async () => {

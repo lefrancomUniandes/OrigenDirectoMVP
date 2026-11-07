@@ -18,6 +18,10 @@ export const routes: Routes = [
         path: 'perfil',
         loadChildren: () => import('./features/profile/routes').then((m) => m.routes),
       },
+      {
+        path: 'mis-lotes',
+        loadChildren: () => import('./features/lots/routes').then((m) => m.routes),
+      },
     ],
   },
 ];

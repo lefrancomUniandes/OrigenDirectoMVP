@@ -35,6 +35,9 @@ cada caficultor tiene su pagina y existe un feed con lo que van publicando.
 - **Identificadores en ingles.** Clases, metodos, signals e ids van en ingles para
   alinearlos con el stack. Los textos de la interfaz y los nombres de las pruebas van en
   espanol, que es el idioma del producto y de los criterios.
+- **`reset` en la URL borra la base local.** Al arrancar, si la direccion trae `reset`,
+  se borra IndexedDB, se quita el parametro y se recarga para volver a sembrar. Sirve
+  para descartar datos viejos del navegador.
 
 ## Como trabajamos
 
@@ -61,5 +64,4 @@ No se resuelve de paso ni se olvida.
 - **Perfil.** Marcar cual es la foto de perfil. El feed usa la primera foto guardada.
 - **Perfil.** Pagina de la finca: contacto, datos, lotes y volver al feed. «Visitar perfil» abre el aviso del navegador porque esa pagina sigue en proceso.
 - **Admin.** Aprobar o desaprobar fincas. El feed muestra todas las que se registran.
-- **Contenido.** Reemplazar los lotes sembrados del carrusel por las publicaciones reales de cada finca.
 - **Feed.** Cargar mas tarjetas al bajar, en lotes, con un indicador mientras llegan.

@@ -1,0 +1,216 @@
+<section class="lots">
+  <header class="lots__top">
+    <div>
+      <h1>Mis Lotes</h1>
+      <p>
+        @if (service.farm(); as farm) {
+          {{ farm.farmName }} ·
+        }
+        gestiona tu oferta visible para compradores.
+      </p>
+    </div>
+    <button type="button" class="btn btn--primario" (click)="openCreate()">＋ Publicar nuevo lote</button>
+  </header>
+
+  @if (service.lots().length === 0) {
+    <div class="lots__empty">Aún no tienes lotes publicados. Usa “Publicar nuevo lote”.</div>
+  } @else {
+    <div class="lots__grid">
+      @for (lot of service.lots(); track lot.id) {
+        <article class="lot">
+          <div class="lot__head">
+            <h3>{{ lot.variety }}</h3>
+            <span class="lot__status" [attr.data-status]="lot.status">{{ lot.status }}</span>
+          </div>
+          <dl class="lot__facts">
+            <div>
+              <dt>Cantidad disponible</dt>
+              <dd>{{ lot.quantity }} {{ unitLabel(lot.unit) }}</dd>
+            </div>
+            <div>
+              <dt>Altitud</dt>
+              <dd>{{ altitudeLabel(lot.altitude) }}</dd>
+            </div>
+            <div class="lot__price">
+              <dt>Precio unitario</dt>
+              <dd>{{ priceLabel(lot.price, lot.unit) }}</dd>
+            </div>
+          </dl>
+          @if (lot.notes) {
+            <p class="lot__notes">{{ lot.notes }}</p>
+          }
+          <div class="lot__actions">
+            <button type="button" class="btn btn--icono" (click)="openEdit(lot)">Editar</button>
+            <button type="button" class="btn btn--icono btn--eliminar" (click)="askRemove(lot)">Eliminar</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (formOpen()) {
+  <div class="overlay">
+    <form class="modal" (submit)="submit($event)" novalidate>
+      <header>
+        <h2>{{ editingId() ? 'Editar lote' : 'Publicar nuevo lote' }}</h2>
+        <p>Los campos con <span class="req">*</span> son obligatorios.</p>
+      </header>
+      <div class="modal__body">
+        <div class="fila">
+          <div class="campo" [class.invalido]="message('quantity')">
+            <label for="cantidad">Cantidad disponible <span class="req">*</span></label>
+            <input
+              id="cantidad"
+              inputmode="numeric"
+              placeholder="Ej. 20"
+              [value]="draft().quantity"
+              (input)="onField('quantity', $event)"
+              (blur)="touch('quantity')"
+            />
+            @if (message('quantity'); as text) {
+              <p class="err">{{ text }}</p>
+            }
+          </div>
+          <div class="campo" [class.invalido]="message('unit')">
+            <label for="unidad">Unidad <span class="req">*</span></label>
+            <select
+              id="unidad"
+              [value]="draft().unit"
+              (change)="onField('unit', $event)"
+              (blur)="touch('unit')"
+            >
+              <option value="">Seleccione</option>
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="sacos">Sacos (70kg)</option>
+            </select>
+            @if (message('unit'); as text) {
+              <p class="err">{{ text }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="campo" [class.invalido]="message('variety')">
+          <label for="variedad">Variedad de café <span class="req">*</span></label>
+          <select id="variedad" (change)="onField('variety', $event)" (blur)="touch('variety')">
+            <option value="" [selected]="draft().variety === ''">Seleccione</option>
+            @for (variety of lotVarieties; track variety) {
+              <option value="{{ variety }}" [selected]="draft().variety === variety">{{ variety }}</option>
+            }
+          </select>
+          @if (message('variety'); as text) {
+            <p class="err">{{ text }}</p>
+          }
+        </div>
+
+        @if (draft().variety === 'Otra') {
+          <div class="campo" [class.invalido]="message('other')">
+            <label for="otra">¿Cuál variedad? <span class="req">*</span></label>
+            <input
+              id="otra"
+              maxlength="50"
+              placeholder="Nombre de la variedad"
+              [value]="draft().other"
+              (input)="onField('other', $event)"
+              (blur)="touch('other')"
+            />
+            <p class="ayuda"><span>Máximo 50 caracteres</span><span>{{ draft().other.trim().length }}/50</span></p>
+            @if (message('other'); as text) {
+              <p class="err">{{ text }}</p>
+            }
+          </div>
+        }
+
+        <div class="fila">
+          <div class="campo" [class.invalido]="message('altitude')">
+            <label for="altitud">Altitud del lote (m.s.n.m.) <span class="req">*</span></label>
+            <input
+              id="altitud"
+              inputmode="numeric"
+              placeholder="500 – 2500"
+              [value]="draft().altitude"
+              (input)="onField('altitude', $event)"
+              (blur)="touch('altitude')"
+            />
+            @if (message('altitude'); as text) {
+              <p class="err">{{ text }}</p>
+            }
+          </div>
+          <div class="campo" [class.invalido]="message('price')">
+            <label for="precio">Precio por unidad (COP) <span class="req">*</span></label>
+            <input
+              id="precio"
+              inputmode="numeric"
+              placeholder="0"
+              [value]="draft().price"
+              (input)="onField('price', $event)"
+              (blur)="touch('price')"
+            />
+            @if (message('price'); as text) {
+              <p class="err">{{ text }}</p>
+            }
+          </div>
+        </div>
+
+        @if (editingId()) {
+          <div class="campo">
+            <label for="estado">Estado</label>
+            <select id="estado" [value]="draft().status" (change)="onField('status', $event)">
+              <option>Disponible</option>
+              <option>En pausa</option>
+              <option>Vendido</option>
+            </select>
+          </div>
+        }
+
+        <div class="campo" [class.invalido]="message('notes')">
+          <label for="notas">Descripción o notas de cata (opcional)</label>
+          <textarea
+            id="notas"
+            maxlength="300"
+            placeholder="Ej. Proceso lavado, notas a panela y cítricos…"
+            [value]="draft().notes"
+            (input)="onField('notes', $event)"
+            (blur)="touch('notes')"
+          ></textarea>
+          <p class="ayuda"><span>Procesos: lavado, natural, honey…</span><span id="cntNotas">{{ draft().notes.length }}/300</span></p>
+          @if (message('notes'); as text) {
+            <p class="err">{{ text }}</p>
+          }
+        </div>
+      </div>
+      <footer>
+        <button type="button" class="btn btn--secundario" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn--primario" [disabled]="!canSave()">
+          {{ editingId() ? 'Guardar cambios' : 'Publicar lote' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+}
+
+@if (confirmLot(); as lot) {
+  <div class="overlay">
+    <div class="modal modal--confirm" role="alertdialog" aria-labelledby="delTit">
+      <header>
+        <h2 id="delTit">Eliminar lote</h2>
+      </header>
+      <div class="modal__body">
+        <p>
+          ¿Estás seguro de que deseas eliminar el lote <strong>{{ lotDeleteName(lot) }}</strong>? Esta acción no se
+          puede deshacer y el lote dejará de estar visible para compradores.
+        </p>
+      </div>
+      <footer>
+        <button type="button" class="btn btn--secundario" (click)="cancelRemove()">Cancelar</button>
+        <button type="button" class="btn btn--peligro" (click)="confirmRemove()">Confirmar eliminación</button>
+      </footer>
+    </div>
+  </div>
+}
+
+<div class="toasts">
+  @for (toast of toasts(); track toast) {
+    <p class="toast" role="status">{{ toast }}</p>
+  }
+</div>

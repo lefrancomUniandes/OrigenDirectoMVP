@@ -7,6 +7,9 @@ import { Shell } from './shell';
 @Component({ template: '' })
 class PerfilPage {}
 
+@Component({ template: '' })
+class MisLotesPage {}
+
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
   let compiled: HTMLElement;
@@ -17,7 +20,11 @@ describe('Shell', () => {
     await TestBed.configureTestingModule({
       imports: [Shell],
       providers: [
-        provideRouter([{ path: 'perfil/:id', component: PerfilPage }]),
+        provideRouter([
+          { path: '', component: PerfilPage },
+          { path: 'perfil/:id', component: PerfilPage },
+          { path: 'mis-lotes', component: MisLotesPage },
+        ]),
         { provide: FarmRegistrationService, useValue: { register: registerFarm } },
       ],
     }).compileComponents();
@@ -1218,6 +1225,18 @@ describe('Shell', () => {
 
     const farmName = compiled.querySelector('#farmName') as HTMLInputElement;
     expect(farmName.value).toBe('');
+  });
+
+  it('«Mis Lotes» abre /mis-lotes y conserva login', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/?login=demo-paraiso');
+    fixture.detectChanges();
+
+    const link = [...compiled.querySelectorAll('a')].find((el) => el.textContent?.trim() === 'Mis Lotes');
+    link?.click();
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/mis-lotes?login=demo-paraiso');
   });
 
   it('«Entendido» abre /perfil/<número>?login=<número>', async () => {
