@@ -4,7 +4,9 @@
     <span class="brand__name">Origen Directo</span>
   </a>
   <div class="header__actions">
-    <a routerLink="/mis-lotes" queryParamsHandling="preserve">Mis Lotes</a>
+    @if (signedIn()) {
+      <a routerLink="/mis-lotes" queryParamsHandling="preserve">Mis Lotes</a>
+    }
     <a routerLink="/register">Cómo registrar<br class="header__break"> tu finca</a>
     <button type="button" class="btn btn--acento" (click)="form.open.set(true)">
       <svg width="22" height="22" aria-hidden="true"><use href="#i-finca" /></svg>

@@ -1227,13 +1227,20 @@ describe('Shell', () => {
     expect(farmName.value).toBe('');
   });
 
+  it('sin login no está «Mis Lotes»', () => {
+    expect(compiled.textContent).not.toContain('Mis Lotes');
+  });
+
   it('«Mis Lotes» abre /mis-lotes y conserva login', async () => {
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/?login=demo-paraiso');
     fixture.detectChanges();
 
     const link = [...compiled.querySelectorAll('a')].find((el) => el.textContent?.trim() === 'Mis Lotes');
-    link?.click();
+    if (!link) {
+      throw new Error('Link "Mis Lotes" not found');
+    }
+    link.click();
     await fixture.whenStable();
 
     expect(router.url).toBe('/mis-lotes?login=demo-paraiso');
