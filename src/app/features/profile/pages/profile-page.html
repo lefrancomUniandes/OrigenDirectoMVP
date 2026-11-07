@@ -1,5 +1,8 @@
 @if (profile.farm(); as farm) {
   <header>
+    @if (farm.photos[0]; as photo) {
+      <img [src]="photoSrc(photo)" alt="" />
+    }
     <h1>{{ farm.farmName }}</h1>
     <p>{{ farm.ownerName }}</p>
     <p>{{ farm.municipality }}, {{ farm.department }}</p>
@@ -12,22 +15,24 @@
   </header>
   @if (editing()) {
     <form>
-      <input id="farmName" [value]="farm.farmName" />
-      <input id="ownerName" [value]="farm.ownerName" />
-      <input id="municipality" [value]="farm.municipality" />
-      <input id="department" [value]="farm.department" />
-      <textarea id="bio" [value]="farm.bio"></textarea>
-      <input id="experience" [value]="farm.experience" />
-      <input id="mobile" [value]="farm.mobile" />
-      <input id="village" [value]="farm.village" />
-      <input id="area" [value]="farm.area" />
-      <input id="areaUnit" [value]="farm.areaUnit" />
-      <input id="altitude" [value]="farm.altitude" />
-      <input id="varieties" [value]="farm.varieties.join(', ')" />
-      <input id="otherVariety" [value]="farm.otherVariety" />
-      <input id="email" [value]="farm.email" />
-      <input id="phoneAreaCode" [value]="farm.phoneAreaCode" />
-      <input id="landline" [value]="farm.landline" />
+      <input id="farmName" name="farmName" [value]="farm.farmName" />
+      <input id="ownerName" name="ownerName" [value]="farm.ownerName" />
+      <input id="municipality" name="municipality" [value]="farm.municipality" />
+      <input id="department" name="department" [value]="farm.department" />
+      <textarea id="bio" name="bio" [value]="farm.bio"></textarea>
+      <input id="experience" name="experience" [value]="farm.experience" />
+      <input id="mobile" name="mobile" [value]="farm.mobile" />
+      <input id="village" name="village" [value]="farm.village" />
+      <input id="area" name="area" [value]="farm.area" />
+      <input id="areaUnit" name="areaUnit" [value]="farm.areaUnit" />
+      <input id="altitude" name="altitude" [value]="farm.altitude" />
+      <input id="varieties" name="varieties" [value]="farm.varieties.join(', ')" />
+      <input id="otherVariety" name="otherVariety" [value]="farm.otherVariety" />
+      <input id="email" name="email" [value]="farm.email" />
+      <input id="phoneAreaCode" name="phoneAreaCode" [value]="farm.phoneAreaCode" />
+      <input id="landline" name="landline" [value]="farm.landline" />
+      <input id="avatar" name="avatar" type="file" accept="image/*" />
+      <button type="button" (click)="save($event)">Guardar</button>
     </form>
   }
   <section aria-label="La finca">

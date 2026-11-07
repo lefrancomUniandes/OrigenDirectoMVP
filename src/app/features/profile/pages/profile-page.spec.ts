@@ -12,9 +12,11 @@ describe('Página del perfil', () => {
   let fixture: ComponentFixture<ProfilePage>;
   let compiled: HTMLElement;
   let login = '';
+  let farmId = 'OD-2026-100001';
 
   beforeEach(async () => {
     login = '';
+    farmId = 'OD-2026-100001';
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
       imports: [ProfilePage],
@@ -23,7 +25,9 @@ describe('Página del perfil', () => {
           provide: ActivatedRoute,
           useValue: {
             snapshot: {
-              paramMap: convertToParamMap({ id: 'OD-2026-100001' }),
+              get paramMap() {
+                return convertToParamMap({ id: farmId });
+              },
               get queryParamMap() {
                 return convertToParamMap(login ? { login } : {});
               },
@@ -248,5 +252,167 @@ describe('Página del perfil', () => {
     expect(value('#email')).toBe('ana@finca.com');
     expect(value('#phoneAreaCode')).toBe('608');
     expect(value('#landline')).toBe('8765432');
+  });
+
+  it('al guardar, la cabecera y «La finca» muestran los datos nuevos', async () => {
+    login = 'OD-2026-100001';
+    await saveFarm();
+    await render();
+
+    const edit = [...compiled.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Editar perfil'),
+    );
+    edit!.click();
+    fixture.detectChanges();
+
+    const set = (selector: string, next: string) => {
+      (compiled.querySelector(selector) as HTMLInputElement).value = next;
+    };
+    set('#farmName', 'Finca El Roble');
+    set('#ownerName', 'Pedro Castaño');
+    set('#municipality', 'Acevedo');
+    set('#department', 'Caldas');
+    set('#bio', 'Café lavado en pequeño lote.');
+    set('#experience', '22');
+    set('#mobile', '3110001122');
+    set('#village', 'San Adolfo');
+    set('#area', '8');
+    set('#areaUnit', 'Cuadras');
+    set('#altitude', '1650');
+    set('#varieties', 'Tabi, Borbón');
+    set('#otherVariety', 'Pink Bourbon');
+    set('#email', 'pedro@elroble.com');
+    set('#phoneAreaCode', '601');
+    set('#landline', '1234567');
+
+    const save = [...compiled.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Guardar'),
+    );
+    save!.click();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
+
+    const header = compiled.querySelector('header') as HTMLElement;
+    const farm = compiled.querySelector('[aria-label="La finca"]') as HTMLElement;
+
+    expect(header.textContent).toContain('Finca El Roble');
+    expect(header.textContent).toContain('Pedro Castaño');
+    expect(header.textContent).toContain('Acevedo, Caldas');
+    expect(header.textContent).toContain('Café lavado en pequeño lote.');
+    expect(header.textContent).toContain('22');
+    expect(header.querySelector('a')?.getAttribute('href')).toBe('https://wa.me/3110001122');
+    expect(farm.textContent).toContain('Finca El Roble');
+    expect(farm.textContent).toContain('1650');
+    expect(farm.textContent).toContain('San Adolfo');
+    expect(farm.textContent).toContain('8 Cuadras');
+    expect(farm.textContent).toContain('Tabi');
+    expect(farm.textContent).toContain('Borbón');
+    expect(farm.textContent).toContain('Pink Bourbon');
+    expect(farm.textContent).toContain('pedro@elroble.com');
+    expect(farm.textContent).toContain('3110001122');
+    expect(farm.textContent).toContain('601');
+    expect(farm.textContent).toContain('1234567');
+  });
+
+  it('al guardar, la publicación de presentación queda con la biografía y el contacto nuevos', async () => {
+    login = 'OD-2026-100001';
+    await saveFarm();
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.table('publicaciones').bulkAdd([
+      {
+        id: 'pub-presentacion',
+        farmId: 'OD-2026-100001',
+        publishedOn: '2026-11-07',
+        text: 'Café de altura cultivado bajo sombra.\nana@finca.com\n3001234567\n8765432',
+        photo: null,
+      },
+      {
+        id: 'pub-proceso',
+        farmId: 'OD-2026-100001',
+        publishedOn: '2026-11-03',
+        text: 'Fermentación en cereza',
+        photo: null,
+      },
+    ]);
+    await render();
+
+    const edit = [...compiled.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Editar perfil'),
+    );
+    edit!.click();
+    fixture.detectChanges();
+
+    const set = (selector: string, next: string) => {
+      (compiled.querySelector(selector) as HTMLInputElement).value = next;
+    };
+    set('#bio', 'Café lavado en pequeño lote.');
+    set('#email', 'pedro@elroble.com');
+    set('#mobile', '3110001122');
+    set('#landline', '1234567');
+
+    const save = [...compiled.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Guardar'),
+    );
+    save!.click();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
+
+    const posts = compiled.querySelector('[aria-label="Publicaciones"]') as HTMLElement;
+
+    expect(posts.textContent).toContain('Café lavado en pequeño lote.');
+    expect(posts.textContent).toContain('pedro@elroble.com');
+    expect(posts.textContent).toContain('3110001122');
+    expect(posts.textContent).toContain('1234567');
+    expect(posts.textContent).toContain('Fermentación en cereza');
+    expect(posts.textContent).not.toContain('ana@finca.com');
+  });
+
+  it('al guardar una foto nueva, el avatar muestra esa imagen', async () => {
+    login = 'OD-2026-100001';
+    await saveFarm();
+    await render();
+
+    const edit = [...compiled.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Editar perfil'),
+    );
+    edit!.click();
+    fixture.detectChanges();
+
+    const file = new File([new Uint8Array([9, 8, 7])], 'nueva.jpg', { type: 'image/jpeg' });
+    const input = compiled.querySelector('#avatar') as HTMLInputElement;
+    const list = {
+      length: 1,
+      item: () => file,
+      0: file,
+      *[Symbol.iterator]() {
+        yield file;
+      },
+    };
+    Object.defineProperty(input, 'files', { configurable: true, value: list });
+
+    const save = [...compiled.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Guardar'),
+    );
+    save!.click();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
+
+    const avatar = compiled.querySelector('header img') as HTMLImageElement;
+    const shown = new Uint8Array(await (await fetch(avatar.src)).arrayBuffer());
+
+    expect([...shown]).toEqual([9, 8, 7]);
+  });
+
+  it('el perfil de Finca El Paraíso muestra «Fermentación en cereza»', async () => {
+    farmId = 'demo-paraiso';
+    await render();
+
+    for (let attempt = 0; attempt < 40 && !compiled.textContent?.includes('Fermentación en cereza'); attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
+
+    expect(compiled.textContent).toContain('Finca El Paraíso');
+    expect(compiled.textContent).toContain('Fermentación en cereza');
   });
 });

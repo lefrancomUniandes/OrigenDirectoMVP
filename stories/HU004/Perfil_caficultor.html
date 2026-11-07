@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perfil público - Finca El Paraíso | Origen Directo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --crema:#fffaf0;
+      --cafe:#3b2416;
+      --mostaza:#e0b13c;
+      --verde:#6b7a3a;
+      --oliva-suave:#e8efdc;
+      --blanco:#ffffff;
+      --borde:#eee3d2;
+      --sombra:0 10px 28px rgba(59,36,22,.08);
+      --sombra-suave:0 4px 12px rgba(59,36,22,.06);
+      --radio-xl:28px;
+      --radio-lg:22px;
+      --radio-md:16px;
+      --radio-pill:999px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--crema);
+      color:var(--cafe);
+      font-family:"Nunito Sans", sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input,select,textarea{
+      font:inherit;
+    }
+
+    .topbar{
+      background:var(--blanco);
+      border-bottom:1px solid var(--borde);
+      width:100%;
+    }
+
+    .topbar-inner{
+      max-width:1120px;
+      margin:0 auto;
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      font-size:1.45rem;
+      font-weight:800;
+      color:var(--verde);
+      letter-spacing:-.02em;
+    }
+
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .topbar-link{
+      font-size:.98rem;
+      color:var(--cafe);
+      opacity:.92;
+    }
+
+    .topbar-link:hover{
+      color:var(--verde);
+    }
+
+    .topbar-btn{
+      border:none;
+      border-radius:var(--radio-pill);
+      background:var(--mostaza);
+      color:var(--blanco);
+      padding:12px 18px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:var(--sombra-suave);
+    }
+
+    .page{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      padding:28px 16px 64px;
+    }
+
+    .column{
+      width:100%;
+      max-width:660px;
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+    }
+
+    .owner-row{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:10px;
+      font-size:.96rem;
+      padding:0 4px;
+    }
+
+    .switch{
+      position:relative;
+      display:inline-block;
+      width:46px;
+      height:26px;
+    }
+
+    .switch input{
+      opacity:0;
+      width:0;
+      height:0;
+    }
+
+    .slider{
+      position:absolute;
+      inset:0;
+      background:#ddd3c4;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .slider:before{
+      content:"";
+      position:absolute;
+      width:20px;
+      height:20px;
+      left:3px;
+      top:3px;
+      background:#fff;
+      border-radius:50%;
+      transition:.2s;
+      box-shadow:0 2px 8px rgba(0,0,0,.14);
+    }
+
+    .switch input:checked + .slider{
+      background:var(--mostaza);
+    }
+
+    .switch input:checked + .slider:before{
+      transform:translateX(20px);
+    }
+
+    .card{
+      background:var(--blanco);
+      border:1px solid var(--borde);
+      border-radius:var(--radio-xl);
+      box-shadow:var(--sombra);
+    }
+
+    .profile-card{
+      padding:34px 28px 28px;
+      text-align:center;
+    }
+
+    .avatar-ring{
+      width:126px;
+      height:126px;
+      margin:0 auto 18px;
+      border-radius:50%;
+      border:5px solid var(--mostaza);
+      display:grid;
+      place-items:center;
+      background:var(--blanco);
+      box-shadow:0 8px 20px rgba(224,177,60,.18);
+    }
+
+    .avatar{
+      width:108px;
+      height:108px;
+      border-radius:50%;
+      object-fit:cover;
+      display:block;
+      background:#efe5d5;
+    }
+
+    .title-main,
+    .title-sub{
+      margin:0;
+      font-size:2rem;
+      line-height:1.08;
+      font-weight:800;
+      color:var(--cafe);
+      letter-spacing:-.03em;
+    }
+
+    .title-sub{
+      margin-top:4px;
+    }
+
+    .location{
+      margin-top:14px;
+      color:var(--verde);
+      font-size:1.02rem;
+      font-weight:700;
+    }
+
+    .bio{
+      margin:10px auto 0;
+      max-width:460px;
+      font-size:1rem;
+      line-height:1.6;
+      color:var(--cafe);
+    }
+
+    .experience{
+      margin-top:10px;
+      color:var(--mostaza);
+      font-weight:800;
+      font-size:1rem;
+    }
+
+    .profile-actions{
+      margin-top:20px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .btn-wa{
+      border:none;
+      border-radius:var(--radio-pill);
+      background:var(--verde);
+      color:var(--blanco);
+      padding:12px 18px;
+      font-weight:800;
+      box-shadow:var(--sombra-suave);
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-edit{
+      border:none;
+      background:transparent;
+      color:var(--verde);
+      font-weight:800;
+      cursor:pointer;
+      padding:10px 4px;
+    }
+
+    .btn-edit:hover{
+      opacity:.82;
+    }
+
+    .section-card{
+      padding:22px;
+    }
+
+    .section-title{
+      margin:0 0 14px;
+      font-size:1.24rem;
+      font-weight:800;
+      color:var(--cafe);
+      letter-spacing:-.02em;
+    }
+
+    .edit-panel{
+      display:none;
+      animation:fadeIn .18s ease;
+    }
+
+    .edit-panel.open{
+      display:block;
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(-8px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    .label{
+      font-size:.94rem;
+      font-weight:700;
+      color:var(--cafe);
+    }
+
+    .input,
+    .select,
+    .textarea{
+      width:100%;
+      border:1px solid var(--borde);
+      background:#fffdf8;
+      color:var(--cafe);
+      border-radius:16px;
+      padding:12px 14px;
+      outline:none;
+    }
+
+    .textarea{
+      min-height:100px;
+      resize:vertical;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus{
+      border-color:var(--mostaza);
+      box-shadow:0 0 0 4px rgba(224,177,60,.12);
+    }
+
+    .farm-layout{
+      display:grid;
+      grid-template-columns:92px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .farm-photo-wrap{
+      width:92px;
+      height:92px;
+      border-radius:50%;
+      border:4px solid var(--mostaza);
+      display:grid;
+      place-items:center;
+      background:#fff;
+    }
+
+    .farm-photo{
+      width:78px;
+      height:78px;
+      border-radius:50%;
+      object-fit:cover;
+      display:block;
+      background:#efe5d5;
+    }
+
+    .farm-name{
+      margin:0 0 10px;
+      font-size:1.18rem;
+      font-weight:800;
+      color:var(--cafe);
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .chip{
+      background:var(--oliva-suave);
+      color:var(--verde);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:.92rem;
+      font-weight:700;
+    }
+
+    .farm-data{
+      display:grid;
+      gap:8px;
+      font-size:.98rem;
+      color:var(--cafe);
+    }
+
+    .farm-data strong{
+      font-weight:800;
+    }
+
+    .posts-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+    }
+
+    .post{
+      aspect-ratio:1/1;
+      border-radius:20px;
+      overflow:hidden;
+      border:1px solid var(--borde);
+      background:#f4ebdb;
+      box-shadow:var(--sombra-suave);
+      cursor:pointer;
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+
+    .post:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 20px rgba(59,36,22,.1);
+    }
+
+    .post img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .post-text{
+      width:100%;
+      height:100%;
+      background:var(--oliva-suave);
+      color:var(--verde);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:20px;
+      font-size:1.1rem;
+      font-weight:800;
+      line-height:1.3;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(59,36,22,.34);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:50;
+    }
+
+    .modal-backdrop.open{
+      display:flex;
+    }
+
+    .modal{
+      width:100%;
+      max-width:430px;
+      background:var(--blanco);
+      border:1px solid var(--borde);
+      border-radius:26px;
+      box-shadow:0 24px 54px rgba(59,36,22,.22);
+      padding:20px;
+      position:relative;
+      animation:modalIn .16s ease;
+    }
+
+    @keyframes modalIn{
+      from{opacity:0; transform:scale(.97)}
+      to{opacity:1; transform:scale(1)}
+    }
+
+    .modal-close{
+      position:absolute;
+      top:12px;
+      right:12px;
+      width:38px;
+      height:38px;
+      border:none;
+      border-radius:50%;
+      background:#f7efe2;
+      color:var(--cafe);
+      cursor:pointer;
+      font-size:1.05rem;
+    }
+
+    .modal-media{
+      width:100%;
+      height:280px;
+      border-radius:18px;
+      overflow:hidden;
+      background:#f4ebdb;
+      margin-bottom:14px;
+    }
+
+    .modal-media img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .modal-text-media{
+      width:100%;
+      height:280px;
+      border-radius:18px;
+      background:var(--oliva-suave);
+      color:var(--verde);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:28px;
+      font-size:1.3rem;
+      font-weight:800;
+      line-height:1.3;
+      margin-bottom:14px;
+    }
+
+    .modal-date{
+      color:var(--mostaza);
+      font-size:.96rem;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .modal-copy{
+      color:var(--cafe);
+      font-size:1rem;
+      line-height:1.6;
+      margin-bottom:12px;
+    }
+
+    .heart-btn{
+      border:none;
+      background:transparent;
+      color:var(--mostaza);
+      font-size:1.8rem;
+      cursor:pointer;
+      padding:0;
+      line-height:1;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:28px;
+      transform:translateX(-50%);
+      background:var(--mostaza);
+      color:var(--blanco);
+      padding:12px 16px;
+      border-radius:999px;
+      font-size:.94rem;
+      font-weight:800;
+      box-shadow:0 10px 24px rgba(224,177,60,.24);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+      z-index:60;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(-4px);
+    }
+
+    @media (max-width: 720px){
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+
+      .farm-layout{
+        grid-template-columns:1fr;
+        justify-items:center;
+        text-align:center;
+      }
+
+      .posts-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media (max-width: 520px){
+      .topbar-inner{
+        padding:16px;
+      }
+
+      .profile-card,
+      .section-card{
+        padding:18px;
+      }
+
+      .title-main,
+      .title-sub{
+        font-size:1.72rem;
+      }
+
+      .posts-grid{
+        grid-template-columns:1fr;
+      }
+
+      .modal-media,
+      .modal-text-media{
+        height:240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">Origen Directo</div>
+      <div class="topbar-right">
+        <a href="#" class="topbar-link">Cómo registrar tu finca</a>
+        <button class="topbar-btn" type="button">Registrar finca</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="column">
+      <div class="owner-row">
+        <span>Modo dueño</span>
+        <label class="switch">
+          <input type="checkbox" id="ownerToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <section class="card profile-card">
+        <div class="avatar-ring">
+          <img
+            class="avatar"
+            src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80"
+            alt="Finca El Paraíso"
+          />
+        </div>
+
+        <h1 class="title-main">Finca El Paraíso</h1>
+        <h2 class="title-sub">Ana Morales</h2>
+        <div class="location">Urrao, Antioquia</div>
+        <div class="bio">Tercera generación cultivando café de altura</div>
+        <div class="experience">18 años de experiencia</div>
+
+        <div class="profile-actions">
+          <a
+            class="btn-wa"
+            href="https://wa.me/573001111111"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Contactar por WhatsApp
+          </a>
+
+          <button class="btn-edit" id="editBtn" type="button">
+            Editar perfil
+          </button>
+        </div>
+      </section>
+
+      <section class="card section-card edit-panel" id="editPanel">
+        <h3 class="section-title">Editar perfil</h3>
+
+        <div class="form-grid">
+          <div class="field">
+            <label class="label">Nombre de la finca</label>
+            <input class="input" type="text" value="Finca El Paraíso">
+          </div>
+
+          <div class="field">
+            <label class="label">Nombre del caficultor</label>
+            <input class="input" type="text" value="Ana Morales">
+          </div>
+
+          <div class="field">
+            <label class="label">Municipio</label>
+            <input class="input" type="text" value="Urrao">
+          </div>
+
+          <div class="field">
+            <label class="label">Departamento</label>
+            <input class="input" type="text" value="Antioquia">
+          </div>
+
+          <div class="field full">
+            <label class="label">Biografía</label>
+            <textarea class="textarea">Tercera generación cultivando café de altura</textarea>
+          </div>
+
+          <div class="field">
+            <label class="label">Años de experiencia</label>
+            <input class="input" type="number" value="18">
+          </div>
+
+          <div class="field">
+            <label class="label">Celular</label>
+            <input class="input" type="text" value="3001111111">
+          </div>
+
+          <div class="field">
+            <label class="label">Vereda</label>
+            <input class="input" type="text" value="La Primavera">
+          </div>
+
+          <div class="field">
+            <label class="label">Área</label>
+            <input class="input" type="text" value="4">
+          </div>
+
+          <div class="field">
+            <label class="label">Unidad</label>
+            <select class="select">
+              <option selected>Hectáreas</option>
+              <option>Fanegadas</option>
+              <option>Metros cuadrados</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label">Altitud</label>
+            <input class="input" type="text" value="1800">
+          </div>
+
+          <div class="field">
+            <label class="label">Variedades</label>
+            <input class="input" type="text" value="Castillo, Caturra">
+          </div>
+
+          <div class="field">
+            <label class="label">Otra variedad</label>
+            <input class="input" type="text" value="">
+          </div>
+
+          <div class="field">
+            <label class="label">Correo</label>
+            <input class="input" type="email" value="ana@origendirecto.com">
+          </div>
+
+          <div class="field">
+            <label class="label">Indicativo</label>
+            <input class="input" type="text" value="4">
+          </div>
+
+          <div class="field">
+            <label class="label">Fijo</label>
+            <input class="input" type="text" value="4442233">
+          </div>
+        </div>
+      </section>
+
+      <section class="card section-card">
+        <h3 class="section-title">La finca</h3>
+
+        <div class="farm-layout">
+          <div class="farm-photo-wrap">
+            <img
+              class="farm-photo"
+              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80"
+              alt="Foto de la finca"
+            >
+          </div>
+
+          <div>
+            <h4 class="farm-name">Finca El Paraíso</h4>
+
+            <div class="chips">
+              <span class="chip">1.800 msnm</span>
+              <span class="chip">Vereda La Primavera</span>
+              <span class="chip">4 Hectáreas</span>
+              <span class="chip">Castillo</span>
+              <span class="chip">Caturra</span>
+            </div>
+
+            <div class="farm-data">
+              <div><strong>Correo:</strong> ana@origendirecto.com</div>
+              <div><strong>Celular:</strong> 3001111111</div>
+              <div><strong>Indicativo:</strong> 4</div>
+              <div><strong>Fijo:</strong> 4442233</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card section-card">
+        <h3 class="section-title">Publicaciones</h3>
+
+        <div class="posts-grid">
+          <div class="post" data-post="0" tabindex="0" aria-label="Abrir publicación de la finca">
+            <img
+              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80"
+              alt="Foto de la finca"
+            >
+          </div>
+
+          <div class="post" data-post="1" tabindex="0" aria-label="Abrir publicación de recolección">
+            <img
+              src="https://images.unsplash.com/photo-1511407397940-d57f68e81203?auto=format&fit=crop&w=900&q=80"
+              alt="Foto de recolección"
+            >
+          </div>
+
+          <div class="post" data-post="2" tabindex="0" aria-label="Abrir publicación de texto">
+            <div class="post-text">Fermentación en cereza</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Detalle de publicación">
+      <button class="modal-close" id="closeModalBtn" aria-label="Cerrar">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Trabajo en progreso</div>
+
+  <script>
+    const ownerToggle = document.getElementById("ownerToggle");
+    const editBtn = document.getElementById("editBtn");
+    const editPanel = document.getElementById("editPanel");
+
+    let ownerMode = true;
+
+    function syncOwnerMode() {
+      ownerMode = ownerToggle.checked;
+      editBtn.style.display = ownerMode ? "inline-block" : "none";
+      if (!ownerMode) {
+        editPanel.classList.remove("open");
+      }
+    }
+
+    ownerToggle.addEventListener("change", syncOwnerMode);
+
+    editBtn.addEventListener("click", () => {
+      if (!ownerMode) return;
+      editPanel.classList.toggle("open");
+    });
+
+    syncOwnerMode();
+
+    const publicaciones = [
+      {
+        tipo: "imagen",
+        imagen: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
+        fecha: "2 nov 2026",
+        texto: "Vista general de la finca en la mañana."
+      },
+      {
+        tipo: "imagen",
+        imagen: "https://images.unsplash.com/photo-1511407397940-d57f68e81203?auto=format&fit=crop&w=1200&q=80",
+        fecha: "2 nov 2026",
+        texto: "Jornada de recolección del café."
+      },
+      {
+        tipo: "texto",
+        fecha: "2 nov 2026",
+        texto: "Fermentación en cereza"
+      }
+    ];
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalContent = document.getElementById("modalContent");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const toast = document.getElementById("toast");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1600);
+    }
+
+    function renderModal(pub) {
+      if (pub.tipo === "imagen") {
+        return `
+          <div class="modal-media">
+            <img src="${pub.imagen}" alt="Publicación ampliada">
+          </div>
+          <div class="modal-date">${pub.fecha}</div>
+          <div class="modal-copy">${pub.texto}</div>
+          <button class="heart-btn" id="heartBtn" type="button" aria-label="Corazón">♡</button>
+        `;
+      }
+
+      return `
+        <div class="modal-text-media">${pub.texto}</div>
+        <div class="modal-date">${pub.fecha}</div>
+        <div class="modal-copy">${pub.texto}</div>
+        <button class="heart-btn" id="heartBtn" type="button" aria-label="Corazón">♡</button>
+      `;
+    }
+
+    function openModal(index) {
+      const pub = publicaciones[index];
+      modalContent.innerHTML = renderModal(pub);
+      modalBackdrop.classList.add("open");
+
+      const heartBtn = document.getElementById("heartBtn");
+      heartBtn.addEventListener("click", () => {
+        showToast("Trabajo en progreso");
+      });
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove("open");
+    }
+
+    document.querySelectorAll(".post").forEach((item) => {
+      item.addEventListener("click", () => {
+        openModal(item.dataset.post);
+      });
+
+      item.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openModal(item.dataset.post);
+        }
+      });
+    });
+
+    closeModalBtn.addEventListener("click", closeModal);
+
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
