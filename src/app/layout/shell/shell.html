@@ -4,18 +4,29 @@
     <span class="brand__name">Origen Directo</span>
   </a>
   <div class="header__actions">
-    <a routerLink="/register">Cómo registrar<br class="header__break"> tu finca</a>
+    <a class="nav-link" routerLink="/register">Cómo registrar<br class="header__break"> tu finca</a>
     <button type="button" class="btn btn--acento" (click)="form.open.set(true)">
       <svg width="22" height="22" aria-hidden="true"><use href="#i-finca" /></svg>
       Registrar finca
     </button>
     @if (!signedIn()) {
-      <a routerLink="/iniciar-sesion">Iniciar sesión</a>
+      <a class="btn btn--suave" routerLink="/iniciar-sesion">Iniciar sesión</a>
     } @else {
       <div class="account">
-        <button type="button" class="account__name" (click)="toggleMenu()">{{ session.account()?.ownerName }}</button>
+        <button type="button" class="account__trigger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()">
+          @if (portraitUrl()) {
+            <img class="account__avatar" [src]="portraitUrl()" alt="" />
+          } @else {
+            <span class="account__avatar" aria-hidden="true">{{ initials() }}</span>
+          }
+          <span class="account__name">{{ session.account()?.ownerName }}</span>
+        </button>
         @if (menuOpen()) {
           <div class="account__menu">
+            <div class="account__label">
+              <b>{{ session.account()?.ownerName }}</b>
+              <small>{{ session.account()?.farmName }}</small>
+            </div>
             <a [routerLink]="['/perfil', session.account()?.farmId]" (click)="menuOpen.set(false)">Mi perfil</a>
             <a routerLink="/mis-lotes" (click)="menuOpen.set(false)">Mis lotes</a>
             <button type="button" (click)="logOut()">Cerrar sesión</button>

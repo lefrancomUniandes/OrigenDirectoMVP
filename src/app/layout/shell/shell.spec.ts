@@ -32,8 +32,11 @@ describe('Shell', () => {
     await mount();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.restoreAllMocks();
+    TestBed.inject(SessionService).end();
+    fixture.detectChanges();
+    await fixture.whenStable();
     TestBed.inject(OrigenDirectoDb).close();
   });
 
@@ -409,6 +412,27 @@ describe('Shell', () => {
     expect(compiled.textContent).toContain('Mis lotes');
     expect(compiled.textContent).toContain('Cerrar sesión');
     expect(compiled.textContent).not.toContain('Iniciar sesión');
+  });
+
+  it('con la sesión de Ana, la cabecera muestra la misma foto que el perfil', async () => {
+    await Dexie.delete('origen-directo');
+    const bytes = new Uint8Array([4, 5, 6]).buffer;
+    await TestBed.inject(OrigenDirectoDb).table('fincas').add({
+      id: 'demo-paraiso',
+      farmName: 'Finca El Paraíso',
+      ownerName: 'Ana Morales',
+      photos: [{ type: 'image/jpeg', bytes }],
+    });
+    anaSession();
+
+    const img = () => compiled.querySelector('img.account__avatar') as HTMLImageElement | null;
+    for (let attempt = 0; attempt < 40 && !img()?.src; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      fixture.detectChanges();
+    }
+
+    const shown = new Uint8Array(await (await fetch(img()!.src)).arrayBuffer());
+    expect([...shown]).toEqual([4, 5, 6]);
   });
 
   it('"Mi perfil" abre /perfil/demo-paraiso y "Mis lotes" abre /mis-lotes', async () => {

@@ -23,6 +23,7 @@ export class LoginPage {
   readonly passwordVisible = signal(false);
   readonly forgot = signal(false);
   readonly notice = signal('');
+  readonly noticeLocked = signal(false);
 
   readonly emailError = computed(() => {
     if (!this.emailTouched()) {
@@ -55,12 +56,12 @@ export class LoginPage {
 
   onEmail(event: Event): void {
     this.email.set((event.target as HTMLInputElement).value);
-    this.notice.set('');
+    this.clearNotice();
   }
 
   onPassword(event: Event): void {
     this.password.set((event.target as HTMLInputElement).value);
-    this.notice.set('');
+    this.clearNotice();
   }
 
   openRegistration(): void {
@@ -72,7 +73,7 @@ export class LoginPage {
     if (!this.canSubmit()) {
       return;
     }
-    this.notice.set('');
+    this.clearNotice();
     const result = await this.login.signIn(this.email(), this.password());
     if (result.kind === 'success') {
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
@@ -81,10 +82,16 @@ export class LoginPage {
       await this.router.navigateByUrl(target);
       return;
     }
+    this.noticeLocked.set(result.kind === 'locked');
     this.notice.set(
       result.kind === 'locked'
         ? 'Cuenta bloqueada temporalmente. Por seguridad bloqueamos el acceso durante 15 minutos.'
         : 'Correo o contraseña incorrectos',
     );
+  }
+
+  private clearNotice(): void {
+    this.notice.set('');
+    this.noticeLocked.set(false);
   }
 }
