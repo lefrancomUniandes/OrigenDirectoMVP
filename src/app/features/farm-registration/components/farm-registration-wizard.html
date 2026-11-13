@@ -104,6 +104,9 @@
                   </option>
                 </select>
               </div>
+              @if (areaError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
             <div class="field full">
               <span class="label">Variedades de café cultivadas <span class="req">*</span></span>
@@ -129,6 +132,9 @@
                   [value]="form().otherVariety"
                   (input)="onText('otherVariety', $event)"
                 />
+                @if (otherVarietyError(); as text) {
+                  <span class="field-error">{{ text }}</span>
+                }
               }
             </div>
             <div class="field">
@@ -140,6 +146,9 @@
                 [value]="form().altitude"
                 (input)="onText('altitude', $event)"
               />
+              @if (altitudeError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
           </div>
         }
@@ -158,6 +167,9 @@
                 [value]="form().ownerName"
                 (input)="onText('ownerName', $event)"
               />
+              @if (ownerNameError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
               <div class="hint"><span></span><span>{{ form().ownerName.length }}/120</span></div>
             </div>
             <div class="field">
@@ -184,6 +196,9 @@
                 [value]="form().documentNumber"
                 (input)="onText('documentNumber', $event)"
               />
+              @if (documentNumberError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
             <div class="field full">
               <label for="email">Correo electrónico <span class="req">*</span></label>
@@ -194,6 +209,9 @@
                 [value]="form().email"
                 (input)="onText('email', $event)"
               />
+              @if (emailError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
             <div class="field">
               <label for="mobile">Celular</label>
@@ -203,6 +221,9 @@
                 [value]="form().mobile"
                 (input)="onText('mobile', $event)"
               />
+              @if (mobileError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
             <div class="field">
               <label>Teléfono fijo</label>
@@ -222,6 +243,12 @@
                   (input)="onText('landline', $event)"
                 />
               </div>
+              @if (phoneAreaCodeError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
+              @if (landlineError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
             <div class="field full">
               <label for="bio">Breve biografía o historia cafetera</label>
@@ -245,6 +272,9 @@
                 [value]="form().experience"
                 (input)="onText('experience', $event)"
               />
+              @if (experienceError(); as text) {
+                <span class="field-error">{{ text }}</span>
+              }
             </div>
           </div>
         }

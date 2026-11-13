@@ -28,6 +28,7 @@ export class FarmRegistrationWizard {
     const value = this.form().area;
     return value === '' || /^[1-9]\d*$/.test(value);
   });
+  readonly areaError = computed(() => (this.areaValid() ? '' : 'Ingresa un entero mayor que 0'));
   readonly altitudeValid = computed(() => {
     const value = this.form().altitude;
     if (value === '') {
@@ -39,14 +40,21 @@ export class FarmRegistrationWizard {
     const meters = Number(value);
     return meters >= 500 && meters <= 2500;
   });
+  readonly altitudeError = computed(() => (this.altitudeValid() ? '' : 'Entre 500 y 2500'));
   readonly otherVarietySelected = computed(() => this.form().varieties.includes('Otro'));
   readonly otherVarietyValid = computed(
     () => !this.otherVarietySelected() || this.form().otherVariety.trim() !== '',
+  );
+  readonly otherVarietyError = computed(() =>
+    this.otherVarietySelected() && !this.otherVarietyValid() ? 'Indica la variedad' : '',
   );
   readonly ownerNameValid = computed(() => {
     const value = this.form().ownerName;
     return value.trim() !== '' && !/\d/.test(value);
   });
+  readonly ownerNameError = computed(() =>
+    /\d/.test(this.form().ownerName) ? 'El nombre no admite números' : '',
+  );
   readonly step1Valid = computed(
     () =>
       this.form().farmName.trim() !== '' &&
@@ -67,9 +75,23 @@ export class FarmRegistrationWizard {
     }
     return /^\d+$/.test(value);
   });
+  readonly documentNumberError = computed(() => {
+    const value = this.form().documentNumber;
+    if (value === '' || this.documentNumberValid()) {
+      return '';
+    }
+    return this.form().documentType === 'Pasaporte' ? 'Solo letras y números' : 'Solo números';
+  });
   readonly emailValid = computed(() =>
     /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(this.form().email),
   );
+  readonly emailError = computed(() => {
+    const value = this.form().email;
+    if (value === '' || this.emailValid()) {
+      return '';
+    }
+    return 'Ingresa un correo válido';
+  });
   readonly mobileValid = computed(() => {
     const value = this.form().mobile;
     return value === '' || /^\d+$/.test(value);
@@ -82,6 +104,11 @@ export class FarmRegistrationWizard {
     const value = this.form().landline;
     return value === '' || /^\d+$/.test(value);
   });
+  readonly mobileError = computed(() => (this.mobileValid() ? '' : 'Solo números'));
+  readonly phoneAreaCodeError = computed(() =>
+    this.phoneAreaCodeValid() ? '' : 'Solo números',
+  );
+  readonly landlineError = computed(() => (this.landlineValid() ? '' : 'Solo números'));
   readonly bioHintVisible = computed(() => {
     const length = this.form().bio.length;
     return length > 0 && length < 150;
@@ -90,6 +117,9 @@ export class FarmRegistrationWizard {
     const value = this.form().experience;
     return value === '' || /^\d+$/.test(value);
   });
+  readonly experienceError = computed(() =>
+    this.experienceValid() ? '' : 'Solo números enteros',
+  );
   readonly step2Valid = computed(
     () =>
       this.ownerNameValid() &&

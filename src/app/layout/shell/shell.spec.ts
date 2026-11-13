@@ -429,6 +429,109 @@ describe('Shell', () => {
     expect(options).not.toContain('Medellín');
   });
 
+  it('el departamento ofrece los 32 departamentos y Bogotá, D.C.', async () => {
+    await openForm();
+
+    const options = [...departmentSelect().options]
+      .map((option) => option.textContent?.trim() ?? '')
+      .filter((name) => name !== 'Selecciona…');
+
+    expect(options).toEqual([
+      'Amazonas',
+      'Antioquia',
+      'Arauca',
+      'Archipiélago de San Andrés, Providencia y Santa Catalina',
+      'Atlántico',
+      'Bogotá, D.C.',
+      'Bolívar',
+      'Boyacá',
+      'Caldas',
+      'Caquetá',
+      'Casanare',
+      'Cauca',
+      'Cesar',
+      'Chocó',
+      'Córdoba',
+      'Cundinamarca',
+      'Guainía',
+      'Guaviare',
+      'Huila',
+      'La Guajira',
+      'Magdalena',
+      'Meta',
+      'Nariño',
+      'Norte de Santander',
+      'Putumayo',
+      'Quindío',
+      'Risaralda',
+      'Santander',
+      'Sucre',
+      'Tolima',
+      'Valle del Cauca',
+      'Vaupés',
+      'Vichada',
+    ]);
+  });
+
+  it('al elegir Huila, el municipio lista sus 37 municipios, entre ellos Neiva, Garzón y Pitalito', async () => {
+    await openForm();
+    await chooseDepartment('Huila');
+
+    const options = [...municipalitySelect().options]
+      .map((option) => option.textContent?.trim() ?? '')
+      .filter((name) => name !== 'Selecciona…');
+
+    expect(options).toEqual([
+      'Acevedo',
+      'Agrado',
+      'Aipe',
+      'Algeciras',
+      'Altamira',
+      'Baraya',
+      'Campoalegre',
+      'Colombia',
+      'Elías',
+      'Garzón',
+      'Gigante',
+      'Guadalupe',
+      'Hobo',
+      'Íquira',
+      'Isnos',
+      'La Argentina',
+      'La Plata',
+      'Nátaga',
+      'Neiva',
+      'Oporapa',
+      'Paicol',
+      'Palermo',
+      'Palestina',
+      'Pital',
+      'Pitalito',
+      'Rivera',
+      'Saladoblanco',
+      'San Agustín',
+      'Santa María',
+      'Suaza',
+      'Tarqui',
+      'Tello',
+      'Teruel',
+      'Tesalia',
+      'Timaná',
+      'Villavieja',
+      'Yaguará',
+    ]);
+  });
+
+  it('al elegir Antioquia, el municipio incluye Medellín y no incluye Pitalito', async () => {
+    await openForm();
+    await chooseDepartment('Antioquia');
+
+    const options = [...municipalitySelect().options].map((option) => option.textContent?.trim());
+
+    expect(options).toContain('Medellín');
+    expect(options).not.toContain('Pitalito');
+  });
+
   it('Continuar permanece deshabilitado si faltan departamento o municipio', async () => {
     await openForm();
     await typeFarmName('Finca La Esperanza');
@@ -501,6 +604,33 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(false);
   });
 
+  it('área en 0, con decimal o con letras muestra "Ingresa un entero mayor que 0"', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog().textContent).not.toContain('Ingresa un entero mayor que 0');
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typeArea('0');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Ingresa un entero mayor que 0');
+
+    await typeArea('12.5');
+    expect(dialog().textContent).toContain('Ingresa un entero mayor que 0');
+
+    await typeArea('abc');
+    expect(dialog().textContent).toContain('Ingresa un entero mayor que 0');
+
+    await typeArea('');
+    expect(dialog().textContent).not.toContain('Ingresa un entero mayor que 0');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
   it('el selector de unidad ofrece Hectáreas y Fanegadas', async () => {
     await openForm();
 
@@ -534,6 +664,26 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(false);
   });
 
+  it('con Otro marcado y el campo vacío, se muestra "Indica la variedad"', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Otro');
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Indica la variedad');
+
+    await typeOtherVariety('   ');
+    expect(dialog().textContent).toContain('Indica la variedad');
+
+    await typeOtherVariety('Sidra');
+    expect(dialog().textContent).not.toContain('Indica la variedad');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
   it('Altitud vacía es válida; 499 y 2501 deshabilitan Continuar; 500 y 2500 lo dejan habilitado', async () => {
     await openForm();
     await typeFarmName('Finca La Esperanza');
@@ -553,6 +703,32 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
 
     await typeAltitude('2500');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('altitud con letras o fuera de 500–2500 muestra "Entre 500 y 2500"', async () => {
+    await openForm();
+    await typeFarmName('Finca La Esperanza');
+    await chooseDepartment('Huila');
+    await chooseMunicipality('Pitalito');
+    await chooseVariety('Castillo');
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog().textContent).not.toContain('Entre 500 y 2500');
+
+    await typeAltitude('abc');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Entre 500 y 2500');
+
+    await typeAltitude('499');
+    expect(dialog().textContent).toContain('Entre 500 y 2500');
+
+    await typeAltitude('2501');
+    expect(dialog().textContent).toContain('Entre 500 y 2500');
+
+    await typeAltitude('');
+    expect(dialog().textContent).not.toContain('Entre 500 y 2500');
     expect(button('Continuar').disabled).toBe(false);
   });
 
@@ -612,6 +788,27 @@ describe('Shell', () => {
     expect(dialog.textContent).toContain('3/120');
   });
 
+  it('un nombre con un dígito muestra "El nombre no admite números"', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog().textContent).not.toContain('El nombre no admite números');
+
+    await typeOwnerName('Ana2');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('El nombre no admite números');
+
+    await typeOwnerName('');
+    expect(dialog().textContent).not.toContain('El nombre no admite números');
+
+    await typeOwnerName('Ana');
+    expect(dialog().textContent).not.toContain('El nombre no admite números');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
   it('Tipo de documento obligatorio; opciones NIT, RUT y cédulas y Pasaporte', async () => {
     await openForm();
     await goToStep2();
@@ -644,6 +841,24 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
   });
 
+  it('un documento que no es solo dígitos muestra "Solo números"; en pasaporte, un espacio muestra "Solo letras y números"', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    await typeDocumentNumber('12a');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Solo números');
+    expect(dialog().textContent).not.toContain('Solo letras y números');
+
+    await chooseDocumentType('Pasaporte');
+    await typeDocumentNumber('AB 12');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Solo letras y números');
+  });
+
   it('Correo obligatorio; sin @ o sin dominio, Continuar sigue deshabilitado', async () => {
     await openForm();
     await goToStep2();
@@ -660,6 +875,27 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
 
     await typeEmail('ana@finca.com');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('un correo sin dominio muestra "Ingresa un correo válido"', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog().textContent).not.toContain('Ingresa un correo válido');
+
+    await typeEmail('ana@finca');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Ingresa un correo válido');
+
+    await typeEmail('ana');
+    expect(dialog().textContent).toContain('Ingresa un correo válido');
+
+    await typeEmail('ana@finca.com');
+    expect(dialog().textContent).not.toContain('Ingresa un correo válido');
     expect(button('Continuar').disabled).toBe(false);
   });
 
@@ -692,6 +928,39 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
 
     await typeLandline('1234567');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('celular, indicativo o teléfono con letras muestra "Solo números"', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog().textContent).not.toContain('Solo números');
+
+    await typeMobile('abc');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Solo números');
+
+    await typeMobile('');
+    expect(dialog().textContent).not.toContain('Solo números');
+    expect(button('Continuar').disabled).toBe(false);
+
+    await typePhoneAreaCode('60a');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Solo números');
+
+    await typePhoneAreaCode('');
+    expect(dialog().textContent).not.toContain('Solo números');
+
+    await typeLandline('abc');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Solo números');
+
+    await typeLandline('');
+    expect(dialog().textContent).not.toContain('Solo números');
     expect(button('Continuar').disabled).toBe(false);
   });
 
@@ -728,6 +997,27 @@ describe('Shell', () => {
     expect(button('Continuar').disabled).toBe(true);
 
     await typeExperience('8');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('años de experiencia con letras muestran "Solo números enteros"', async () => {
+    await openForm();
+    await goToStep2();
+    await fillStep2Required();
+
+    const dialog = () => compiled.querySelector('[role="dialog"]') as HTMLElement;
+
+    expect(dialog().textContent).not.toContain('Solo números enteros');
+
+    await typeExperience('abc');
+    expect(button('Continuar').disabled).toBe(true);
+    expect(dialog().textContent).toContain('Solo números enteros');
+
+    await typeExperience('1.5');
+    expect(dialog().textContent).toContain('Solo números enteros');
+
+    await typeExperience('');
+    expect(dialog().textContent).not.toContain('Solo números enteros');
     expect(button('Continuar').disabled).toBe(false);
   });
 
