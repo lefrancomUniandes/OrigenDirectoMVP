@@ -213,6 +213,21 @@
                 <span class="field-error">{{ text }}</span>
               }
             </div>
+            <div class="field full">
+              <label for="password">Contraseña <span class="req">*</span></label>
+              <div class="password-row">
+                <input
+                  class="input"
+                  id="password"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                  [value]="form().password"
+                  (input)="onText('password', $event)"
+                />
+                <button type="button" class="btn btn--secundario" (click)="passwordVisible.set(!passwordVisible())">
+                  {{ passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña' }}
+                </button>
+              </div>
+            </div>
             <div class="field">
               <label for="mobile">Celular</label>
               <input

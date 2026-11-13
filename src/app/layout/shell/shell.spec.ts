@@ -1,8 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
+import Dexie from 'dexie';
+import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
+import { hashPassword } from '../../core/auth/password-hash';
+import { OrigenDirectoDb } from '../../core/db/origen-directo.db';
+import { SessionService } from '../../core/session/session';
+import { requireOwnFarm, requireSession } from '../../core/session/session-guard';
 import { FarmRegistrationService } from '../../features/farm-registration/services/farm-registration.service';
+import { LoginPage } from '../../features/login/pages/login-page';
 import { Shell } from './shell';
+
+Dexie.dependencies.indexedDB = indexedDB;
+Dexie.dependencies.IDBKeyRange = IDBKeyRange;
 
 @Component({ template: '' })
 class PerfilPage {}
@@ -16,27 +26,46 @@ describe('Shell', () => {
   let registerFarm: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    localStorage.removeItem('od.session');
+    localStorage.removeItem('od.login-attempts');
     registerFarm = vi.fn().mockResolvedValue('OD-2026-100001');
+    await mount();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    TestBed.inject(OrigenDirectoDb).close();
+  });
+
+  async function mount(): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [Shell],
       providers: [
         provideRouter([
           { path: '', component: PerfilPage },
+          { path: 'perfil/:id/editar', canActivate: [requireOwnFarm], component: PerfilPage },
           { path: 'perfil/:id', component: PerfilPage },
-          { path: 'mis-lotes', component: MisLotesPage },
+          { path: 'mis-lotes', canActivate: [requireSession], component: MisLotesPage },
+          { path: 'iniciar-sesion', component: LoginPage },
         ]),
         { provide: FarmRegistrationService, useValue: { register: registerFarm } },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Shell);
-    await fixture.whenStable();
     compiled = fixture.nativeElement as HTMLElement;
-  });
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  function anaSession(): void {
+    TestBed.inject(SessionService).start({
+      farmId: 'demo-paraiso',
+      ownerName: 'Ana Morales',
+      farmName: 'Finca El Paraíso',
+    });
+    fixture.detectChanges();
+  }
 
   async function settleFinish(): Promise<void> {
     for (let i = 0; i < 8; i++) {
@@ -64,6 +93,34 @@ describe('Shell', () => {
       throw new Error(`Button "${label}" not found`);
     }
     return found as HTMLButtonElement;
+  }
+
+  function link(label: string): HTMLAnchorElement {
+    const found = [...compiled.querySelectorAll('a')].find((el) => el.textContent?.trim() === label);
+    if (!found) {
+      throw new Error(`Link "${label}" not found`);
+    }
+    return found;
+  }
+
+  async function untilUrl(url: string): Promise<void> {
+    const router = TestBed.inject(Router);
+    for (let attempt = 0; attempt < 50 && router.url !== url; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      fixture.detectChanges();
+    }
+  }
+
+  async function seedAna(): Promise<void> {
+    await Dexie.delete('origen-directo');
+    await TestBed.inject(OrigenDirectoDb).table('fincas').add({
+      id: 'demo-paraiso',
+      farmName: 'Finca El Paraíso',
+      ownerName: 'Ana Morales',
+      email: 'ana@paraiso.com',
+      passwordHash: await hashPassword('Cafe2026*'),
+      verified: true,
+    });
   }
 
   async function typeFarmName(value: string): Promise<HTMLInputElement> {
@@ -209,11 +266,21 @@ describe('Shell', () => {
     await fixture.whenStable();
   }
 
+  async function typePassword(value: string): Promise<HTMLInputElement> {
+    const input = compiled.querySelector('#password') as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
   async function fillStep2Required(): Promise<void> {
     await typeOwnerName('Ana');
     await chooseDocumentType('Cédula de ciudadanía');
     await typeDocumentNumber('123');
     await typeEmail('ana@finca.com');
+    await typePassword('Cafe2026*');
   }
 
   async function goToStep3(documentType = 'Cédula de ciudadanía'): Promise<void> {
@@ -222,6 +289,7 @@ describe('Shell', () => {
     await chooseDocumentType(documentType);
     await typeDocumentNumber('123');
     await typeEmail('ana@finca.com');
+    await typePassword('Cafe2026*');
     button('Continuar').click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -316,6 +384,117 @@ describe('Shell', () => {
     const toolbar = compiled.querySelector('.shell__toolbar') as HTMLElement;
 
     expect(button('Registrar finca', toolbar)).toBeTruthy();
+  });
+
+  it('sin sesión, la cabecera muestra "Iniciar sesión" junto a "Registrar finca" y abre /iniciar-sesion', async () => {
+    const actions = compiled.querySelector('.header__actions') as HTMLElement;
+    const register = button('Registrar finca', actions);
+    const login = register.nextElementSibling as HTMLAnchorElement | null;
+
+    expect(login?.textContent?.trim()).toBe('Iniciar sesión');
+
+    login?.click();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/iniciar-sesion');
+  });
+
+  it('con la sesión de Ana, la cabecera muestra "Ana Morales" y el menú "Mi perfil", "Mis lotes" y "Cerrar sesión"', () => {
+    anaSession();
+    button('Ana Morales').click();
+    fixture.detectChanges();
+
+    expect(compiled.textContent).toContain('Ana Morales');
+    expect(compiled.textContent).toContain('Mi perfil');
+    expect(compiled.textContent).toContain('Mis lotes');
+    expect(compiled.textContent).toContain('Cerrar sesión');
+    expect(compiled.textContent).not.toContain('Iniciar sesión');
+  });
+
+  it('"Mi perfil" abre /perfil/demo-paraiso y "Mis lotes" abre /mis-lotes', async () => {
+    anaSession();
+    const router = TestBed.inject(Router);
+
+    button('Ana Morales').click();
+    fixture.detectChanges();
+    link('Mi perfil').click();
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/perfil/demo-paraiso');
+
+    button('Ana Morales').click();
+    fixture.detectChanges();
+    link('Mis lotes').click();
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/mis-lotes');
+  });
+
+  it('al recargar, la sesión de Ana sigue y la cabecera no vuelve a "Iniciar sesión"', async () => {
+    anaSession();
+    TestBed.resetTestingModule();
+    await mount();
+
+    expect(compiled.textContent).toContain('Ana Morales');
+    expect(compiled.textContent).not.toContain('Iniciar sesión');
+  });
+
+  it('sin sesión, /mis-lotes abre /iniciar-sesion y, tras ingresar, vuelve a /mis-lotes', async () => {
+    await seedAna();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/mis-lotes');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(router.url).toContain('/iniciar-sesion');
+    expect(router.url).toContain('returnUrl');
+
+    await typeEmail('ana@paraiso.com');
+    await typePassword('Cafe2026*');
+    button('Ingresar').click();
+    await untilUrl('/mis-lotes');
+
+    expect(router.url).toBe('/mis-lotes');
+  });
+
+  it('sin sesión, editar el perfil de Ana abre /iniciar-sesion y, tras ingresar, vuelve a esa edición', async () => {
+    await seedAna();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/perfil/demo-paraiso/editar');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(router.url).toContain('/iniciar-sesion');
+    expect(decodeURIComponent(router.url)).toContain('/perfil/demo-paraiso/editar');
+
+    await typeEmail('ana@paraiso.com');
+    await typePassword('Cafe2026*');
+    button('Ingresar').click();
+    await untilUrl('/perfil/demo-paraiso/editar');
+
+    expect(router.url).toBe('/perfil/demo-paraiso/editar');
+  });
+
+  it('la página pública /perfil/demo-paraiso se abre sin sesión', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/perfil/demo-paraiso');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/perfil/demo-paraiso');
+  });
+
+  it('"Cerrar sesión" quita la sesión y vuelve al feed', async () => {
+    anaSession();
+    button('Ana Morales').click();
+    fixture.detectChanges();
+    button('Cerrar sesión').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/');
+    expect(compiled.textContent).toContain('Iniciar sesión');
+    expect(compiled.textContent).not.toContain('Ana Morales');
   });
 
   it('Registrar finca abre el modal del paso 1 con el campo nombre de la finca', async () => {
@@ -865,6 +1044,7 @@ describe('Shell', () => {
     await typeOwnerName('Ana');
     await chooseDocumentType('Cédula de ciudadanía');
     await typeDocumentNumber('123');
+    await typePassword('Cafe2026*');
 
     expect(button('Continuar').disabled).toBe(true);
 
@@ -896,6 +1076,31 @@ describe('Shell', () => {
 
     await typeEmail('ana@finca.com');
     expect(dialog().textContent).not.toContain('Ingresa un correo válido');
+    expect(button('Continuar').disabled).toBe(false);
+  });
+
+  it('en el paso del usuario, la contraseña es obligatoria, se oculta y tiene mostrar/ocultar; sin ella no se continúa', async () => {
+    await openForm();
+    await goToStep2();
+    await typeOwnerName('Ana');
+    await chooseDocumentType('Cédula de ciudadanía');
+    await typeDocumentNumber('123');
+    await typeEmail('ana@finca.com');
+
+    const input = compiled.querySelector('#password') as HTMLInputElement;
+
+    expect(input.type).toBe('password');
+    expect(button('Continuar').disabled).toBe(true);
+
+    button('Mostrar contraseña').click();
+    fixture.detectChanges();
+    expect((compiled.querySelector('#password') as HTMLInputElement).type).toBe('text');
+
+    button('Ocultar contraseña').click();
+    fixture.detectChanges();
+    expect((compiled.querySelector('#password') as HTMLInputElement).type).toBe('password');
+
+    await typePassword('Cafe2026*');
     expect(button('Continuar').disabled).toBe(false);
   });
 
@@ -1289,6 +1494,7 @@ describe('Shell', () => {
     await chooseDocumentType('Cédula de ciudadanía');
     await typeDocumentNumber('123');
     await typeEmail('ana@finca.com');
+    await typePassword('Cafe2026*');
     await typeMobile('3001234567');
     await typePhoneAreaCode('604');
     await typeLandline('1234567');
@@ -1517,26 +1723,22 @@ describe('Shell', () => {
     expect(farmName.value).toBe('');
   });
 
-  it('sin login no está «Mis Lotes»', () => {
-    expect(compiled.textContent).not.toContain('Mis Lotes');
+  it('sin login no está «Mis lotes»', () => {
+    expect(compiled.textContent).not.toContain('Mis lotes');
   });
 
-  it('«Mis Lotes» abre /mis-lotes y conserva login', async () => {
+  it('con la sesión iniciada, «Mis lotes» abre /mis-lotes', async () => {
+    anaSession();
     const router = TestBed.inject(Router);
-    await router.navigateByUrl('/?login=demo-paraiso');
+    button('Ana Morales').click();
     fixture.detectChanges();
-
-    const link = [...compiled.querySelectorAll('a')].find((el) => el.textContent?.trim() === 'Mis Lotes');
-    if (!link) {
-      throw new Error('Link "Mis Lotes" not found');
-    }
-    link.click();
+    link('Mis lotes').click();
     await fixture.whenStable();
 
-    expect(router.url).toBe('/mis-lotes?login=demo-paraiso');
+    expect(router.url).toBe('/mis-lotes');
   });
 
-  it('«Entendido» abre /perfil/<número>?login=<número>', async () => {
+  it('«Entendido» abre /perfil/<número>', async () => {
     await openForm();
     await goToStep3();
     await choosePhotos([photoFile('finca.jpg')]);
@@ -1550,6 +1752,6 @@ describe('Shell', () => {
     button('Entendido').click();
     await fixture.whenStable();
 
-    expect(TestBed.inject(Router).url).toBe('/perfil/OD-2026-100001?login=OD-2026-100001');
+    expect(TestBed.inject(Router).url).toBe('/perfil/OD-2026-100001');
   });
 });

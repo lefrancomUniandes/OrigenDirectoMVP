@@ -1,9 +1,8 @@
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { map } from 'rxjs';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { RegistrationForm } from '../../core/registration/registration-form';
+import { SessionService } from '../../core/session/session';
 import { FarmRegistrationWizard } from '../../features/farm-registration/components/farm-registration-wizard';
-import { RegistrationForm } from '../../features/farm-registration/services/registration-form';
 
 @Component({
   imports: [RouterLink, RouterOutlet, FarmRegistrationWizard],
@@ -12,10 +11,19 @@ import { RegistrationForm } from '../../features/farm-registration/services/regi
   templateUrl: './shell.html',
 })
 export class Shell {
-  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   readonly form = inject(RegistrationForm);
-  readonly signedIn = toSignal(
-    this.route.queryParamMap.pipe(map((params) => !!params.get('login'))),
-    { initialValue: !!this.route.snapshot.queryParamMap.get('login') },
-  );
+  readonly session = inject(SessionService);
+  readonly signedIn = this.session.signedIn;
+  readonly menuOpen = signal(false);
+
+  toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  logOut(): void {
+    this.session.end();
+    this.menuOpen.set(false);
+    void this.router.navigateByUrl('/');
+  }
 }

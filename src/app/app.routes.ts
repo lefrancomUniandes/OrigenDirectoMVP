@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { requireSession } from './core/session/session-guard';
 import { Shell } from './layout/shell/shell';
 
 export const routes: Routes = [
@@ -20,7 +21,12 @@ export const routes: Routes = [
       },
       {
         path: 'mis-lotes',
+        canActivate: [requireSession],
         loadChildren: () => import('./features/lots/routes').then((m) => m.routes),
+      },
+      {
+        path: 'iniciar-sesion',
+        loadChildren: () => import('./features/login/routes').then((m) => m.routes),
       },
     ],
   },

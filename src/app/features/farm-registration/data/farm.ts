@@ -28,4 +28,6 @@ export interface Farm extends Entity {
   readonly experience: string;
   readonly photos: readonly FarmFile[];
   readonly pdf: FarmFile | null;
+  readonly passwordHash: string;
+  readonly verified: boolean;
 }

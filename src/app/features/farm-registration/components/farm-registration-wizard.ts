@@ -2,6 +2,7 @@ import { Component, computed, DestroyRef, inject, output, signal } from '@angula
 import { Router } from '@angular/router';
 import { coffeeVarieties } from '../../../core/catalogs/coffee-varieties';
 import { departments, municipalitiesByDepartment } from '../../../core/catalogs/colombia';
+import { SessionService } from '../../../core/session/session';
 import { FarmRegistrationService } from '../services/farm-registration.service';
 import { emptyWizardForm, WizardForm, WizardPhoto } from './wizard-form';
 
@@ -13,12 +14,14 @@ import { emptyWizardForm, WizardForm, WizardPhoto } from './wizard-form';
 export class FarmRegistrationWizard {
   private readonly farmRegistration = inject(FarmRegistrationService);
   private readonly router = inject(Router);
+  private readonly session = inject(SessionService);
   readonly closed = output<void>();
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.resetForm());
   }
   readonly form = signal<WizardForm>(emptyWizardForm);
+  readonly passwordVisible = signal(false);
   readonly coffeeVarieties = coffeeVarieties;
   readonly departments = departments;
   readonly municipalities = computed(
@@ -126,6 +129,7 @@ export class FarmRegistrationWizard {
       this.form().documentType !== '' &&
       this.documentNumberValid() &&
       this.emailValid() &&
+      this.form().password !== '' &&
       this.mobileValid() &&
       this.phoneAreaCodeValid() &&
       this.landlineValid() &&
@@ -179,6 +183,7 @@ export class FarmRegistrationWizard {
       | 'ownerName'
       | 'documentNumber'
       | 'email'
+      | 'password'
       | 'mobile'
       | 'phoneAreaCode'
       | 'landline'
@@ -372,6 +377,7 @@ export class FarmRegistrationWizard {
         documentType: current.documentType,
         documentNumber: current.documentNumber,
         email: current.email,
+        password: current.password,
         mobile: current.mobile,
         phoneAreaCode: current.phoneAreaCode,
         landline: current.landline,
@@ -409,10 +415,16 @@ export class FarmRegistrationWizard {
   }
 
   acknowledge(): void {
-    const id = this.form().requestNumber;
+    const current = this.form();
+    const id = current.requestNumber;
+    this.session.start({
+      farmId: id,
+      ownerName: current.ownerName,
+      farmName: current.farmName,
+    });
     this.resetForm();
     this.closed.emit();
-    void this.router.navigate(['/perfil', id], { queryParams: { login: id } });
+    void this.router.navigate(['/perfil', id]);
   }
 
   goBack(): void {
@@ -431,6 +443,7 @@ export class FarmRegistrationWizard {
     for (const photo of this.form().photos) {
       URL.revokeObjectURL(photo.url);
     }
+    this.passwordVisible.set(false);
     this.form.set(emptyWizardForm);
   }
 }

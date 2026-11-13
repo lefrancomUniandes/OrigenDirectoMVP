@@ -1,0 +1,92 @@
+:host {
+  display: block;
+  max-width: 420px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+.login h1 {
+  margin: 0 0 20px;
+  color: var(--cafe-900);
+  font-size: 28px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--cafe-700);
+  font-weight: 700;
+}
+
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--linea);
+  border-radius: 10px;
+  background: var(--blanco);
+  font: inherit;
+  font-weight: 600;
+  color: var(--cafe-900);
+  box-sizing: border-box;
+}
+
+.password-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.password-row .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-error {
+  display: block;
+  margin: 0 0 12px;
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 22px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--primario {
+  background: var(--oliva);
+  color: var(--crema-2);
+}
+
+.btn--secundario {
+  background: var(--blanco);
+  color: var(--cafe-900);
+  border-color: var(--linea);
+  white-space: nowrap;
+}
+
+.text-button {
+  display: block;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cafe-700);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}

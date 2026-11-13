@@ -4,14 +4,25 @@
     <span class="brand__name">Origen Directo</span>
   </a>
   <div class="header__actions">
-    @if (signedIn()) {
-      <a routerLink="/mis-lotes" queryParamsHandling="preserve">Mis Lotes</a>
-    }
     <a routerLink="/register">Cómo registrar<br class="header__break"> tu finca</a>
     <button type="button" class="btn btn--acento" (click)="form.open.set(true)">
       <svg width="22" height="22" aria-hidden="true"><use href="#i-finca" /></svg>
       Registrar finca
     </button>
+    @if (!signedIn()) {
+      <a routerLink="/iniciar-sesion">Iniciar sesión</a>
+    } @else {
+      <div class="account">
+        <button type="button" class="account__name" (click)="toggleMenu()">{{ session.account()?.ownerName }}</button>
+        @if (menuOpen()) {
+          <div class="account__menu">
+            <a [routerLink]="['/perfil', session.account()?.farmId]" (click)="menuOpen.set(false)">Mi perfil</a>
+            <a routerLink="/mis-lotes" (click)="menuOpen.set(false)">Mis lotes</a>
+            <button type="button" (click)="logOut()">Cerrar sesión</button>
+          </div>
+        }
+      </div>
+    }
   </div>
 </header>
 

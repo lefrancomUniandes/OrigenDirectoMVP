@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Iniciar sesión · Origen Directo (Mockup HU005)</title>
+<meta name="description" content="Mockup HTML plano de la historia de usuario OD-47 / HU005 - Login." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<!--
+  ============================================================================
+  MOCKUP · OD-47 HU005 - Login · Proyecto: Origen Directo (MVP-1)
+  ----------------------------------------------------------------------------
+  Historia: Como caficultor registrado quiero crear una contraseña al
+  registrarme e iniciar sesión con mi correo y contraseña para administrar de
+  forma segura mi perfil, mis fincas y mis lotes de café.
+  Alcance: en el MVP solo los caficultores tienen cuenta e inician sesión.
+
+  Archivo autocontenido (HTML + CSS + JS sin dependencias). Las imágenes van en
+  ./img/. Cada bloque está marcado con el criterio de aceptación que cubre
+  (C1…C7) y con atributos data-testid para pruebas.
+
+  Vistas (navegación por hash):
+    #/login       Pantalla de inicio de sesión (pública)
+    #/mis-lotes   Mis Lotes (HU003) · privada
+    #/perfil      Mi perfil · privada
+
+  Cuentas simuladas (contraseña: Cafe2026*):
+    maria@origendirecto.co  → cuenta aprobada  → redirige a Mis Lotes (C3)
+    jose@origendirecto.co   → solicitud #1042 en revisión (C5)
+    cualquier otra combinación → "Correo o contraseña incorrectos" (C4)
+
+  NOTA C7: en producción las contraseñas se envían por HTTPS y se guardan con
+  hash (p. ej. bcrypt/argon2). Este mockup nunca guarda la contraseña; solo
+  guarda en localStorage los datos públicos de la sesión simulada.
+  ============================================================================
+-->
+<style>
+  /* ---------- Design tokens (paleta cálida y terrosa) ---------- */
+  :root {
+    --coffee: oklch(0.32 0.05 50);       /* café: texto principal  ~#4a3426 */
+    --olive: oklch(0.5 0.085 122);       /* verde oliva: acción primaria ~#5f6f35 */
+    --ochre: oklch(0.66 0.12 68);        /* ocre ~#c0853a */
+    --mustard: oklch(0.8 0.14 84);       /* amarillo mostaza ~#e7b443 */
+    --terracotta: oklch(0.62 0.11 40);   /* terracota suave ~#c06f52 */
+
+    --background: oklch(0.965 0.02 82);  /* crema claro uniforme */
+    --card: oklch(0.988 0.012 85);
+    --secondary: oklch(0.93 0.03 80);
+    --muted-fg: oklch(0.48 0.04 55);
+    --border: oklch(0.88 0.03 75);
+    --input: oklch(0.84 0.035 72);
+    --destructive: oklch(0.53 0.17 30);
+    --on-dark: oklch(0.985 0.012 85);
+
+    --radius-sm: 0.75rem;
+    --radius: 0.875rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
+
+    /* Sombreado plano muy sutil, sin degradados */
+    --shadow-flat: 0 4px 0 0 oklch(0.32 0.05 50 / 0.08);
+    --shadow-soft: 0 1px 2px oklch(0.32 0.05 50 / 0.06), 0 8px 24px -12px oklch(0.32 0.05 50 / 0.18);
+
+    --font: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--background); color: var(--coffee); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  svg.icon { width: 1rem; height: 1rem; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-lg svg.icon, svg.icon.lg { width: 1.25rem; height: 1.25rem; }
+  [hidden] { display: none !important; }
+  .container { max-width: 80rem; margin: 0 auto; padding: 0 1.25rem; }
+  @media (min-width: 640px) { .container { padding: 0 2rem; } }
+
+  /* ---------- Botones ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 2.75rem; padding: 0 1.5rem; border-radius: var(--radius-sm); font-weight: 700; font-size: .875rem; white-space: nowrap; transition: background-color .15s, opacity .15s; }
+  .btn-mustard { background: var(--mustard); color: var(--coffee); box-shadow: var(--shadow-flat); }
+  .btn-mustard:hover { background: oklch(0.8 0.14 84 / .85); }
+  .btn-olive { background: var(--olive); color: var(--on-dark); box-shadow: var(--shadow-flat); }
+  .btn-olive:hover { background: oklch(0.5 0.085 122 / .9); }
+  .btn-soft { border: 2px solid oklch(0.5 0.085 122 / .7); color: var(--olive); }
+  .btn-soft:hover { background: oklch(0.5 0.085 122 / .1); }
+  .btn-xl { height: 3rem; font-size: 1rem; width: 100%; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .link { font-weight: 700; font-size: .875rem; }
+  .link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .link-olive { color: var(--olive); }
+  .link-terracotta { color: var(--terracotta); }
+
+  /* ---------- C1 · Cabecera ---------- */
+  .header { position: sticky; top: 0; z-index: 30; background: oklch(0.988 0.012 85 / .95); border-bottom: 1px solid var(--border); backdrop-filter: blur(6px); }
+  .header .container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .brand { display: flex; align-items: center; gap: .625rem; }
+  .brand-mark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 999px; background: oklch(0.62 0.11 40 / .15); color: var(--terracotta); }
+  .brand-mark svg { width: 1.25rem; height: 1.25rem; stroke-width: 2.4; }
+  .brand-name { font-size: 1.125rem; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; }
+  .nav { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+  .nav-link { display: none; font-size: .875rem; font-weight: 700; opacity: .8; }
+  .nav-link:hover { opacity: 1; }
+  .hide-sm { display: none; }
+  @media (max-width: 639px) {
+    .header .container { gap: .5rem; }
+    .brand { gap: .5rem; }
+    .brand-mark { width: 2rem; height: 2rem; }
+    .brand-name { font-size: 1rem; }
+    .nav { gap: .375rem; }
+    .nav .btn { height: 2.5rem; padding: 0 .75rem; gap: .375rem; }
+  }
+  @media (max-width: 379px) { .brand-name { display: none; } }
+  @media (min-width: 640px) { .brand-name { font-size: 1.25rem; } .nav { gap: .75rem; } .hide-sm { display: inline; } }
+  @media (min-width: 768px) { .nav-link { display: inline; } }
+
+  /* C3 · Menú de usuario */
+  .user-menu { position: relative; }
+  .user-trigger { display: flex; align-items: center; gap: .625rem; padding: .25rem .75rem .25rem .25rem; border: 1px solid var(--border); border-radius: 999px; background: var(--background); }
+  .user-trigger:hover { background: var(--secondary); }
+  .avatar { width: 2.25rem; height: 2.25rem; border-radius: 999px; border: 2px solid var(--mustard); object-fit: cover; background: var(--olive); color: var(--on-dark); display: grid; place-items: center; font-weight: 800; font-size: .8rem; overflow: hidden; }
+  .user-name { font-size: .875rem; font-weight: 700; }
+  .dropdown { position: absolute; right: 0; top: calc(100% + .5rem); width: 14rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-soft); padding: .25rem; }
+  .dropdown-label { padding: .5rem .75rem; }
+  .dropdown-label small { display: block; color: var(--muted-fg); font-size: .75rem; }
+  .dropdown hr { border: 0; border-top: 1px solid var(--border); margin: .25rem -.25rem; }
+  .dropdown-item { display: flex; width: 100%; align-items: center; gap: .5rem; padding: .5rem .75rem; border-radius: .5rem; font-size: .875rem; text-align: left; }
+  .dropdown-item:hover { background: var(--secondary); }
+  .dropdown-item.danger { color: var(--destructive); }
+
+  /* ---------- Layout login ---------- */
+  .login-grid { display: grid; gap: 2rem; padding-top: 2rem; padding-bottom: 2rem; }
+  @media (min-width: 1024px) { .login-grid { grid-template-columns: 1.05fr 1fr; gap: 3.5rem; padding-top: 3.5rem; padding-bottom: 3.5rem; } }
+  .art { display: none; position: relative; min-height: 680px; overflow: hidden; border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--card); box-shadow: var(--shadow-soft); }
+  @media (min-width: 1024px) { .art { display: block; } }
+  .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .art-caption { position: absolute; left: 1.25rem; right: 1.25rem; bottom: 1.25rem; background: oklch(0.988 0.012 85 / .95); border-radius: 1rem; padding: 1.25rem; box-shadow: var(--shadow-flat); }
+  .eyebrow { font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .18em; color: var(--ochre); }
+  .art-caption p:last-child { margin-top: .25rem; font-size: 1.125rem; font-weight: 800; line-height: 1.35; }
+
+  .form-col { display: flex; flex-direction: column; justify-content: center; }
+  .form-wrap { width: 100%; max-width: 28rem; margin: 0 auto; }
+  .chip { display: inline-flex; align-items: center; gap: .5rem; padding: .25rem .75rem; border-radius: 999px; background: oklch(0.5 0.085 122 / .12); color: var(--olive); font-size: .75rem; font-weight: 800; }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--olive); }
+  .title { margin-top: 1rem; font-size: 2.25rem; font-weight: 800; letter-spacing: -.02em; }
+  .mark { text-decoration: underline; text-decoration-color: var(--mustard); text-decoration-thickness: 6px; text-underline-offset: 6px; }
+  .lead { margin-top: .75rem; color: var(--muted-fg); }
+
+  /* ---------- C2 · Formulario ---------- */
+  .card-form { margin-top: 2rem; display: flex; flex-direction: column; gap: 1.25rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-soft); }
+  @media (min-width: 640px) { .card-form { padding: 2rem; } }
+  .field { display: flex; flex-direction: column; gap: .5rem; }
+  .label { font-size: .875rem; font-weight: 700; }
+  .input-wrap { position: relative; }
+  .input-wrap > .lead-icon { position: absolute; left: .875rem; top: 50%; transform: translateY(-50%); color: var(--muted-fg); pointer-events: none; width: 1.25rem; height: 1.25rem; }
+  .input { width: 100%; height: 3rem; padding: 0 1rem 0 2.75rem; border: 1px solid var(--input); border-radius: var(--radius-sm); background: var(--background); color: var(--coffee); font: inherit; font-size: 1rem; box-shadow: 0 1px 2px oklch(0.32 0.05 50 / .05); outline: none; }
+  .input::placeholder { color: var(--muted-fg); }
+  .input:focus { box-shadow: 0 0 0 1px var(--olive); }
+  .input.has-toggle { padding-right: 3rem; }
+  .input[aria-invalid="true"] { border-color: var(--destructive); }
+  .input[aria-invalid="true"]:focus { box-shadow: 0 0 0 1px var(--destructive); }
+  .toggle-pass { position: absolute; right: .5rem; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: .5rem; color: var(--muted-fg); }
+  .toggle-pass:hover { background: var(--secondary); color: var(--coffee); }
+  .toggle-pass svg { width: 1.25rem; height: 1.25rem; }
+  .field-error { display: flex; align-items: center; gap: .375rem; font-size: .875rem; font-weight: 600; color: var(--destructive); }
+  .forgot-row { display: flex; justify-content: flex-end; }
+  .signup { padding-top: 1.25rem; border-top: 1px solid var(--border); text-align: center; font-size: .875rem; color: var(--muted-fg); }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- C4 / C5 · Avisos ---------- */
+  .notice { display: flex; gap: .75rem; padding: 1rem; border: 1px solid; border-radius: var(--radius-sm); font-size: .875rem; line-height: 1.6; }
+  .notice svg { width: 1.25rem; height: 1.25rem; margin-top: .125rem; }
+  .notice strong.t { display: block; font-weight: 700; }
+  .notice p { color: var(--muted-fg); }
+  .notice p b { color: var(--coffee); }
+  .notice-error { border-color: oklch(0.53 0.17 30 / .3); background: oklch(0.53 0.17 30 / .1); color: var(--destructive); }
+  .notice-error p { color: oklch(0.53 0.17 30 / .9); }
+  .notice-locked { border-color: oklch(0.62 0.11 40 / .4); background: oklch(0.62 0.11 40 / .12); }
+  .notice-locked svg { color: var(--terracotta); }
+  .notice-pending { border-color: oklch(0.66 0.12 68 / .4); background: oklch(0.8 0.14 84 / .2); }
+  .notice-pending svg { color: var(--ochre); }
+
+  /* ---------- Panel de escenarios (solo mockup) ---------- */
+  .demo { margin-top: 1.5rem; border: 1px dashed oklch(0.66 0.12 68 / .6); background: oklch(0.8 0.14 84 / .1); border-radius: 1rem; padding: 1rem; font-size: .875rem; }
+  .demo summary { list-style: none; display: flex; align-items: center; gap: .5rem; cursor: pointer; font-weight: 800; color: var(--ochre); }
+  .demo summary::-webkit-details-marker { display: none; }
+  .demo summary span { margin-left: auto; font-size: .75rem; color: var(--muted-fg); }
+  .demo[open] summary span { display: none; }
+  .demo-list { margin-top: .75rem; display: flex; flex-direction: column; gap: .5rem; }
+  .demo-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: .625rem .75rem; border-radius: var(--radius-sm); background: var(--card); box-shadow: var(--shadow-flat); font-weight: 600; text-align: left; }
+  .demo-row:hover { background: var(--secondary); }
+  .demo-row em { font-style: normal; font-size: .75rem; font-weight: 700; color: var(--olive); }
+  .demo-reset { display: inline-flex; align-items: center; gap: .375rem; margin-top: .25rem; font-size: .75rem; font-weight: 700; color: var(--muted-fg); }
+  .demo-reset:hover { color: var(--coffee); }
+  .footnote { margin-top: 1.25rem; display: flex; align-items: center; justify-content: center; gap: .375rem; font-size: .75rem; color: var(--muted-fg); }
+
+  /* ---------- Vistas privadas ---------- */
+  .page { max-width: 72rem; margin: 0 auto; padding: 2.5rem 1.25rem; }
+  .page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  .page-head small { font-size: .875rem; font-weight: 700; color: var(--muted-fg); }
+  .lots { margin-top: 2rem; display: grid; gap: 1.25rem; }
+  @media (min-width: 640px) { .lots { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .lots { grid-template-columns: repeat(3, 1fr); } }
+  .lot { overflow: hidden; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--card); box-shadow: var(--shadow-soft); }
+  .lot-swatch { height: 7rem; }
+  .lot-body { padding: 1.25rem; }
+  .lot-top { display: flex; justify-content: space-between; align-items: center; }
+  .lot h2 { font-size: 1.25rem; font-weight: 800; }
+  .badge { padding: .125rem .625rem; border-radius: 999px; background: var(--secondary); font-size: .75rem; font-weight: 700; }
+  .meta { margin-top: .5rem; display: flex; align-items: center; gap: .375rem; font-size: .875rem; color: var(--muted-fg); }
+  .meta + .meta { margin-top: .25rem; }
+  .profile { margin-top: 2rem; max-width: 42rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); }
+  .profile div { display: flex; justify-content: space-between; gap: 1rem; padding: 1.25rem; font-weight: 700; }
+  .profile div + div { border-top: 1px solid var(--border); }
+  .profile dt { color: var(--muted-fg); }
+
+  /* ---------- Toast ---------- */
+  .toasts { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 50; display: flex; flex-direction: column; gap: .5rem; width: min(22rem, calc(100% - 2rem)); }
+  .toast { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-soft); padding: .875rem 1rem; font-size: .875rem; animation: toastIn .2s ease-out; }
+  .toast b { display: block; }
+  .toast span { color: var(--muted-fg); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-6px); } }
+</style>
+</head>
+<body>
+
+<!-- ======================= C1 · CABECERA (todas las páginas públicas) ======================= -->
+<header class="header" data-testid="site-header">
+  <div class="container">
+    <a href="#/login" class="brand" aria-label="Origen Directo, inicio">
+      <span class="brand-mark"><i data-icon="bean"></i></span>
+      <span class="brand-name">Origen Directo</span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="https://main.dstp4gpncawdi.amplifyapp.com/">Cómo registrar tu finca</a>
+
+      <!-- Sin sesión: "Registrar finca" + "Iniciar sesión" -->
+      <a class="btn btn-mustard" data-guest href="https://main.dstp4gpncawdi.amplifyapp.com/" data-testid="btn-registrar-finca">
+        <i data-icon="sprout"></i><span class="hide-sm">Registrar finca</span>
+      </a>
+      <a class="btn btn-soft" data-guest href="#/login" data-testid="btn-iniciar-sesion">
+        <i data-icon="log-in"></i>Iniciar sesión
+      </a>
+
+      <!-- C3 · Con sesión: foto + nombre + menú desplegable -->
+      <div class="user-menu" data-user hidden>
+        <button class="user-trigger" id="userTrigger" aria-haspopup="menu" aria-expanded="false" data-testid="user-menu-trigger">
+          <span class="avatar" id="userAvatar"></span>
+          <span class="user-name hide-sm" id="userName"></span>
+          <i data-icon="chevron-down"></i>
+        </button>
+        <div class="dropdown" id="userDropdown" role="menu" hidden>
+          <div class="dropdown-label"><b id="menuName"></b><small id="menuFarm"></small></div>
+          <hr />
+          <a class="dropdown-item" role="menuitem" href="#/perfil"><i data-icon="user-round"></i>Mi perfil</a>
+          <a class="dropdown-item" role="menuitem" href="#/mis-lotes"><i data-icon="sprout"></i>Mis lotes</a>
+          <hr />
+          <button class="dropdown-item danger" role="menuitem" id="logoutBtn" data-testid="btn-cerrar-sesion"><i data-icon="log-out"></i>Cerrar sesión</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- ======================= VISTA: INICIO DE SESIÓN (#/login) ======================= -->
+<main id="view-login" class="container login-grid" data-view="login">
+  <section class="art" aria-hidden="false">
+    <img src="img/ilustracion-login.webp" alt="Caficultora recolectando cerezas de café en una finca de montaña" width="800" height="1000" />
+    <div class="art-caption">
+      <p class="eyebrow">Para caficultores</p>
+      <p>Administra tu perfil, tus fincas y tus lotes de café en un solo lugar.</p>
+    </div>
+  </section>
+
+  <section class="form-col">
+    <div class="form-wrap">
+      <span class="chip">Acceso caficultores</span>
+      <h1 class="title"><span class="mark">Iniciar</span> sesión</h1>
+      <p class="lead">Ingresa con el correo y la contraseña que creaste al registrar tu finca.</p>
+
+      <!-- C2 · Formulario de inicio de sesión -->
+      <form class="card-form" id="loginForm" novalidate data-testid="login-form">
+        <!-- C4 / C5 · Aviso de resultado (se inserta aquí) -->
+        <div id="notice" aria-live="polite"></div>
+
+        <div class="field">
+          <label class="label" for="email">Correo electrónico</label>
+          <div class="input-wrap">
+            <i data-icon="mail" class="lead-icon"></i>
+            <!-- Obligatorio · formato y dominio válidos · máx. 120 caracteres -->
+            <input class="input" id="email" name="email" type="email" inputmode="email" autocomplete="email"
+                   placeholder="tucorreo@ejemplo.com" maxlength="130" aria-describedby="email-error" data-testid="input-email" />
+          </div>
+          <p class="field-error" id="email-error" hidden><i data-icon="circle-alert"></i><span></span></p>
+        </div>
+
+        <div class="field">
+          <label class="label" for="password">Contraseña</label>
+          <div class="input-wrap">
+            <i data-icon="lock" class="lead-icon"></i>
+            <!-- Obligatoria · caracteres ocultos · ícono mostrar/ocultar -->
+            <input class="input has-toggle" id="password" name="password" type="password" autocomplete="current-password"
+                   placeholder="Escribe tu contraseña" aria-describedby="password-error" data-testid="input-password" />
+            <button type="button" class="toggle-pass" id="togglePass" aria-label="Mostrar contraseña" data-testid="toggle-password">
+              <i data-icon="eye"></i>
+            </button>
+          </div>
+          <p class="field-error" id="password-error" hidden><i data-icon="circle-alert"></i><span></span></p>
+        </div>
+
+        <div class="forgot-row">
+          <button type="button" class="link link-olive" id="forgotBtn" data-testid="link-olvidaste">¿Olvidaste tu contraseña?</button>
+        </div>
+
+        <!-- Inhabilitado hasta que ambos campos sean válidos -->
+        <button type="submit" class="btn btn-olive btn-xl" id="submitBtn" disabled data-testid="btn-ingresar">Ingresar</button>
+
+        <p class="signup">¿Aún no tienes cuenta?
+          <!-- Lleva al formulario de HU001 -->
+          <a class="link link-terracotta" href="https://main.dstp4gpncawdi.amplifyapp.com/" data-testid="link-registra-finca">Registra tu finca</a>
+        </p>
+      </form>
+
+      <!-- Panel de escenarios: SOLO para revisar el mockup, no va a producción -->
+      <details class="demo">
+        <summary><i data-icon="flask-conical"></i>Probar escenarios del mockup<span>Ver</span></summary>
+        <div class="demo-list">
+          <button type="button" class="demo-row" data-fill="maria@origendirecto.co|Cafe2026*">Cuenta aprobada → Mis lotes <em>Rellenar</em></button>
+          <button type="button" class="demo-row" data-fill="jose@origendirecto.co|Cafe2026*">Solicitud en revisión <em>Rellenar</em></button>
+          <button type="button" class="demo-row" data-fill="maria@origendirecto.co|clave-erronea">Credenciales incorrectas (5 veces = bloqueo) <em>Rellenar</em></button>
+          <button type="button" class="demo-reset" id="resetDemo"><i data-icon="rotate-ccw"></i>Reiniciar intentos y bloqueos</button>
+        </div>
+      </details>
+
+      <p class="footnote"><i data-icon="clock"></i>Tu sesión se mantiene activa aunque recargues la página.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ======================= VISTA: MIS LOTES (#/mis-lotes, privada · HU003) ======================= -->
+<main id="view-mis-lotes" class="page" data-view="mis-lotes" hidden>
+  <div class="page-head">
+    <div>
+      <small class="js-farm"></small>
+      <h1 class="title" style="margin-top:.25rem"><span class="mark">Mis lotes</span></h1>
+    </div>
+    <button class="btn btn-mustard"><i data-icon="plus"></i>Nuevo lote</button>
+  </div>
+  <div class="lots">
+    <article class="lot"><div class="lot-swatch" style="background:var(--olive)"></div><div class="lot-body"><div class="lot-top"><h2>Caturra</h2><span class="badge">Publicado</span></div><p class="meta"><i data-icon="mountain"></i>1.850 m · Lavado</p><p class="meta"><i data-icon="map-pin"></i>Urrao, Antioquia</p></div></article>
+    <article class="lot"><div class="lot-swatch" style="background:var(--ochre)"></div><div class="lot-body"><div class="lot-top"><h2>Castillo</h2><span class="badge">Publicado</span></div><p class="meta"><i data-icon="mountain"></i>1.700 m · Honey</p><p class="meta"><i data-icon="map-pin"></i>Urrao, Antioquia</p></div></article>
+    <article class="lot"><div class="lot-swatch" style="background:var(--terracotta)"></div><div class="lot-body"><div class="lot-top"><h2>Geisha</h2><span class="badge">Borrador</span></div><p class="meta"><i data-icon="mountain"></i>1.950 m · Natural</p><p class="meta"><i data-icon="map-pin"></i>Urrao, Antioquia</p></div></article>
+  </div>
+</main>
+
+<!-- ======================= VISTA: MI PERFIL (#/perfil, privada) ======================= -->
+<main id="view-perfil" class="page" data-view="perfil" hidden>
+  <h1 class="title"><span class="mark">Mi perfil</span></h1>
+  <dl class="profile">
+    <div><dt>Nombre</dt><dd class="js-name"></dd></div>
+    <div><dt>Correo electrónico</dt><dd class="js-email"></dd></div>
+    <div><dt>Finca</dt><dd class="js-farm"></dd></div>
+  </dl>
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+/* ============================================================================
+   Íconos (Lucide, ISC) inyectados como SVG en línea
+   ============================================================================ */
+const ICONS = {"bean":"<path d=\"M10.165 6.598C9.954 7.478 9.64 8.36 9 9c-.64.64-1.521.954-2.402 1.165A6 6 0 0 0 8 22c7.732 0 14-6.268 14-14a6 6 0 0 0-11.835-1.402Z\"/><path d=\"M5.341 10.62a4 4 0 1 0 5.279-5.28\"/>","sprout":"<path d=\"M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3\"/><path d=\"M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4\"/><path d=\"M5 21h14\"/>","log-in":"<path d=\"m10 17 5-5-5-5\"/><path d=\"M15 12H3\"/><path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"/>","log-out":"<path d=\"m16 17 5-5-5-5\"/><path d=\"M21 12H9\"/><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/>","mail":"<path d=\"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7\"/><rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>","eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","eye-off":"<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","hourglass":"<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\"/><path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/>","flask-conical":"<path d=\"M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2\"/><path d=\"M6.453 15h11.094\"/><path d=\"M8.5 2h7\"/>","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>","chevron-down":"<path d=\"m6 9 6 6 6-6\"/>","user-round":"<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>","mountain":"<path d=\"m8 3 4 8 5-5 5 15H2L8 3z\"/>","map-pin":"<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","loader-circle":"<path d=\"M21 12a9 9 0 1 1-6.219-8.56\"/>"};
+function iconSvg(name, cls) {
+  return `<svg class="icon ${cls || ""}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+}
+function hydrateIcons(root = document) {
+  root.querySelectorAll("i[data-icon]").forEach((el) => {
+    const tmp = document.createElement("span");
+    tmp.innerHTML = iconSvg(el.dataset.icon, el.className);
+    el.replaceWith(tmp.firstChild);
+  });
+}
+hydrateIcons();
+
+/* ============================================================================
+   Reglas de negocio (HU005) — simuladas, sin backend
+   ============================================================================ */
+const MAX_EMAIL_LENGTH = 120;   // C2
+const MAX_FAILED_ATTEMPTS = 5;  // C4
+const LOCK_MINUTES = 15;        // C4
+const PENDING_DAYS = 8;         // C5
+
+const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/;
+
+function validateEmail(value) {
+  const v = value.trim();
+  if (!v) return "Ingresa tu correo electrónico";
+  if (v.length > MAX_EMAIL_LENGTH) return `El correo no puede superar ${MAX_EMAIL_LENGTH} caracteres`;
+  if (!EMAIL_RE.test(v)) return "Ingresa un correo válido";
+  return null;
+}
+function validatePassword(value) {
+  return value ? null : "Ingresa tu contraseña";
+}
+
+// Cuentas simuladas. En producción la verificación ocurre en el servidor (C7).
+const DEMO_ACCOUNTS = [
+  { email: "maria@origendirecto.co", password: "Cafe2026*", name: "María Restrepo", farm: "Finca El Paraíso", status: "approved", avatar: "img/avatar-maria.webp" },
+  { email: "jose@origendirecto.co",  password: "Cafe2026*", name: "José Ospina",    farm: "Finca El Roble",   status: "pending", requestNumber: "1042", avatar: null },
+];
+
+/**
+ * Intenta iniciar sesión.
+ * Resultado: { kind: "success", user } | { kind: "invalid", attemptsLeft }
+ *          | { kind: "locked", until } | { kind: "pending", requestNumber }
+ */
+function attemptLogin(email, password, attempts, now) {
+  const key = email.trim().toLowerCase();
+  let state = attempts[key] || { count: 0, lockedUntil: null };
+
+  // C4 · Cuenta bloqueada temporalmente
+  if (state.lockedUntil !== null) {
+    if (now < state.lockedUntil) return { result: { kind: "locked", until: state.lockedUntil }, attempts };
+    state = { count: 0, lockedUntil: null };
+  }
+
+  const account = DEMO_ACCOUNTS.find((a) => a.email === key && a.password === password);
+
+  // C4 · Credenciales incorrectas (mensaje genérico, 5 intentos → bloqueo 15 min)
+  if (!account) {
+    const count = state.count + 1;
+    if (count >= MAX_FAILED_ATTEMPTS) {
+      const until = now + LOCK_MINUTES * 60000;
+      return { result: { kind: "locked", until }, attempts: { ...attempts, [key]: { count: 0, lockedUntil: until } } };
+    }
+    return { result: { kind: "invalid", attemptsLeft: MAX_FAILED_ATTEMPTS - count }, attempts: { ...attempts, [key]: { count, lockedUntil: null } } };
+  }
+
+  const cleared = { ...attempts };
+  delete cleared[key];
+
+  // C5 · Cuenta pendiente de aprobación: no se da acceso
+  if (account.status === "pending") return { result: { kind: "pending", requestNumber: account.requestNumber }, attempts: cleared };
+
+  // C3 · Éxito (nunca se guarda la contraseña — C7)
+  const { password: _omit, status: _s, requestNumber: _r, ...user } = account;
+  return { result: { kind: "success", user }, attempts: cleared };
+}
+
+/* ---------- Persistencia simulada (C6: la sesión sobrevive a recargas) ---------- */
+const SESSION_KEY = "od-session";
+const ATTEMPTS_KEY = "od-login-attempts";
+const store = {
+  session: () => { try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } },
+  setSession: (u) => (u ? localStorage.setItem(SESSION_KEY, JSON.stringify(u)) : localStorage.removeItem(SESSION_KEY)),
+  attempts: () => { try { return JSON.parse(localStorage.getItem(ATTEMPTS_KEY)) || {}; } catch { return {}; } },
+  setAttempts: (m) => localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(m)),
+};
+
+/* ============================================================================
+   Router por hash + rutas protegidas (C6)
+   ============================================================================ */
+const PRIVATE_ROUTES = ["mis-lotes", "perfil"];
+let redirectAfterLogin = null;
+
+function currentRoute() {
+  const r = location.hash.replace(/^#\/?/, "").split("?")[0];
+  return r || "login";
+}
+function go(route) { location.hash = "#/" + route; }
+
+function render() {
+  let route = currentRoute();
+  const user = store.session();
+
+  if (PRIVATE_ROUTES.includes(route) && !user) {   // sin sesión → login, recordando destino
+    redirectAfterLogin = route;
+    return go("login");
+  }
+  if (route === "login" && user) return go(redirectAfterLogin || "mis-lotes");
+  if (!["login", ...PRIVATE_ROUTES].includes(route)) return go("login");
+
+  document.querySelectorAll("[data-view]").forEach((v) => (v.hidden = v.dataset.view !== route));
+  renderHeader(user);
+  if (user) {
+    document.querySelectorAll(".js-name").forEach((e) => (e.textContent = user.name));
+    document.querySelectorAll(".js-email").forEach((e) => (e.textContent = user.email));
+    document.querySelectorAll(".js-farm").forEach((e) => (e.textContent = user.farm));
+  }
+  document.title = { login: "Iniciar sesión", "mis-lotes": "Mis lotes", perfil: "Mi perfil" }[route] + " · Origen Directo";
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", render);
+
+/* ---------- C1 / C3 · Cabecera según estado de sesión ---------- */
+const $ = (id) => document.getElementById(id);
+function initials(name) { return name.split(" ").slice(0, 2).map((p) => p[0]).join(""); }
+
+function renderHeader(user) {
+  document.querySelectorAll("[data-guest]").forEach((el) => (el.hidden = !!user));
+  document.querySelector("[data-user]").hidden = !user;
+  if (!user) return;
+  $("userAvatar").innerHTML = user.avatar ? `<img class="avatar" src="${user.avatar}" alt="${user.name}" />` : initials(user.name);
+  $("userName").textContent = user.name;
+  $("menuName").textContent = user.name;
+  $("menuFarm").textContent = user.farm;
+}
+
+function setMenu(open) { $("userDropdown").hidden = !open; $("userTrigger").setAttribute("aria-expanded", String(open)); }
+$("userTrigger").addEventListener("click", (e) => { e.stopPropagation(); setMenu($("userDropdown").hidden); });
+document.addEventListener("click", () => setMenu(false));
+document.addEventListener("keydown", (e) => e.key === "Escape" && setMenu(false));
+
+// C6 · Cerrar sesión → vuelve al feed principal (HU002). En este mockup: login.
+$("logoutBtn").addEventListener("click", () => {
+  store.setSession(null);
+  redirectAfterLogin = null;
+  setMenu(false);
+  toast("Cerraste sesión", "Te esperamos de vuelta pronto.");
+  go("login"); render();
+});
+
+/* ============================================================================
+   C2 · Formulario
+   ============================================================================ */
+const emailEl = $("email"), passEl = $("password"), submitBtn = $("submitBtn");
+const touched = { email: false, password: false };
+let submitting = false;
+
+function showFieldError(input, errEl, msg, isTouched) {
+  const show = isTouched && msg;
+  input.setAttribute("aria-invalid", show ? "true" : "false");
+  errEl.hidden = !show;
+  errEl.querySelector("span").textContent = show ? msg : "";
+}
+function validateForm() {
+  const eErr = validateEmail(emailEl.value), pErr = validatePassword(passEl.value);
+  showFieldError(emailEl, $("email-error"), eErr, touched.email);
+  showFieldError(passEl, $("password-error"), pErr, touched.password);
+  submitBtn.disabled = !!eErr || !!pErr || submitting;   // "Ingresar" inhabilitado hasta que ambos sean válidos
+}
+emailEl.addEventListener("input", validateForm);
+passEl.addEventListener("input", validateForm);
+emailEl.addEventListener("blur", () => { touched.email = true; validateForm(); });
+passEl.addEventListener("blur", () => { touched.password = true; validateForm(); });
+
+// Mostrar / ocultar contraseña
+$("togglePass").addEventListener("click", () => {
+  const show = passEl.type === "password";
+  passEl.type = show ? "text" : "password";
+  $("togglePass").setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
+  $("togglePass").innerHTML = iconSvg(show ? "eye-off" : "eye");
+});
+
+$("forgotBtn").addEventListener("click", () => toast("Recuperar contraseña", "Esta pantalla se diseñará en otra historia de usuario."));
+
+/* ---------- C4 / C5 · Avisos ---------- */
+function formatTime(ts) { return new Date(ts).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" }); }
+function renderNotice(res) {
+  const n = $("notice");
+  if (!res) { n.innerHTML = ""; return; }
+  if (res.kind === "invalid") {
+    const warn = res.attemptsLeft <= 2
+      ? `<p>Te ${res.attemptsLeft === 1 ? "queda 1 intento" : `quedan ${res.attemptsLeft} intentos`} antes de bloquear temporalmente el acceso.</p>` : "";
+    n.innerHTML = `<div class="notice notice-error" role="alert" data-testid="notice-invalid">${iconSvg("circle-alert")}<div><strong class="t">Correo o contraseña incorrectos</strong>${warn}</div></div>`;
+  } else if (res.kind === "locked") {
+    n.innerHTML = `<div class="notice notice-locked" role="alert" data-testid="notice-locked">${iconSvg("lock")}<div><strong class="t">Cuenta bloqueada temporalmente</strong><p>Por seguridad bloqueamos el acceso durante ${LOCK_MINUTES} minutos tras ${MAX_FAILED_ATTEMPTS} intentos fallidos. Podrás intentarlo de nuevo a las <b>${formatTime(res.until)}</b></p></div></div>`;
+  } else if (res.kind === "pending") {
+    n.innerHTML = `<div class="notice notice-pending" role="status" data-testid="notice-pending">${iconSvg("hourglass")}<div><strong class="t">Solicitud en revisión</strong><p>Tu solicitud <b>#${res.requestNumber}</b> está en revisión. Recibirás respuesta en máximo ${PENDING_DAYS} días hábiles.</p></div></div>`;
+  }
+}
+
+/* ---------- Envío ---------- */
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (submitBtn.disabled) return;
+  submitting = true; validateForm();
+  submitBtn.innerHTML = `${iconSvg("loader-circle", "spin")}Ingresando…`;
+  renderNotice(null);
+
+  await new Promise((r) => setTimeout(r, 700));   // simula latencia de red
+  const { result, attempts } = attemptLogin(emailEl.value, passEl.value, store.attempts(), Date.now());
+  store.setAttempts(attempts);
+
+  submitting = false;
+  submitBtn.textContent = "Ingresar";
+
+  if (result.kind === "success") {                // C3 · redirige a Mis Lotes (o a la ruta solicitada)
+    store.setSession(result.user);
+    toast(`¡Hola, ${result.user.name.split(" ")[0]}!`, "Bienvenida de nuevo a tu finca.");
+    passEl.value = "";
+    const dest = redirectAfterLogin || "mis-lotes";
+    redirectAfterLogin = null;
+    go(dest); render();
+    return;
+  }
+  if (result.kind === "invalid") passEl.value = "";
+  renderNotice(result);
+  validateForm();
+});
+
+/* ---------- Panel de escenarios (solo mockup) ---------- */
+document.querySelectorAll("[data-fill]").forEach((btn) =>
+  btn.addEventListener("click", () => {
+    const [em, pw] = btn.dataset.fill.split("|");
+    emailEl.value = em; passEl.value = pw;
+    touched.email = touched.password = true;
+    renderNotice(null); validateForm();
+  })
+);
+$("resetDemo").addEventListener("click", () => {
+  store.setAttempts({}); renderNotice(null);
+  toast("Intentos reiniciados", "Puedes volver a probar el bloqueo.");
+});
+
+/* ---------- Toast ---------- */
+function toast(title, desc) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.innerHTML = `<b>${title}</b><span>${desc}</span>`;
+  $("toasts").appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+render();
+</script>
+</body>
+</html>

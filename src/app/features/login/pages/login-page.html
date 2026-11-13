@@ -1,0 +1,49 @@
+<section class="login">
+  <h1>Iniciar sesión</h1>
+  <form (submit)="enter($event)">
+    <div class="field">
+      <label for="email">Correo electrónico</label>
+      <input
+        class="input"
+        id="email"
+        type="email"
+        autocomplete="username"
+        [value]="email()"
+        (input)="onEmail($event)"
+        (blur)="emailTouched.set(true)"
+      />
+      @if (emailError(); as text) {
+        <span class="field-error">{{ text }}</span>
+      }
+    </div>
+    <div class="field">
+      <label for="password">Contraseña</label>
+      <div class="password-row">
+        <input
+          class="input"
+          id="password"
+          autocomplete="current-password"
+          [type]="passwordVisible() ? 'text' : 'password'"
+          [value]="password()"
+          (input)="onPassword($event)"
+          (blur)="passwordTouched.set(true)"
+        />
+        <button type="button" class="btn btn--secundario" (click)="passwordVisible.set(!passwordVisible())">
+          {{ passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña' }}
+        </button>
+      </div>
+      @if (passwordError(); as text) {
+        <span class="field-error">{{ text }}</span>
+      }
+    </div>
+    @if (notice(); as text) {
+      <p class="field-error">{{ text }}</p>
+    }
+    <button class="btn btn--primario" type="submit" [disabled]="!canSubmit()">Ingresar</button>
+  </form>
+  <button type="button" class="text-button" (click)="forgot.set(true)">¿Olvidaste tu contraseña?</button>
+  @if (forgot()) {
+    <p>Recuperar la contraseña se hará en otra historia.</p>
+  }
+  <button type="button" class="text-button" (click)="openRegistration()">Registra tu finca</button>
+</section>

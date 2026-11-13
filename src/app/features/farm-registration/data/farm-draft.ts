@@ -24,6 +24,8 @@ export function emptyFarmDraft(
     experience: '',
     photos: [],
     pdf: null,
+    passwordHash: '',
+    verified: true,
     ...overrides,
   };
 }

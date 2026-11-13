@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter, Router, RouterOutlet 
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
+import { SessionService } from '../../../core/session/session';
 import { installDemoAssets } from '../../../../testing/demo-assets';
 import { FeedPage } from '../../feed/pages/feed-page';
 import { Lot } from '../data/lot';
@@ -21,6 +22,7 @@ describe('Página de mis lotes', () => {
 
   beforeEach(async () => {
     login = 'OD-2026-100001';
+    localStorage.removeItem('od.session');
     installDemoAssets();
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
@@ -45,6 +47,11 @@ describe('Página de mis lotes', () => {
   });
 
   async function render(): Promise<void> {
+    TestBed.inject(SessionService).start({
+      farmId: login,
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
     fixture = TestBed.createComponent(LotsPage);
     compiled = fixture.nativeElement as HTMLElement;
     view = compiled;
@@ -416,6 +423,7 @@ describe('Lote publicado en el carrusel', () => {
   let fixture: ComponentFixture<Host>;
 
   beforeEach(async () => {
+    localStorage.removeItem('od.session');
     installDemoAssets();
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
@@ -427,6 +435,11 @@ describe('Lote publicado en el carrusel', () => {
         ]),
       ],
     }).compileComponents();
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
   });
 
   afterEach(() => {

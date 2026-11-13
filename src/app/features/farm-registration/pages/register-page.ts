@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RegistrationForm } from '../services/registration-form';
+import { RegistrationForm } from '../../../core/registration/registration-form';
 
 @Component({
   selector: 'app-register-page',

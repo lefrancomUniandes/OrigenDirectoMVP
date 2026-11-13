@@ -65,3 +65,4 @@ No se resuelve de paso ni se olvida.
 - **Perfil.** Pagina de la finca: contacto, datos, lotes y volver al feed. «Visitar perfil» abre el aviso del navegador porque esa pagina sigue en proceso.
 - **Admin.** Aprobar o desaprobar fincas. El feed muestra todas las que se registran.
 - **Feed.** Cargar mas tarjetas al bajar, en lotes, con un indicador mientras llegan.
+- **Login.** Recuperar la contraseña. El enlace avisa que se hará en otra historia.

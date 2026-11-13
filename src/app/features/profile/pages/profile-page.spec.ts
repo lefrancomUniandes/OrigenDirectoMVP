@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
+import { SessionService } from '../../../core/session/session';
 import { installDemoAssets } from '../../../../testing/demo-assets';
 import { ProfilePage } from './profile-page';
 
@@ -18,6 +19,7 @@ describe('Página del perfil', () => {
   beforeEach(async () => {
     login = '';
     farmId = 'OD-2026-100001';
+    localStorage.removeItem('od.session');
     installDemoAssets();
     await Dexie.delete('origen-directo');
     await TestBed.configureTestingModule({
@@ -45,6 +47,12 @@ describe('Página del perfil', () => {
   });
 
   async function render(): Promise<void> {
+    const session = TestBed.inject(SessionService);
+    if (login) {
+      session.start({ farmId: login, ownerName: 'Ana', farmName: 'Finca La Esperanza' });
+    } else {
+      session.end();
+    }
     fixture = TestBed.createComponent(ProfilePage);
     fixture.detectChanges();
     await new Promise((resolve) => setTimeout(resolve, 50));

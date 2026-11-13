@@ -142,4 +142,22 @@ describe('FarmRegistrationService', () => {
       vi.useRealTimers();
     }
   });
+
+  it('al registrar, verified queda true y lo guardado de la contraseña no es el texto Cafe2026*', async () => {
+    let saved: Record<string, unknown> | undefined;
+    const farms = {
+      create: async (data: Record<string, unknown>) => {
+        saved = data;
+        return String(data['id']);
+      },
+    };
+    const service = new FarmRegistrationService(farms as never, { create: async () => 'pub' } as never);
+
+    await service.register({ ...emptyFarmDraft(), password: 'Cafe2026*' });
+
+    expect(saved?.['verified']).toBe(true);
+    expect(saved?.['password']).toBeUndefined();
+    expect(saved?.['passwordHash']).not.toBe('Cafe2026*');
+    expect(Object.values(saved ?? {})).not.toContain('Cafe2026*');
+  });
 });

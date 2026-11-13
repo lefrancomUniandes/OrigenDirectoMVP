@@ -57,6 +57,8 @@ describe('FarmRepository', () => {
       experience: '',
       photos: [photo],
       pdf,
+      passwordHash: '',
+      verified: true,
     });
     const saved = await farms.getById(id);
 

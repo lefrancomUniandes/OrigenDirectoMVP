@@ -1,3 +1,4 @@
+import { hashPassword } from '../auth/password-hash';
 import { OrigenDirectoDb } from './origen-directo.db';
 
 interface DemoPhoto {
@@ -43,6 +44,7 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
   const angelesBio = 'Café de montaña en las laderas de Chinchiná.';
   const fortunaBio = 'Una finca pequeña entre cafetos del Tolima.';
   const robleBio = 'Cafetal bajo sombra en las colinas de Pitalito.';
+  const passwordHash = await hashPassword('Cafe2026*');
 
   await db.table('fincas').bulkAdd([
     {
@@ -67,6 +69,8 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
       experience: '18',
       photos: [paraiso],
       pdf: null,
+      passwordHash,
+      verified: true,
     },
     {
       id: 'demo-angeles',
@@ -90,6 +94,8 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
       experience: '12',
       photos: [angeles1, angeles2],
       pdf: null,
+      passwordHash,
+      verified: true,
     },
     {
       id: 'demo-fortuna',
@@ -113,6 +119,8 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
       experience: '20',
       photos: [fortuna],
       pdf: null,
+      passwordHash,
+      verified: true,
     },
     {
       id: 'demo-roble',
@@ -136,6 +144,8 @@ export async function seedDemoIfEmpty(db: OrigenDirectoDb): Promise<void> {
       experience: '9',
       photos: [roble],
       pdf: null,
+      passwordHash,
+      verified: true,
     },
   ]);
 

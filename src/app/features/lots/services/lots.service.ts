@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { NovedadRepository } from '../../../core/data/novedad.repository';
 import { liveQuerySignal } from '../../../core/db/live-query';
+import { SessionService } from '../../../core/session/session';
 import { Lot } from '../data/lot';
 import { LotFarm, LotFarmRepository } from '../data/lot-farm.repository';
 import { LotRepository } from '../data/lot.repository';
@@ -9,11 +9,10 @@ import { LotWrite } from './lot-form';
 
 @Injectable()
 export class LotsService {
-  private readonly route = inject(ActivatedRoute);
   private readonly lotsRepo = inject(LotRepository);
   private readonly farms = inject(LotFarmRepository);
   private readonly novedades = inject(NovedadRepository);
-  private readonly farmId = this.route.snapshot.queryParamMap.get('login') ?? '';
+  private readonly farmId = inject(SessionService).account()?.farmId ?? '';
 
   readonly farm = liveQuerySignal(
     () => this.farms.getById(this.farmId),

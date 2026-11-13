@@ -4,6 +4,7 @@ import { Publication, PublicationRepository } from '../../../core/data/publicati
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
 import { seedDemoIfEmpty } from '../../../core/db/demo-seed';
 import { liveQuerySignal } from '../../../core/db/live-query';
+import { SessionService } from '../../../core/session/session';
 import { ProfileFarm, ProfileFarmRepository } from '../data/profile-farm.repository';
 
 @Injectable()
@@ -12,7 +13,7 @@ export class ProfileService {
   private readonly farms = inject(ProfileFarmRepository);
   private readonly publications = inject(PublicationRepository);
   private readonly farmId = this.route.snapshot.paramMap.get('id') ?? '';
-  readonly canEdit = this.route.snapshot.queryParamMap.get('login') === this.farmId;
+  readonly canEdit = inject(SessionService).account()?.farmId === this.farmId;
 
   constructor() {
     void seedDemoIfEmpty(inject(OrigenDirectoDb));

@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Publication } from '../../../core/data/publication.repository';
 import { ProfileFarm, ProfilePhoto } from '../data/profile-farm.repository';
 import { ProfileService } from '../services/profile.service';
@@ -11,9 +12,10 @@ import { ProfileService } from '../services/profile.service';
 })
 export class ProfilePage {
   readonly profile = inject(ProfileService);
+  private readonly route = inject(ActivatedRoute);
   readonly openPost = signal<Publication | null>(null);
   readonly notice = signal('');
-  readonly editing = signal(false);
+  readonly editing = signal(this.route.snapshot.data?.['edit'] === true);
 
   photoSrc(photo: ProfilePhoto): string {
     const copy = new Uint8Array(photo.bytes);

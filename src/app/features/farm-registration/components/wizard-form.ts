@@ -20,6 +20,7 @@ export interface WizardForm {
   documentType: string;
   documentNumber: string;
   email: string;
+  password: string;
   mobile: string;
   phoneAreaCode: string;
   landline: string;
@@ -52,6 +53,7 @@ export const emptyWizardForm: WizardForm = {
   documentType: '',
   documentNumber: '',
   email: '',
+  password: '',
   mobile: '',
   phoneAreaCode: '',
   landline: '',
