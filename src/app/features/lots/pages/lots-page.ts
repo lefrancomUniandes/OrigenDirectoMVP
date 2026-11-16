@@ -111,6 +111,15 @@ export class LotsPage {
     file.click();
   }
 
+  async copyLink(): Promise<void> {
+    const id = this.qrLotId();
+    if (!id) {
+      return;
+    }
+    await navigator.clipboard.writeText(this.qrLink(id));
+    this.toast('Enlace copiado');
+  }
+
   askRemove(lot: Lot): void {
     this.confirmId.set(lot.id);
   }

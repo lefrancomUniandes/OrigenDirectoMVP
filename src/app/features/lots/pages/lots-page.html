@@ -49,6 +49,7 @@
               <img alt="Código QR" [src]="qrImage()" />
               <p>{{ qrLink(lot.id) }}</p>
               <button type="button" class="btn btn--icono" (click)="downloadQr()">Descargar QR</button>
+              <button type="button" class="btn btn--icono" (click)="copyLink()">Copiar enlace</button>
             </div>
           }
         </article>

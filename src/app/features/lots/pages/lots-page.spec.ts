@@ -471,6 +471,31 @@ describe('Página de mis lotes', () => {
     expect(shown?.startsWith('data:image/')).toBe(true);
   });
 
+  it('al copiar el enlace, el portapapeles queda con el enlace que se ve y aparece «Enlace copiado»', async () => {
+    await addLot({ id: 'lote-castillo', farmId: 'OD-2026-100001', variety: 'Castillo' });
+    await render();
+    await untilText('Castillo');
+    button('Ver QR').click();
+    await untilText('lote-castillo');
+
+    const shown = compiled.querySelector('.lot__qr p')?.textContent?.trim();
+    const copied: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: (value: string) => {
+          copied.push(value);
+          return Promise.resolve();
+        },
+      },
+    });
+    button('Copiar enlace').click();
+    await untilText('Enlace copiado');
+
+    expect(copied).toEqual([shown]);
+    expect(compiled.textContent).toContain('Enlace copiado');
+  });
+
   async function linkOf(variety: string): Promise<string> {
     const card = [...compiled.querySelectorAll('article.lot')].find((el) =>
       el.querySelector('h3')?.textContent?.includes(variety),
