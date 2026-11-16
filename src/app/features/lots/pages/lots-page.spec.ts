@@ -411,6 +411,25 @@ describe('Página de mis lotes', () => {
     const rows = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
     expect(rows).toEqual([expect.objectContaining({ id: 'propio', active: false })]);
   });
+
+  it('al publicar un lote y abrirlo, se ve el código QR y el enlace público de ese lote', async () => {
+    await saveFarm();
+    await render();
+    openCreate();
+    fillValid();
+    button('Publicar lote').click();
+    await untilText('¡Lote Publicado con éxito!');
+
+    const [lot] = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
+    button('Ver QR').click();
+    fixture.detectChanges();
+    const link = `${location.origin}/origen/lote/${lot.id}`;
+    await untilText(link);
+
+    expect(compiled.textContent).toContain(link);
+    const qr = compiled.querySelector('img[alt="Código QR"]') as HTMLImageElement | null;
+    expect(qr?.getAttribute('src')).toBeTruthy();
+  });
 });
 
 @Component({

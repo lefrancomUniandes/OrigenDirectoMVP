@@ -66,3 +66,4 @@ No se resuelve de paso ni se olvida.
 - **Admin.** Aprobar o desaprobar fincas. El feed muestra todas las que se registran.
 - **Feed.** Cargar mas tarjetas al bajar, en lotes, con un indicador mientras llegan.
 - **Login.** Recuperar la contraseña. El enlace avisa que se hará en otra historia.
+- **Registro de Origen.** La ficha pública del lote debe mostrar el nombre del lote, el proceso o método de fermentación, el perfil de tueste y las notas de cata principales. Esos campos todavía no se registran; esta historia los deja listos para esa ventana.

@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toString as qrSvg } from 'qrcode';
 import { lotVarieties } from '../../../core/catalogs/lot-varieties';
 import { Lot } from '../data/lot';
 import {
@@ -34,6 +35,8 @@ export class LotsPage {
   readonly touched = signal<ReadonlySet<keyof LotDraft>>(new Set());
   readonly confirmId = signal<string | null>(null);
   readonly toasts = signal<readonly string[]>([]);
+  readonly qrLotId = signal<string | null>(null);
+  readonly qrImage = signal('');
 
   readonly canSave = computed(() => lotFormValid(this.draft()));
   readonly confirmLot = computed(
@@ -84,6 +87,17 @@ export class LotsPage {
 
   touch(field: keyof LotDraft): void {
     this.touched.update((current) => new Set(current).add(field));
+  }
+
+  qrLink(id: string): string {
+    return `${location.origin}/origen/lote/${id}`;
+  }
+
+  async openQr(lot: Lot): Promise<void> {
+    const link = this.qrLink(lot.id);
+    const svg = await qrSvg(link, { type: 'svg', margin: 1 });
+    this.qrImage.set(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+    this.qrLotId.set(lot.id);
   }
 
   askRemove(lot: Lot): void {

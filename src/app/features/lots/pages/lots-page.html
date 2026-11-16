@@ -40,9 +40,16 @@
             <p class="lot__notes">{{ lot.notes }}</p>
           }
           <div class="lot__actions">
+            <button type="button" class="btn btn--icono" (click)="openQr(lot)">Ver QR</button>
             <button type="button" class="btn btn--icono" (click)="openEdit(lot)">Editar</button>
             <button type="button" class="btn btn--icono btn--eliminar" (click)="askRemove(lot)">Eliminar</button>
           </div>
+          @if (qrLotId() === lot.id) {
+            <div class="lot__qr">
+              <img alt="Código QR" [src]="qrImage()" />
+              <p>{{ qrLink(lot.id) }}</p>
+            </div>
+          }
         </article>
       }
     </div>
