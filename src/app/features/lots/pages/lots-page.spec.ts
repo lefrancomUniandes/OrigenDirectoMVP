@@ -447,6 +447,30 @@ describe('Página de mis lotes', () => {
     expect(castillo).not.toBe(geisha);
   });
 
+  it('al descargar el QR, se obtiene una imagen de ese código', async () => {
+    await addLot({ id: 'lote-castillo', farmId: 'OD-2026-100001', variety: 'Castillo' });
+    await render();
+    await untilText('Castillo');
+    button('Ver QR').click();
+    await untilText('lote-castillo');
+
+    const shown = compiled.querySelector('img[alt="Código QR"]')?.getAttribute('src');
+    const downloads: HTMLAnchorElement[] = [];
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      downloads.push(this);
+    };
+    try {
+      button('Descargar QR').click();
+    } finally {
+      HTMLAnchorElement.prototype.click = click;
+    }
+
+    expect(downloads).toHaveLength(1);
+    expect(downloads[0].getAttribute('href')).toBe(shown);
+    expect(shown?.startsWith('data:image/')).toBe(true);
+  });
+
   async function linkOf(variety: string): Promise<string> {
     const card = [...compiled.querySelectorAll('article.lot')].find((el) =>
       el.querySelector('h3')?.textContent?.includes(variety),

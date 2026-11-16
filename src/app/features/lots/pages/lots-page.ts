@@ -100,6 +100,17 @@ export class LotsPage {
     this.qrLotId.set(lot.id);
   }
 
+  downloadQr(): void {
+    const image = this.qrImage();
+    if (!image) {
+      return;
+    }
+    const file = document.createElement('a');
+    file.href = image;
+    file.download = 'codigo-qr.svg';
+    file.click();
+  }
+
   askRemove(lot: Lot): void {
     this.confirmId.set(lot.id);
   }
