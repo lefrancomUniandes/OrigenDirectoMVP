@@ -430,6 +430,46 @@ describe('Página de mis lotes', () => {
     const qr = compiled.querySelector('img[alt="Código QR"]') as HTMLImageElement | null;
     expect(qr?.getAttribute('src')).toBeTruthy();
   });
+
+  it('al abrir dos lotes, cada enlace es distinto y corresponde solo a su lote', async () => {
+    await addLot({ id: 'lote-castillo', farmId: 'OD-2026-100001', variety: 'Castillo' });
+    await addLot({ id: 'lote-geisha', farmId: 'OD-2026-100001', variety: 'Geisha' });
+    await render();
+    await untilText('Geisha');
+
+    const castillo = await linkOf('Castillo');
+    const geisha = await linkOf('Geisha');
+
+    expect(castillo).toContain('lote-castillo');
+    expect(castillo).not.toContain('lote-geisha');
+    expect(geisha).toContain('lote-geisha');
+    expect(geisha).not.toContain('lote-castillo');
+    expect(castillo).not.toBe(geisha);
+  });
+
+  async function linkOf(variety: string): Promise<string> {
+    const card = [...compiled.querySelectorAll('article.lot')].find((el) =>
+      el.querySelector('h3')?.textContent?.includes(variety),
+    );
+    if (!card) {
+      throw new Error(`lote ${variety} not found`);
+    }
+    const ver = [...card.querySelectorAll('button')].find((el) => el.textContent?.includes('Ver QR'));
+    if (!ver) {
+      throw new Error(`Ver QR de ${variety} not found`);
+    }
+    ver.click();
+    for (let attempt = 0; attempt < 40; attempt++) {
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const text = card.querySelector('.lot__qr p')?.textContent?.trim() ?? '';
+      if (text) {
+        return text;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    return '';
+  }
 });
 
 @Component({
