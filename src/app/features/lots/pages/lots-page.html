@@ -44,20 +44,62 @@
             <button type="button" class="btn btn--icono" (click)="openEdit(lot)">Editar</button>
             <button type="button" class="btn btn--icono btn--eliminar" (click)="askRemove(lot)">Eliminar</button>
           </div>
-          @if (qrLotId() === lot.id) {
-            <div class="lot__qr">
-              <img alt="Código QR" [src]="qrImage()" />
-              <p>{{ qrLink(lot.id) }}</p>
-              <button type="button" class="btn btn--icono" (click)="downloadQr()">Descargar QR</button>
-              <button type="button" class="btn btn--icono" (click)="copyLink()">Copiar enlace</button>
-              <button type="button" class="btn btn--icono" (click)="share()">Compartir</button>
-            </div>
-          }
         </article>
       }
     </div>
   }
 </section>
+
+@if (qrLotId(); as id) {
+  <div class="overlay">
+    <div class="modal modal--qr" role="dialog" aria-labelledby="qrTit">
+      @if (qrLot(); as lot) {
+        <header class="modal__qr-head">
+          <h2 id="qrTit">{{ lot.variety }}</h2>
+          <span class="lot__status" [attr.data-status]="lot.status">{{ lot.status }}</span>
+        </header>
+        <div class="modal__body">
+          <dl class="lot__facts">
+            <div>
+              <dt>Cantidad disponible</dt>
+              <dd>{{ lot.quantity }} {{ unitLabel(lot.unit) }}</dd>
+            </div>
+            <div>
+              <dt>Altitud</dt>
+              <dd>{{ altitudeLabel(lot.altitude) }}</dd>
+            </div>
+            <div class="lot__price">
+              <dt>Precio unitario</dt>
+              <dd>{{ priceLabel(lot.price, lot.unit) }}</dd>
+            </div>
+          </dl>
+          @if (lot.notes) {
+            <p class="lot__notes">{{ lot.notes }}</p>
+          }
+          <p class="lot__support">
+            Este lote ya tiene un código QR único asociado a su ficha digital pública. Mientras el lote esté activo,
+            el QR siempre abrirá la versión más actualizada de la ficha.
+          </p>
+          <div class="lot__qr">
+            <h3 class="lot__qr-title">Ficha digital de origen</h3>
+            <div class="lot__qr-box">
+              <img alt="Código QR" [src]="qrImage()" />
+            </div>
+            <p>{{ qrLink(id) }}</p>
+            <div class="lot__qr-actions">
+              <button type="button" class="btn btn--mostaza" (click)="downloadQr()">Descargar QR</button>
+              <button type="button" class="btn btn--mostaza" (click)="copyLink()">Copiar enlace</button>
+              <button type="button" class="btn btn--verde" (click)="share()">Compartir</button>
+            </div>
+          </div>
+        </div>
+      }
+      <footer>
+        <button type="button" class="btn btn--secundario" (click)="closeQr()">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+}
 
 @if (formOpen()) {
   <div class="overlay">

@@ -52,7 +52,13 @@ export class LotsPage {
     return fieldError(field, this.draft());
   }
 
+  qrLot(): Lot | undefined {
+    const id = this.qrLotId();
+    return this.service.lots().find((lot) => lot.id === id);
+  }
+
   openCreate(): void {
+    this.closeQr();
     this.editingId.set(null);
     this.draft.set(emptyLotDraft);
     this.touched.set(new Set());
@@ -60,6 +66,7 @@ export class LotsPage {
   }
 
   openEdit(lot: Lot): void {
+    this.closeQr();
     const known = (lotVarieties as readonly string[]).includes(lot.variety);
     this.editingId.set(lot.id);
     this.draft.set({
@@ -81,6 +88,12 @@ export class LotsPage {
     this.editingId.set(null);
   }
 
+  closeQr(): void {
+    this.qrLotId.set(null);
+    this.qrImage.set('');
+    this.qrBytes.set(null);
+  }
+
   onField(field: keyof LotDraft, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.draft.update((current) => ({ ...current, [field]: value }));
@@ -95,13 +108,17 @@ export class LotsPage {
     return `${location.origin}/origen/lote/${id}`;
   }
 
-  async openQr(lot: Lot): Promise<void> {
-    const link = this.qrLink(lot.id);
+  openQr(lot: Lot): Promise<void> {
+    return this.showQr(lot.id);
+  }
+
+  async showQr(id: string): Promise<void> {
+    const link = this.qrLink(id);
     const svg = await qrSvg(link, { type: 'svg', margin: 1 });
     const png = await qrPng(link);
     this.qrImage.set(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
     this.qrBytes.set(png);
-    this.qrLotId.set(lot.id);
+    this.qrLotId.set(id);
   }
 
   downloadQr(): void {
@@ -157,10 +174,13 @@ export class LotsPage {
         '¡Lote Actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
       );
     } else {
-      await this.service.publish(write);
+      const id = await this.service.publish(write);
       this.toast(
         '¡Lote Publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
       );
+      this.closeForm();
+      await this.showQr(id);
+      return;
     }
     this.closeForm();
   }
@@ -177,5 +197,11 @@ export class LotsPage {
 
   private toast(message: string): void {
     this.toasts.update((current) => [...current, message]);
+    setTimeout(() => {
+      this.toasts.update((current) => {
+        const index = current.indexOf(message);
+        return index < 0 ? current : current.filter((_, i) => i !== index);
+      });
+    }, 4000);
   }
 }

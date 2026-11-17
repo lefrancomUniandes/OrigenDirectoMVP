@@ -24,7 +24,7 @@ export class LotsService {
     return rows.filter((row) => row.farmId === this.farmId && row.active);
   }, [] as Lot[]);
 
-  async publish(input: LotWrite): Promise<void> {
+  async publish(input: LotWrite): Promise<string> {
     const publishedOn = new Date().toISOString();
     const id = await this.lotsRepo.create({
       ...input,
@@ -42,6 +42,7 @@ export class LotsService {
       department: farm?.department ?? '',
       publishedOn,
     });
+    return id;
   }
 
   async save(id: string, input: LotWrite): Promise<void> {

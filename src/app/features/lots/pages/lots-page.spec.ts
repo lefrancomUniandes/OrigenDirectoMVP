@@ -574,8 +574,8 @@ describe('Página de mis lotes', () => {
     for (let attempt = 0; attempt < 40; attempt++) {
       await fixture.whenStable();
       fixture.detectChanges();
-      const text = card.querySelector('.lot__qr p')?.textContent?.trim() ?? '';
-      if (text) {
+      const text = compiled.querySelector('.lot__qr p')?.textContent?.trim() ?? '';
+      if (text.includes(`lote-${variety.toLowerCase()}`)) {
         return text;
       }
       await new Promise((resolve) => setTimeout(resolve, 50));
