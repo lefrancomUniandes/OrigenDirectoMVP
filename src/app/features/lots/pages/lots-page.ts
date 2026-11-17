@@ -120,6 +120,17 @@ export class LotsPage {
     this.toast('Enlace copiado');
   }
 
+  async shareWhatsApp(): Promise<void> {
+    const id = this.qrLotId();
+    const image = this.qrImage();
+    if (!id || !image) {
+      return;
+    }
+    const payload = decodeURIComponent(image.slice(image.indexOf(',') + 1));
+    const file = new File([payload], 'codigo-qr.svg', { type: 'image/svg+xml' });
+    await navigator.share({ text: this.qrLink(id), files: [file] });
+  }
+
   askRemove(lot: Lot): void {
     this.confirmId.set(lot.id);
   }

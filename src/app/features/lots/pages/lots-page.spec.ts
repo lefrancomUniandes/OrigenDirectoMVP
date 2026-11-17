@@ -496,6 +496,36 @@ describe('Página de mis lotes', () => {
     expect(compiled.textContent).toContain('Enlace copiado');
   });
 
+  it('al compartir por WhatsApp, se entrega la imagen del QR y el enlace de ese lote', async () => {
+    await addLot({ id: 'lote-castillo', farmId: 'OD-2026-100001', variety: 'Castillo' });
+    await render();
+    await untilText('Castillo');
+    button('Ver QR').click();
+    await untilText('lote-castillo');
+
+    const shown = compiled.querySelector('img[alt="Código QR"]')?.getAttribute('src') ?? '';
+    const link = compiled.querySelector('.lot__qr p')?.textContent?.trim();
+    const shared: ShareData[] = [];
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: (data: ShareData) => {
+        shared.push(data);
+        return Promise.resolve();
+      },
+    });
+    button('Compartir por WhatsApp').click();
+    for (let attempt = 0; attempt < 40 && shared.length === 0; attempt++) {
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    const file = shared[0]?.files?.[0];
+    const payload = decodeURIComponent(shown.slice(shown.indexOf(',') + 1));
+    expect(shared[0]?.text).toBe(link);
+    expect(file?.type.startsWith('image/')).toBe(true);
+    expect(await file?.text()).toBe(payload);
+  });
+
   async function linkOf(variety: string): Promise<string> {
     const card = [...compiled.querySelectorAll('article.lot')].find((el) =>
       el.querySelector('h3')?.textContent?.includes(variety),
