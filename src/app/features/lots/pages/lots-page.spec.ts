@@ -496,14 +496,13 @@ describe('Página de mis lotes', () => {
     expect(compiled.textContent).toContain('Enlace copiado');
   });
 
-  it('al compartir por WhatsApp, se entrega la imagen del QR y el enlace de ese lote', async () => {
+  it('al compartir, se entrega la imagen del QR y el enlace de ese lote', async () => {
     await addLot({ id: 'lote-castillo', farmId: 'OD-2026-100001', variety: 'Castillo' });
     await render();
     await untilText('Castillo');
     button('Ver QR').click();
     await untilText('lote-castillo');
 
-    const shown = compiled.querySelector('img[alt="Código QR"]')?.getAttribute('src') ?? '';
     const link = compiled.querySelector('.lot__qr p')?.textContent?.trim();
     const shared: ShareData[] = [];
     Object.defineProperty(navigator, 'share', {
@@ -513,17 +512,51 @@ describe('Página de mis lotes', () => {
         return Promise.resolve();
       },
     });
-    button('Compartir por WhatsApp').click();
+    button('Compartir').click();
     for (let attempt = 0; attempt < 40 && shared.length === 0; attempt++) {
       await fixture.whenStable();
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
     const file = shared[0]?.files?.[0];
-    const payload = decodeURIComponent(shown.slice(shown.indexOf(',') + 1));
+    const bytes = file ? new Uint8Array(await file.arrayBuffer()) : new Uint8Array();
     expect(shared[0]?.text).toBe(link);
-    expect(file?.type.startsWith('image/')).toBe(true);
-    expect(await file?.text()).toBe(payload);
+    expect(file?.name).toBe('codigo-qr.png');
+    expect(file?.type).toBe('image/png');
+    expect([...bytes.slice(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+  });
+
+  it('al editar cantidad, precio, notas o estado, el QR y el enlace siguen iguales', async () => {
+    await addLot({ id: 'lote-castillo', farmId: 'OD-2026-100001', variety: 'Castillo' });
+    await render();
+    await untilText('Castillo');
+    button('Ver QR').click();
+    await untilText('lote-castillo');
+
+    const link = compiled.querySelector('.lot__qr p')?.textContent?.trim();
+    const qr = compiled.querySelector('img[alt="Código QR"]')?.getAttribute('src');
+
+    button('Editar').click();
+    fixture.detectChanges();
+    setControl('cantidad', '30');
+    setControl('precio', '90000');
+    setControl('notas', 'Panela');
+    setControl('estado', 'En pausa');
+    button('Guardar cambios').click();
+    await untilText('¡Lote Actualizado con éxito!');
+    button('Ver QR').click();
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await fixture.whenStable();
+      fixture.detectChanges();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    expect(compiled.textContent).toContain('30 sacos (70kg)');
+    expect(compiled.textContent).toContain('$90.000 COP / saco');
+    expect(compiled.textContent).toContain('Panela');
+    expect(compiled.textContent).toContain('En pausa');
+    expect(compiled.querySelector('.lot__qr p')?.textContent?.trim()).toBe(link);
+    expect(compiled.querySelector('img[alt="Código QR"]')?.getAttribute('src')).toBe(qr);
   });
 
   async function linkOf(variety: string): Promise<string> {

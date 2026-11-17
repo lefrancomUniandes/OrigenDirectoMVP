@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toString as qrSvg } from 'qrcode';
 import { lotVarieties } from '../../../core/catalogs/lot-varieties';
+import { qrPng } from '../services/qr-png';
 import { Lot } from '../data/lot';
 import {
   LotDraft,
@@ -37,6 +38,7 @@ export class LotsPage {
   readonly toasts = signal<readonly string[]>([]);
   readonly qrLotId = signal<string | null>(null);
   readonly qrImage = signal('');
+  readonly qrBytes = signal<Uint8Array | null>(null);
 
   readonly canSave = computed(() => lotFormValid(this.draft()));
   readonly confirmLot = computed(
@@ -96,7 +98,9 @@ export class LotsPage {
   async openQr(lot: Lot): Promise<void> {
     const link = this.qrLink(lot.id);
     const svg = await qrSvg(link, { type: 'svg', margin: 1 });
+    const png = await qrPng(link);
     this.qrImage.set(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+    this.qrBytes.set(png);
     this.qrLotId.set(lot.id);
   }
 
@@ -120,14 +124,15 @@ export class LotsPage {
     this.toast('Enlace copiado');
   }
 
-  async shareWhatsApp(): Promise<void> {
+  async share(): Promise<void> {
     const id = this.qrLotId();
-    const image = this.qrImage();
-    if (!id || !image) {
+    const png = this.qrBytes();
+    if (!id || !png) {
       return;
     }
-    const payload = decodeURIComponent(image.slice(image.indexOf(',') + 1));
-    const file = new File([payload], 'codigo-qr.svg', { type: 'image/svg+xml' });
+    const bytes = new ArrayBuffer(png.byteLength);
+    new Uint8Array(bytes).set(png);
+    const file = new File([bytes], 'codigo-qr.png', { type: 'image/png' });
     await navigator.share({ text: this.qrLink(id), files: [file] });
   }
 
