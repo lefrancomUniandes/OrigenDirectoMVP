@@ -67,3 +67,4 @@ No se resuelve de paso ni se olvida.
 - **Feed.** Cargar mas tarjetas al bajar, en lotes, con un indicador mientras llegan.
 - **Login.** Recuperar la contraseña. El enlace avisa que se hará en otra historia.
 - **Registro de Origen.** La ficha pública del lote debe mostrar el nombre del lote, el proceso o método de fermentación, el perfil de tueste y las notas de cata principales. Esos campos todavía no se registran; esta historia los deja listos para esa ventana.
+- **Registro de Origen.** Un lote En pausa o Vendido abre la ficha pública y muestra ese estado. Qué debe hacer la ficha en esos estados queda para esta historia.

@@ -28,6 +28,10 @@ export const routes: Routes = [
         path: 'iniciar-sesion',
         loadChildren: () => import('./features/login/routes').then((m) => m.routes),
       },
+      {
+        path: 'origen/lote',
+        loadChildren: () => import('./features/origin/routes').then((m) => m.routes),
+      },
     ],
   },
 ];
