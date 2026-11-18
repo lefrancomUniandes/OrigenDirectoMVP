@@ -1,77 +1,59 @@
 @if (origin.sheet(); as sheet) {
   <article class="origin">
-    <p class="origin__public">Consulta pública, no necesitas iniciar sesión</p>
+    <header class="origin__head">
+      <div>
+        <h1>{{ sheet.farm.farmName }}</h1>
+        <p class="origin__sub">{{ sheet.farm.ownerName }}</p>
+      </div>
+      <span class="origin__badge">Consulta pública</span>
+    </header>
+
     @if (sheet.farm.photos[0]; as photo) {
       <img class="origin__photo" [src]="photoSrc(photo)" alt="Origen del lote" />
     }
-    <h1>{{ sheet.farm.farmName }}</h1>
-    <p>{{ sheet.farm.ownerName }}</p>
-    <dl>
-      <div>
-        <dt>Código</dt>
-        <dd>{{ sheet.lot.id }}</dd>
-      </div>
-      <div>
-        <dt>Vereda</dt>
-        <dd>{{ sheet.farm.village }}</dd>
-      </div>
-      <div>
-        <dt>Municipio</dt>
-        <dd>{{ sheet.farm.municipality }}</dd>
-      </div>
-      <div>
-        <dt>Departamento</dt>
-        <dd>{{ sheet.farm.department }}</dd>
-      </div>
-      <div>
-        <dt>Altitud</dt>
-        <dd>{{ sheet.lot.altitude.toLocaleString('es-CO') }} m.s.n.m.</dd>
-      </div>
-      <div>
-        <dt>Área</dt>
-        <dd>{{ sheet.farm.area }} {{ sheet.farm.areaUnit }}</dd>
-      </div>
-      <div>
-        <dt>Variedad</dt>
-        <dd>{{ sheet.lot.variety }}</dd>
-      </div>
-      <div>
-        <dt>Estado</dt>
-        <dd>{{ sheet.lot.status }}</dd>
-      </div>
-      <div>
-        <dt>Celular</dt>
-        <dd>{{ sheet.farm.mobile }}</dd>
-      </div>
-      <div>
-        <dt>Indicativo</dt>
-        <dd>{{ sheet.farm.phoneAreaCode }}</dd>
-      </div>
-      <div>
-        <dt>Fijo</dt>
-        <dd>{{ sheet.farm.landline }}</dd>
-      </div>
-      <div>
-        <dt>Correo</dt>
-        <dd>{{ sheet.farm.email }}</dd>
-      </div>
-    </dl>
-    <p>{{ sheet.farm.bio }}</p>
+
+    <section class="origin__block" aria-label="Origen">
+      <h2>Origen</h2>
+      <p><strong>Código:</strong> {{ sheet.lot.id }}</p>
+      <p><strong>Ubicación:</strong> {{ sheet.farm.municipality }}, {{ sheet.farm.department }}</p>
+      <p><strong>Vereda:</strong> {{ sheet.farm.village }}</p>
+      <p><strong>Altitud:</strong> {{ sheet.lot.altitude.toLocaleString('es-CO') }} m.s.n.m.</p>
+      <p><strong>Área:</strong> {{ sheet.farm.area }} {{ sheet.farm.areaUnit }}</p>
+      <p><strong>Estado del lote:</strong> {{ sheet.lot.status }}</p>
+    </section>
+
+    <section class="origin__block" aria-label="Productor">
+      <h2>Productor</h2>
+      <p><strong>Nombre:</strong> {{ sheet.farm.ownerName }}</p>
+      <p><strong>Biografía:</strong> {{ sheet.farm.bio }}</p>
+      <p><strong>Celular:</strong> {{ sheet.farm.mobile }}</p>
+      <p><strong>Indicativo:</strong> {{ sheet.farm.phoneAreaCode }}</p>
+      <p><strong>Fijo:</strong> {{ sheet.farm.landline }}</p>
+      <p><strong>Correo:</strong> {{ sheet.farm.email }}</p>
+    </section>
+
+    <section class="origin__block" aria-label="Características del café">
+      <h2>Características del café</h2>
+      <p><strong>Variedad:</strong> {{ sheet.lot.variety }}</p>
+    </section>
+
     @if (sheet.lot.notes) {
-      <section aria-label="Notas de cata">
+      <section class="origin__block" aria-label="Notas de cata">
         <h2>Notas de cata</h2>
         <p>{{ sheet.lot.notes }}</p>
       </section>
     }
-    <iframe
-      title="Ubicación del origen"
-      [src]="mapLink(sheet.farm)"
-    ></iframe>
+
+    <section class="origin__block" aria-label="Ubicación del origen">
+      <h2>Ubicación del origen</h2>
+      <iframe title="Ubicación del origen" [src]="mapLink(sheet.farm)"></iframe>
+    </section>
   </article>
 } @else if (origin.sheet() === null) {
-  <article class="origin">
+  <article class="origin origin--empty">
+    <span class="origin__alert" aria-hidden="true">!</span>
     <h1>Esta ficha no está disponible</h1>
     <p>El lote puede estar inactivo o el código ya no es válido.</p>
-    <a routerLink="/">Volver al inicio</a>
+    <a class="origin__back" routerLink="/">Volver al inicio</a>
   </article>
 }
