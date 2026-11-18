@@ -57,6 +57,10 @@
       </div>
     </dl>
     <p>{{ sheet.farm.bio }}</p>
+    <section aria-label="Notas de cata">
+      <h2>Notas de cata</h2>
+      <p>{{ sheet.lot.notes }}</p>
+    </section>
     <iframe
       title="Ubicación del origen"
       [src]="mapLink(sheet.farm)"

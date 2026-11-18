@@ -8,6 +8,7 @@ export interface OriginLot extends Entity {
   readonly variety: string;
   readonly altitude: number;
   readonly status: string;
+  readonly notes: string;
 }
 
 @Injectable({ providedIn: 'root' })

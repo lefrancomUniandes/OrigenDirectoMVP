@@ -27,12 +27,13 @@ describe('Página de la ficha pública', () => {
     TestBed.inject(OrigenDirectoDb).close();
   });
 
-  async function open(url: string): Promise<void> {
+  async function open(url: string, marker = 'LOD-2026-001'): Promise<void> {
+    fixture?.destroy();
     fixture = TestBed.createComponent(Shell);
+    compiled = fixture.nativeElement as HTMLElement;
     await TestBed.inject(Router).navigateByUrl(url);
     fixture.detectChanges();
-    compiled = fixture.nativeElement as HTMLElement;
-    await untilText('LOD-2026-001');
+    await untilText(marker);
   }
 
   async function untilText(text: string): Promise<void> {
@@ -45,6 +46,7 @@ describe('Página de la ficha pública', () => {
 
   async function saveOrigin(
     photos: { type: string; bytes: ArrayBuffer }[] = [],
+    notes = '',
   ): Promise<void> {
     const db = TestBed.inject(OrigenDirectoDb);
     await db.open();
@@ -82,7 +84,7 @@ describe('Página de la ficha pública', () => {
       altitude: 1800,
       price: 85000,
       status: 'Disponible',
-      notes: '',
+      notes,
       active: true,
       publishedOn: '2026-10-01',
     });
@@ -142,5 +144,61 @@ describe('Página de la ficha pública', () => {
     expect(images).toHaveLength(1);
     const shown = new Uint8Array(await (await fetch((images[0] as HTMLImageElement).src)).arrayBuffer());
     expect([...shown]).toEqual([1, 2, 3, 4]);
+  });
+
+  it('un lote En pausa y uno Vendido abren la ficha y muestran ese estado', async () => {
+    await saveOrigin();
+    await TestBed.inject(OrigenDirectoDb).table('lotes').bulkAdd([
+      {
+        id: 'lote-pausa',
+        farmId: 'OD-2026-100001',
+        quantity: 20,
+        unit: 'sacos',
+        variety: 'Castillo',
+        altitude: 1800,
+        price: 85000,
+        status: 'En pausa',
+        notes: '',
+        active: true,
+        publishedOn: '2026-10-01',
+      },
+      {
+        id: 'lote-vendido',
+        farmId: 'OD-2026-100001',
+        quantity: 20,
+        unit: 'sacos',
+        variety: 'Castillo',
+        altitude: 1800,
+        price: 85000,
+        status: 'Vendido',
+        notes: '',
+        active: true,
+        publishedOn: '2026-10-01',
+      },
+    ]);
+
+    await open('/origen/lote/lote-pausa', 'En pausa');
+    expect(TestBed.inject(Router).url).toBe('/origen/lote/lote-pausa');
+    expect(compiled.textContent).toContain('En pausa');
+    expect(compiled.textContent).toContain('Consulta pública, no necesitas iniciar sesión');
+
+    await open('/origen/lote/lote-vendido', 'Vendido');
+    expect(TestBed.inject(Router).url).toBe('/origen/lote/lote-vendido');
+    expect(compiled.textContent).toContain('Vendido');
+    expect(compiled.textContent).toContain('Consulta pública, no necesitas iniciar sesión');
+  });
+
+  it('con notas de cata, la ficha muestra ese texto', async () => {
+    await saveOrigin([], 'Panela, cacao y frutos rojos.');
+    await open('/origen/lote/LOD-2026-001');
+
+    expect(compiled.textContent).toContain('Panela, cacao y frutos rojos.');
+  });
+
+  it('sin notas de cata, la ficha no muestra el bloque de notas', async () => {
+    await saveOrigin();
+    await open('/origen/lote/LOD-2026-001');
+
+    expect(compiled.querySelector('[aria-label="Notas de cata"]')).toBeNull();
   });
 });
