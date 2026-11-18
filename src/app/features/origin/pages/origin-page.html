@@ -57,13 +57,21 @@
       </div>
     </dl>
     <p>{{ sheet.farm.bio }}</p>
-    <section aria-label="Notas de cata">
-      <h2>Notas de cata</h2>
-      <p>{{ sheet.lot.notes }}</p>
-    </section>
+    @if (sheet.lot.notes) {
+      <section aria-label="Notas de cata">
+        <h2>Notas de cata</h2>
+        <p>{{ sheet.lot.notes }}</p>
+      </section>
+    }
     <iframe
       title="Ubicación del origen"
       [src]="mapLink(sheet.farm)"
     ></iframe>
+  </article>
+} @else if (origin.sheet() === null) {
+  <article class="origin">
+    <h1>Esta ficha no está disponible</h1>
+    <p>El lote puede estar inactivo o el código ya no es válido.</p>
+    <a routerLink="/">Volver al inicio</a>
   </article>
 }

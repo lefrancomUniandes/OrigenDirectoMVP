@@ -25,5 +25,5 @@ export class OriginService {
       return null;
     }
     return { lot, farm };
-  }, null as OriginSheet | null);
+  }, undefined as OriginSheet | null | undefined);
 }

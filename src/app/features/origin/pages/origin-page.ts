@@ -1,10 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 import { OriginFarm, OriginPhoto } from '../data/origin-farm.repository';
 import { OriginService } from '../services/origin.service';
 
 @Component({
   selector: 'app-origin-page',
+  imports: [RouterLink],
   providers: [OriginService],
   templateUrl: './origin-page.html',
   styleUrl: './origin-page.scss',

@@ -201,4 +201,20 @@ describe('Página de la ficha pública', () => {
 
     expect(compiled.querySelector('[aria-label="Notas de cata"]')).toBeNull();
   });
+
+  it('si el enlace no corresponde a un lote, se ve «Esta ficha no está disponible» y volver al inicio lleva al feed', async () => {
+    await saveOrigin();
+    await open('/origen/lote/no-existe', 'Esta ficha no está disponible');
+
+    expect(compiled.textContent).toContain('Esta ficha no está disponible');
+    expect(compiled.textContent).toContain('El lote puede estar inactivo o el código ya no es válido.');
+    expect(compiled.textContent).not.toContain('LOD-2026-001');
+
+    const back = [...compiled.querySelectorAll('a')].find((el) => el.textContent?.includes('Volver al inicio'));
+    back?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(TestBed.inject(Router).url).toBe('/');
+  });
 });
