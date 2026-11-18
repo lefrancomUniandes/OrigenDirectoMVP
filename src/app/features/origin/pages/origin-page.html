@@ -1,6 +1,9 @@
 @if (origin.sheet(); as sheet) {
   <article class="origin">
     <p class="origin__public">Consulta pública, no necesitas iniciar sesión</p>
+    @if (sheet.farm.photos[0]; as photo) {
+      <img class="origin__photo" [src]="photoSrc(photo)" alt="Origen del lote" />
+    }
     <h1>{{ sheet.farm.farmName }}</h1>
     <p>{{ sheet.farm.ownerName }}</p>
     <dl>

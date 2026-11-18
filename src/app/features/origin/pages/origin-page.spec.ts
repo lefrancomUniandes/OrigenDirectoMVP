@@ -4,6 +4,7 @@ import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { routes } from '../../../app.routes';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
+import { SessionService } from '../../../core/session/session';
 import { Shell } from '../../../layout/shell/shell';
 
 Dexie.dependencies.indexedDB = indexedDB;
@@ -42,7 +43,9 @@ describe('Página de la ficha pública', () => {
     }
   }
 
-  async function saveOrigin(): Promise<void> {
+  async function saveOrigin(
+    photos: { type: string; bytes: ArrayBuffer }[] = [],
+  ): Promise<void> {
     const db = TestBed.inject(OrigenDirectoDb);
     await db.open();
     await db.table('fincas').add({
@@ -65,7 +68,7 @@ describe('Página de la ficha pública', () => {
       landline: '4442233',
       bio: 'Tercera generación cultivando café de altura.',
       experience: '',
-      photos: [],
+      photos,
       pdf: null,
       passwordHash: 'hash',
       verified: true,
@@ -109,5 +112,35 @@ describe('Página de la ficha pública', () => {
     expect(compiled.querySelector('iframe')?.getAttribute('src')).toBe(
       'https://www.google.com/maps?q=Urrao%2C%20Antioquia%2C%20Colombia&output=embed',
     );
+  });
+
+  it('con sesión iniciada, el mismo enlace sigue mostrando la ficha y no redirige al login', async () => {
+    await saveOrigin();
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana Morales',
+      farmName: 'Finca El Paraíso',
+    });
+    await open('/origen/lote/LOD-2026-001');
+
+    expect(TestBed.inject(Router).url).toBe('/origen/lote/LOD-2026-001');
+    expect(compiled.textContent).toContain('LOD-2026-001');
+    expect(compiled.textContent).toContain('Finca El Paraíso');
+    expect(compiled.textContent).toContain('Consulta pública, no necesitas iniciar sesión');
+  });
+
+  it('cuando la finca tiene fotos, la ficha muestra la primera', async () => {
+    const first = new Uint8Array([1, 2, 3, 4]).buffer;
+    const second = new Uint8Array([9, 8, 7]).buffer;
+    await saveOrigin([
+      { type: 'image/jpeg', bytes: first },
+      { type: 'image/png', bytes: second },
+    ]);
+    await open('/origen/lote/LOD-2026-001');
+
+    const images = [...compiled.querySelectorAll('article img')];
+    expect(images).toHaveLength(1);
+    const shown = new Uint8Array(await (await fetch((images[0] as HTMLImageElement).src)).arrayBuffer());
+    expect([...shown]).toEqual([1, 2, 3, 4]);
   });
 });

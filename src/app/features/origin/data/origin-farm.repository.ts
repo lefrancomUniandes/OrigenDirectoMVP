@@ -3,6 +3,11 @@ import { DexieRepository } from '../../../core/data/dexie.repository';
 import { Entity } from '../../../core/data/repository.port';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
 
+export interface OriginPhoto {
+  readonly type: string;
+  readonly bytes: ArrayBuffer;
+}
+
 export interface OriginFarm extends Entity {
   readonly farmName: string;
   readonly ownerName: string;
@@ -16,6 +21,7 @@ export interface OriginFarm extends Entity {
   readonly mobile: string;
   readonly phoneAreaCode: string;
   readonly landline: string;
+  readonly photos: readonly OriginPhoto[];
 }
 
 @Injectable({ providedIn: 'root' })
