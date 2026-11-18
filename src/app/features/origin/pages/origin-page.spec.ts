@@ -217,4 +217,14 @@ describe('Página de la ficha pública', () => {
 
     expect(TestBed.inject(Router).url).toBe('/');
   });
+
+  it('si el lote está inactivo, se ve el mismo aviso', async () => {
+    await saveOrigin();
+    await TestBed.inject(OrigenDirectoDb).table('lotes').update('LOD-2026-001', { active: false });
+    await open('/origen/lote/LOD-2026-001', 'Esta ficha no está disponible');
+
+    expect(compiled.textContent).toContain('Esta ficha no está disponible');
+    expect(compiled.textContent).toContain('El lote puede estar inactivo o el código ya no es válido.');
+    expect(compiled.textContent).not.toContain('Finca El Paraíso');
+  });
 });

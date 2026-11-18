@@ -17,7 +17,7 @@ export class OriginService {
 
   readonly sheet = liveQuerySignal(async () => {
     const lot = await this.lots.getById(this.lotId);
-    if (!lot) {
+    if (!lot?.active) {
       return null;
     }
     const farm = await this.farms.getById(lot.farmId);
