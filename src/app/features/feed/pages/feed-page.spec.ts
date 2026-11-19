@@ -162,6 +162,7 @@ describe('Página del feed', () => {
 
     const novedad = () => compiled.querySelector('[aria-label="Novedades"]');
     expect(novedad()?.textContent).toContain('Caturra');
+    expect(compiled.querySelector('a.novedad')?.getAttribute('href')).toBe('/origen/lote/demo-paraiso-lote');
     expect(novedad()?.textContent).toContain('Finca El Paraíso');
     expect(novedad()?.textContent).toContain('Urrao');
     expect(novedad()?.textContent).toContain('Antioquia');

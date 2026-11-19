@@ -47,6 +47,7 @@
     <section class="origin__block" aria-label="Ubicación del origen">
       <h2>Ubicación del origen</h2>
       <iframe title="Ubicación del origen" [src]="mapLink(sheet.farm)"></iframe>
+      <!-- NO INCLUIR: <p class="origin__public">Consulta pública, no necesitas iniciar sesión</p> -->
     </section>
   </article>
 } @else if (origin.sheet() === null) {

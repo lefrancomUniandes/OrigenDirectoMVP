@@ -6,6 +6,7 @@ import { routes } from '../../../app.routes';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
 import { SessionService } from '../../../core/session/session';
 import { Shell } from '../../../layout/shell/shell';
+import { installDemoAssets } from '../../../../testing/demo-assets';
 
 Dexie.dependencies.indexedDB = indexedDB;
 Dexie.dependencies.IDBKeyRange = IDBKeyRange;
@@ -89,6 +90,17 @@ describe('Página de la ficha pública', () => {
       publishedOn: '2026-10-01',
     });
   }
+
+  it('sin datos previos y sin sesión, el lote de demostración muestra su ficha', async () => {
+    installDemoAssets();
+    await open('/origen/lote/demo-paraiso-lote', 'Finca El Paraíso');
+
+    expect(TestBed.inject(Router).url).toBe('/origen/lote/demo-paraiso-lote');
+    expect(compiled.textContent).toContain('Finca El Paraíso');
+    expect(compiled.textContent).toContain('Ana Morales');
+    expect(compiled.textContent).toContain('Consulta pública, no necesitas iniciar sesión');
+    expect(compiled.textContent).not.toContain('Esta ficha no está disponible');
+  });
 
   it('sin sesión, el enlace de un lote activo muestra código, finca, productor, vereda, municipio, departamento, altitud, área, variedad, estado Disponible, contacto, biografía y el aviso de consulta pública', async () => {
     await saveOrigin();
