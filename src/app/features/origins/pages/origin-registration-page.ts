@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { OriginRegistrationService } from '../services/origin-registration.service';
 
 @Component({
@@ -12,8 +12,37 @@ export class OriginRegistrationPage {
   readonly errors = signal<Record<string, string>>({});
   readonly evidences = signal<{ name: string; url?: string }[]>([]);
   readonly notice = signal('');
+  readonly editing = signal(false);
+  readonly initialName = signal('');
+  private editingId = '';
+  private nameApplied = false;
+  private readonly nameInput = viewChild<ElementRef<HTMLInputElement>>('nombre');
   private readonly origins = inject(OriginRegistrationService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  constructor() {
+    const id = this.route.snapshot.queryParamMap.get('editar') ?? '';
+    if (!id) {
+      return;
+    }
+    this.editing.set(true);
+    this.editingId = id;
+    void this.origins.find(id).then((origin) => {
+      if (origin) {
+        this.initialName.set(origin.name);
+      }
+    });
+
+    effect(() => {
+      const input = this.nameInput()?.nativeElement;
+      const name = this.initialName();
+      if (!this.nameApplied && input && name) {
+        input.value = name;
+        this.nameApplied = true;
+      }
+    });
+  }
 
   addNote(event: KeyboardEvent): void {
     if (event.key !== 'Enter') {
@@ -50,7 +79,7 @@ export class OriginRegistrationPage {
     input.value = '';
   }
 
-  publish(event: Event): void {
+  async publish(event: Event): Promise<void> {
     const form = (event.target as HTMLElement).closest('form');
     if (!form) {
       return;
@@ -87,6 +116,11 @@ export class OriginRegistrationPage {
     }
 
     this.errors.set(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+    await this.origins.publish(name);
+    await this.router.navigateByUrl('/origenes');
   }
 
   async saveDraft(event: Event): Promise<void> {
@@ -96,6 +130,16 @@ export class OriginRegistrationPage {
     }
     const name = String(new FormData(form).get('nombre') ?? '');
     await this.origins.saveDraft(name);
+    await this.router.navigateByUrl('/origenes');
+  }
+
+  async saveChanges(event: Event): Promise<void> {
+    const form = (event.target as HTMLElement).closest('form');
+    if (!form) {
+      return;
+    }
+    const name = String(new FormData(form).get('nombre') ?? '');
+    await this.origins.saveChanges(this.editingId, name);
     await this.router.navigateByUrl('/origenes');
   }
 }

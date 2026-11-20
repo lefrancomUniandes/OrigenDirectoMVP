@@ -12,4 +12,10 @@ export class OriginsPage {
     const checked = (event.target as HTMLInputElement).checked;
     void this.origins.setActive(id, checked);
   }
+
+  dateLabel(iso: string): string {
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const [, month, day] = iso.split('-');
+    return `${Number(day)} ${months[Number(month) - 1]}`;
+  }
 }

@@ -38,6 +38,15 @@ export class ProfilePage {
     this.editing.set(true);
   }
 
+  dateLabel(iso: string): string {
+    if (!iso) {
+      return '';
+    }
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const [, month, day] = iso.split('-');
+    return `${Number(day)} ${months[Number(month) - 1]}`;
+  }
+
   cancelEdit(): void {
     this.editing.set(false);
   }

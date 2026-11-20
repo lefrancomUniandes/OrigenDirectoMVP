@@ -31,7 +31,25 @@ export class OriginRegistrationService {
     });
   }
 
+  publish(name: string): Promise<string> {
+    return this.repo.create({
+      farmId: this.session.account()?.farmId ?? '',
+      name: name.trim(),
+      status: 'publicado',
+      active: true,
+      publishedOn: new Date().toISOString().slice(0, 10),
+    });
+  }
+
   setActive(id: string, active: boolean): Promise<void> {
     return this.repo.update(id, { active });
+  }
+
+  find(id: string): Promise<Origin | undefined> {
+    return this.repo.getById(id);
+  }
+
+  saveChanges(id: string, name: string): Promise<void> {
+    return this.repo.update(id, { name: name.trim() });
   }
 }

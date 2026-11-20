@@ -425,4 +425,51 @@ describe('Página del perfil', () => {
     expect(compiled.textContent).toContain('Finca El Paraíso');
     expect(compiled.textContent).toContain('Fermentación en cereza');
   });
+
+  it('el carrusel muestra la foto, Nuevo, la fecha, el nombre, la finca, el departamento, la variedad, el proceso, el tueste, la altura y las notas de los orígenes publicados y activos', async () => {
+    await saveFarm();
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.table('origenes').add({
+      id: 'origen-1',
+      farmId: 'OD-2026-100001',
+      name: 'Lote 4 · Bourbon Natural',
+      status: 'publicado',
+      active: true,
+      publishedOn: '2026-11-28',
+      variety: 'Bourbon',
+      process: 'Natural',
+      roast: 'Medio',
+      altitude: 1750,
+      notes: ['panela', 'durazno'],
+      photo: 'data:image/jpeg;base64,AQID',
+    });
+    await render();
+
+    for (
+      let attempt = 0;
+      attempt < 40 &&
+      !compiled.querySelector('[aria-label="Orígenes"]')?.textContent?.includes('Lote 4 · Bourbon Natural');
+      attempt++
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
+
+    const carousel = compiled.querySelector('[aria-label="Orígenes"]') as HTMLElement;
+    const photo = carousel.querySelector('img') as HTMLImageElement;
+
+    expect(photo.getAttribute('src')).toBe('data:image/jpeg;base64,AQID');
+    expect(photo.getAttribute('alt')).toBe('Lote 4 · Bourbon Natural');
+    expect(carousel.textContent).toContain('Nuevo');
+    expect(carousel.textContent).toContain('28 nov');
+    expect(carousel.textContent).toContain('Lote 4 · Bourbon Natural');
+    expect(carousel.textContent).toContain('Finca La Esperanza');
+    expect(carousel.textContent).toContain('Huila');
+    expect(carousel.textContent).toContain('Bourbon');
+    expect(carousel.textContent).toContain('Natural');
+    expect(carousel.textContent).toContain('Medio');
+    expect(carousel.textContent).toContain('1750 m.s.n.m.');
+    expect(carousel.textContent).toContain('panela');
+    expect(carousel.textContent).toContain('durazno');
+  });
 });

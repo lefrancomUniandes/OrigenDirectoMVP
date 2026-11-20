@@ -171,9 +171,32 @@
     </div>
   </section>
 
-  @for (origin of profile.origins(); track origin.id) {
-    <p>{{ origin.name }}</p>
-  }
+  <section aria-label="Orígenes">
+    @for (origin of profile.origins(); track origin.id) {
+      <article>
+        @if (origin.photo) {
+          <img [src]="origin.photo" [alt]="origin.name" />
+        }
+        <span>✦ Nuevo</span>
+        <span>{{ dateLabel(origin.publishedOn) }}</span>
+        <h3>{{ origin.name }}</h3>
+        <p>📍 {{ farm.farmName }} · {{ farm.department }}</p>
+        <dl>
+          <dt>Variedad</dt>
+          <dd>{{ origin.variety }}</dd>
+          <dt>Proceso</dt>
+          <dd>{{ origin.process }}</dd>
+          <dt>Tueste</dt>
+          <dd>{{ origin.roast }}</dd>
+          <dt>Altura</dt>
+          <dd>{{ origin.altitude }} m.s.n.m.</dd>
+        </dl>
+        @for (note of origin.notes ?? []; track note) {
+          <span>{{ note }}</span>
+        }
+      </article>
+    }
+  </section>
 
   @if (openPost(); as post) {
     <div class="modal-backdrop" (click)="close()">

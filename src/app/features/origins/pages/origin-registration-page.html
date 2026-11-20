@@ -4,7 +4,7 @@
 <form novalidate>
   <div>
     <label for="nombre">Nombre del lote</label>
-    <input id="nombre" name="nombre" type="text" maxlength="100" />
+    <input #nombre id="nombre" name="nombre" type="text" maxlength="100" />
     @if (errors()['nombre']; as text) {
       <p class="err">{{ text }}</p>
     }
@@ -89,6 +89,10 @@
     }
   </div>
 
-  <button type="button" (click)="saveDraft($event)">Guardar borrador</button>
-  <button type="button" (click)="publish($event)">Publicar registro</button>
+  @if (editing()) {
+    <button type="button" (click)="saveChanges($event)">Guardar cambios</button>
+  } @else {
+    <button type="button" (click)="saveDraft($event)">Guardar borrador</button>
+    <button type="button" (click)="publish($event)">Publicar registro</button>
+  }
 </form>

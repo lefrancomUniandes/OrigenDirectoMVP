@@ -12,6 +12,7 @@
       {{ origin.active ? 'Activo' : 'Desactivado' }}
     </label>
     <a [href]="'/origenes/registrar?editar=' + origin.id">Editar</a>
+    <p>{{ dateLabel(origin.publishedOn) }}</p>
     <h3>{{ origin.name }}</h3>
   </article>
 }

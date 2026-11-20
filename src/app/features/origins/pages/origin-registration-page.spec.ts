@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router, RouterOutlet } from '@angular/router';
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
@@ -30,7 +30,13 @@ describe('Página de registro de origen', () => {
   async function open(): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [OriginRegistrationPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(OriginRegistrationPage);
@@ -208,6 +214,49 @@ describe('Página de registro de origen', () => {
     fixture.detectChanges();
     await untilText('Fincas');
     expect(compiled.textContent).not.toContain('Lote Borrador del Alto');
+  });
+
+  it('Publicar con los datos completos guarda el origen y vuelve a la finca', async () => {
+    localStorage.removeItem('od.session');
+    await Dexie.delete('origen-directo');
+    await TestBed.configureTestingModule({
+      imports: [SpecHost],
+      providers: [
+        provideRouter([
+          {
+            path: 'origenes',
+            loadChildren: () => import('../routes').then((m) => m.routes),
+          },
+        ]),
+      ],
+    }).compileComponents();
+
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
+
+    const router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(SpecHost);
+    compiled = fixture.nativeElement as HTMLElement;
+    await router.navigateByUrl('/origenes/registrar');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    setValue('nombre', 'Lote 4 · Bourbon Natural');
+    setValue('variedad', 'Bourbon');
+    setValue('proceso', 'Natural');
+    setValue('tueste', 'Medio');
+    addNote('panela');
+    setValue('altura', '1750');
+    button('Publicar registro')?.click();
+    await untilText('Lote 4 · Bourbon Natural');
+
+    expect(router.url).toBe('/origenes');
+    expect(compiled.textContent).toContain('Lote 4 · Bourbon Natural');
+    expect(compiled.querySelector('a[href*="editar="]')?.textContent).toContain('Editar');
   });
 
   function label(text: string): HTMLLabelElement | undefined {

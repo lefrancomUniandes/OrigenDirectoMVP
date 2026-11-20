@@ -184,6 +184,168 @@ describe('Orígenes de la finca', () => {
     expect(compiled.textContent).not.toContain('Lote 4 · Bourbon Natural');
   });
 
+  it('al activar de nuevo, recupera el estado activo y reaparece en el feed y en el perfil', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [SpecHost],
+      providers: [
+        provideRouter([
+          {
+            path: 'origenes',
+            loadChildren: () => import('../routes').then((m) => m.routes),
+          },
+          { path: 'perfil/:id', component: ProfilePage },
+          { path: '', component: FeedPage },
+        ]),
+      ],
+    }).compileComponents();
+
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.open();
+    await db.table('fincas').add({
+      id: 'OD-2026-100001',
+      farmName: 'Finca La Esperanza',
+      ownerName: 'Ana',
+      department: 'Huila',
+      municipality: 'Pitalito',
+      village: '',
+      area: '',
+      areaUnit: '',
+      altitude: '',
+      varieties: [],
+      otherVariety: '',
+      email: '',
+      mobile: '',
+      phoneAreaCode: '',
+      landline: '',
+      bio: '',
+      experience: '',
+      photos: [],
+      pdf: null,
+    });
+    await db.table('origenes').add({
+      id: 'origen-1',
+      farmId: 'OD-2026-100001',
+      name: 'Lote 4 · Bourbon Natural',
+      status: 'publicado',
+      publishedOn: '2026-11-28',
+      active: false,
+    });
+
+    const router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(SpecHost);
+    compiled = fixture.nativeElement as HTMLElement;
+
+    await router.navigateByUrl('/perfil/OD-2026-100001');
+    fixture.detectChanges();
+    await untilText('Finca La Esperanza');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    fixture.detectChanges();
+    expect(compiled.textContent).not.toContain('Lote 4 · Bourbon Natural');
+
+    await router.navigateByUrl('/');
+    fixture.detectChanges();
+    await untilText('Fincas');
+    expect(compiled.textContent).not.toContain('Lote 4 · Bourbon Natural');
+
+    await router.navigateByUrl('/origenes');
+    fixture.detectChanges();
+    await untilText('Desactivado');
+    const toggle = compiled.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await untilText('Activo');
+
+    const updated = compiled.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(updated.closest('label')?.textContent).toContain('Activo');
+    expect(updated.checked).toBe(true);
+
+    await router.navigateByUrl('/perfil/OD-2026-100001');
+    fixture.detectChanges();
+    await untilText('Lote 4 · Bourbon Natural');
+    expect(compiled.textContent).toContain('Lote 4 · Bourbon Natural');
+
+    await router.navigateByUrl('/');
+    fixture.detectChanges();
+    await untilText('Lote 4 · Bourbon Natural');
+    expect(compiled.textContent).toContain('Lote 4 · Bourbon Natural');
+  });
+
+  it('al editar y guardar, vuelve a la finca, la tarjeta muestra lo nuevo y la fecha sigue igual', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [SpecHost],
+      providers: [
+        provideRouter([
+          {
+            path: 'origenes',
+            loadChildren: () => import('../routes').then((m) => m.routes),
+          },
+        ]),
+      ],
+    }).compileComponents();
+
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.open();
+    await db.table('origenes').add({
+      id: 'origen-1',
+      farmId: 'OD-2026-100001',
+      name: 'Lote 4 · Bourbon Natural',
+      status: 'publicado',
+      publishedOn: '2026-11-28',
+      active: true,
+    });
+
+    const router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(SpecHost);
+    compiled = fixture.nativeElement as HTMLElement;
+
+    await router.navigateByUrl('/origenes');
+    fixture.detectChanges();
+    await untilText('Lote 4 · Bourbon Natural');
+    expect(compiled.textContent).toContain('28 nov');
+
+    const edit = action('Editar');
+    await router.navigateByUrl(edit?.getAttribute('href') ?? '');
+    fixture.detectChanges();
+    await untilText('Guardar cambios');
+    for (
+      let attempt = 0;
+      attempt < 40 &&
+      (compiled.querySelector('#nombre') as HTMLInputElement | null)?.value !== 'Lote 4 · Bourbon Natural';
+      attempt++
+    ) {
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
+
+    const name = compiled.querySelector('#nombre') as HTMLInputElement;
+    expect(name.value).toBe('Lote 4 · Bourbon Natural');
+    name.value = 'Lote 4 · Caturra Honey';
+    (action('Guardar cambios') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await untilText('Lote 4 · Caturra Honey');
+
+    expect(router.url).toBe('/origenes');
+    expect(compiled.textContent).toContain('Lote 4 · Caturra Honey');
+    expect(compiled.textContent).not.toContain('Lote 4 · Bourbon Natural');
+    expect(compiled.textContent).toContain('28 nov');
+    expect(action('Editar')).toBeTruthy();
+  });
+
   async function untilText(text: string): Promise<void> {
     for (let attempt = 0; attempt < 40 && !compiled.textContent?.includes(text); attempt++) {
       await fixture.whenStable();
