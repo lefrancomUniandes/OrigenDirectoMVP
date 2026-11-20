@@ -29,7 +29,7 @@
             </div>
             <a [routerLink]="['/perfil', session.account()?.farmId]" (click)="menuOpen.set(false)">Mi perfil</a>
             <a routerLink="/origenes" (click)="menuOpen.set(false)">Mis orígenes</a>
-            <a routerLink="/mis-lotes" (click)="menuOpen.set(false)">Mis lotes</a>
+            <a routerLink="/mis-lotes" (click)="menuOpen.set(false)">Mis productos</a>
             <button type="button" (click)="logOut()">Cerrar sesión</button>
           </div>
         }

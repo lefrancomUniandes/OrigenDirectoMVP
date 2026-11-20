@@ -171,22 +171,25 @@
     </div>
   </section>
 
-  <section class="origins-track" aria-label="Orígenes">
-    @for (origin of profile.origins(); track origin.id) {
-      <app-origin-card
-        [name]="origin.name"
-        [photo]="origin.photo"
-        [publishedOn]="origin.publishedOn"
-        [farmName]="farm.farmName"
-        [department]="farm.department"
-        [variety]="origin.variety"
-        [process]="origin.process"
-        [roast]="origin.roast"
-        [altitude]="origin.altitude"
-        [notes]="origin.notes ?? []"
-        [editHref]="profile.canEdit ? '/origenes/registrar?editar=' + origin.id : ''"
-      />
-    }
+  <section class="card section-card origins" aria-label="Orígenes">
+    <h2 class="section-title">Orígenes</h2>
+    <div class="origins-track">
+      @for (origin of profile.origins(); track origin.id) {
+        <app-origin-card
+          [name]="origin.name"
+          [photo]="origin.photo"
+          [publishedOn]="origin.publishedOn"
+          [farmName]="farm.farmName"
+          [department]="farm.department"
+          [variety]="origin.variety"
+          [process]="origin.process"
+          [roast]="origin.roast"
+          [altitude]="origin.altitude"
+          [notes]="origin.notes ?? []"
+          [editHref]="profile.canEdit ? '/origenes/registrar?editar=' + origin.id : ''"
+        />
+      }
+    </div>
   </section>
 
   @if (openPost(); as post) {

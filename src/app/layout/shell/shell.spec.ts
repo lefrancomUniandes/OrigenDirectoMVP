@@ -406,7 +406,7 @@ describe('Shell', () => {
     expect(TestBed.inject(Router).url).toBe('/iniciar-sesion');
   });
 
-  it('con la sesión de Ana, la cabecera muestra "Ana Morales" y el menú "Mi perfil", "Mis orígenes", "Mis lotes" y "Cerrar sesión"', () => {
+  it('con la sesión de Ana, la cabecera muestra "Ana Morales" y el menú "Mi perfil", "Mis orígenes", "Mis productos" y "Cerrar sesión"', () => {
     anaSession();
     button('Ana Morales').click();
     fixture.detectChanges();
@@ -414,7 +414,7 @@ describe('Shell', () => {
     expect(compiled.textContent).toContain('Ana Morales');
     expect(compiled.textContent).toContain('Mi perfil');
     expect(compiled.textContent).toContain('Mis orígenes');
-    expect(compiled.textContent).toContain('Mis lotes');
+    expect(compiled.textContent).toContain('Mis productos');
     expect(compiled.textContent).toContain('Cerrar sesión');
     expect(compiled.textContent).not.toContain('Iniciar sesión');
   });
@@ -440,7 +440,7 @@ describe('Shell', () => {
     expect([...shown]).toEqual([4, 5, 6]);
   });
 
-  it('"Mi perfil" abre /perfil/demo-paraiso, "Mis orígenes" abre /origenes y "Mis lotes" abre /mis-lotes', async () => {
+  it('"Mi perfil" abre /perfil/demo-paraiso, "Mis orígenes" abre /origenes y "Mis productos" abre /mis-lotes', async () => {
     anaSession();
     const router = TestBed.inject(Router);
 
@@ -460,7 +460,7 @@ describe('Shell', () => {
 
     button('Ana Morales').click();
     fixture.detectChanges();
-    link('Mis lotes').click();
+    link('Mis productos').click();
     await fixture.whenStable();
 
     expect(router.url).toBe('/mis-lotes');
@@ -1759,16 +1759,16 @@ describe('Shell', () => {
     expect(farmName.value).toBe('');
   });
 
-  it('sin login no está «Mis lotes»', () => {
-    expect(compiled.textContent).not.toContain('Mis lotes');
+  it('sin login no está «Mis productos»', () => {
+    expect(compiled.textContent).not.toContain('Mis productos');
   });
 
-  it('con la sesión iniciada, «Mis lotes» abre /mis-lotes', async () => {
+  it('con la sesión iniciada, «Mis productos» abre /mis-lotes', async () => {
     anaSession();
     const router = TestBed.inject(Router);
     button('Ana Morales').click();
     fixture.detectChanges();
-    link('Mis lotes').click();
+    link('Mis productos').click();
     await fixture.whenStable();
 
     expect(router.url).toBe('/mis-lotes');

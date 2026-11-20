@@ -96,9 +96,19 @@ a.novedad {
 }
 
 .novedad__art {
+  position: relative;
   background:
     radial-gradient(circle at 72% 28%, var(--mostaza) 0 18%, transparent 19%),
     linear-gradient(160deg, var(--oliva-claro), var(--oliva));
+}
+
+.novedad__art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .novedad__body {
@@ -135,8 +145,26 @@ a.novedad {
   font-weight: 700;
 }
 
-.novedad__place {
-  color: var(--cafe-700);
+.novedad__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.novedad__notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.novedad__notes span {
+  background: var(--crema);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .fincas__grid {

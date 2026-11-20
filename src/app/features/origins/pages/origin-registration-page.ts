@@ -10,6 +10,10 @@ import { OriginRegistrationService } from '../services/origin-registration.servi
 })
 export class OriginRegistrationPage {
   readonly notes = signal<string[]>([]);
+  readonly variety = signal('');
+  readonly roast = signal('');
+  readonly varieties = ['Castillo', 'Caturra', 'Geisha', 'Bourbon', 'Tabi', 'Typica', 'Colombia'];
+  readonly roasts = ['Claro / Ligero', 'Medio', 'Oscuro'];
   readonly errors = signal<Record<string, string>>({});
   readonly evidences = signal<{ name: string; url?: string }[]>([]);
   readonly notice = signal('');
@@ -48,9 +52,9 @@ export class OriginRegistrationPage {
 
   private fill(form: HTMLFormElement, origin: Origin): void {
     (form.querySelector('#nombre') as HTMLInputElement).value = origin.name;
-    (form.querySelector('#variedad') as HTMLSelectElement).value = origin.variety ?? '';
+    this.variety.set(origin.variety ?? '');
     (form.querySelector('#proceso') as HTMLSelectElement).value = origin.process ?? '';
-    (form.querySelector('#tueste') as HTMLSelectElement).value = origin.roast ?? '';
+    this.roast.set(origin.roast ?? '');
     (form.querySelector('#altura') as HTMLInputElement).value = origin.altitude ? String(origin.altitude) : '';
     this.notes.set([...(origin.notes ?? [])]);
     if (origin.photo) {
@@ -69,6 +73,10 @@ export class OriginRegistrationPage {
       this.notes.update((current) => [...current, value]);
     }
     input.value = '';
+  }
+
+  removeNote(note: string): void {
+    this.notes.update((current) => current.filter((item) => item !== note));
   }
 
   async addEvidence(event: Event): Promise<void> {

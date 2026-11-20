@@ -468,14 +468,21 @@
   }
 }
 
+.origins {
+  min-width: 0;
+}
+
 .origins-track {
   display: flex;
   gap: 16px;
+  min-width: 0;
   overflow-x: auto;
-  margin-top: 16px;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 4px;
 }
 
 .origins-track app-origin-card {
   flex: 0 0 280px;
+  scroll-snap-align: start;
 }
 

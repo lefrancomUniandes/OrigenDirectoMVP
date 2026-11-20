@@ -23,15 +23,37 @@
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
   border: 1px solid var(--linea);
-  border-radius: 12px;
-  padding: 11px 22px;
-  font: inherit;
-  font-weight: 700;
-  font-size: 15px;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font: 600 14px var(--font);
   text-decoration: none;
   background: var(--crema-2);
   color: var(--cafe-900);
+}
+
+.btn--primario {
+  background: var(--oliva);
+  color: var(--crema-2);
+  border-color: var(--oliva);
+}
+
+.muted {
+  color: var(--cafe-500);
+  font-size: 14px;
+}
+
+.empty {
+  border: 2px dashed var(--linea);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+}
+
+.empty .btn {
+  margin-top: 12px;
 }
 
 .origins__grid {

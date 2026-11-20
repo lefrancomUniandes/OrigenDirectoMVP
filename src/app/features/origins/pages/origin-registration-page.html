@@ -1,26 +1,29 @@
-<a class="back" href="/mis-lotes">Volver a mis lotes</a>
-<h1>Registro de Origen</h1>
+<a class="back" href="/origenes">← Mis orígenes</a>
+<h1><span class="ul">{{ editing() ? 'Editar origen' : 'Registro de Origen' }}</span></h1>
 <p class="sub">Documenta la trazabilidad de tu lote de café</p>
 <form #form novalidate>
   <div>
-    <label for="nombre">Nombre del lote</label>
-    <input #nombre id="nombre" name="nombre" type="text" maxlength="100" />
+    <label class="req" for="nombre">Nombre del lote</label>
+    <input #nombre id="nombre" name="nombre" type="text" maxlength="100" placeholder="Ej: Lote 4 · Bourbon Natural" />
     @if (errors()['nombre']; as text) {
       <p class="err">{{ text }}</p>
     }
   </div>
 
   <div>
-    <label for="variedad">Variedad</label>
-    <select id="variedad" name="variedad">
+    <label class="req" for="variedad">Variedad</label>
+    <div class="opt">
+      @for (name of varieties; track name) {
+        <button type="button" [class.sel]="variety() === name" (click)="variety.set(variety() === name ? '' : name)">
+          {{ name }}
+        </button>
+      }
+    </div>
+    <select id="variedad" name="variedad" class="sr-only" [value]="variety()" (change)="variety.set($any($event.target).value)">
       <option value="">Selecciona…</option>
-      <option>Castillo</option>
-      <option>Caturra</option>
-      <option>Geisha</option>
-      <option>Bourbon</option>
-      <option>Tabi</option>
-      <option>Typica</option>
-      <option>Colombia</option>
+      @for (name of varieties; track name) {
+        <option>{{ name }}</option>
+      }
     </select>
     @if (errors()['variedad']; as text) {
       <p class="err">{{ text }}</p>
@@ -28,7 +31,7 @@
   </div>
 
   <div>
-    <label for="proceso">Proceso / fermentación</label>
+    <label class="req" for="proceso">Proceso / fermentación</label>
     <select id="proceso" name="proceso">
       <option value="">Selecciona…</option>
       <option>Lavado</option>
@@ -44,12 +47,19 @@
   </div>
 
   <div>
-    <label for="tueste">Perfil de tueste</label>
-    <select id="tueste" name="tueste">
+    <label class="req" for="tueste">Perfil de tueste</label>
+    <div class="opt">
+      @for (name of roasts; track name) {
+        <button type="button" [class.sel]="roast() === name" (click)="roast.set(roast() === name ? '' : name)">
+          {{ name }}
+        </button>
+      }
+    </div>
+    <select id="tueste" name="tueste" class="sr-only" [value]="roast()" (change)="roast.set($any($event.target).value)">
       <option value="">Selecciona…</option>
-      <option>Claro / Ligero</option>
-      <option>Medio</option>
-      <option>Oscuro</option>
+      @for (name of roasts; track name) {
+        <option>{{ name }}</option>
+      }
     </select>
     @if (errors()['tueste']; as text) {
       <p class="err">{{ text }}</p>
@@ -57,19 +67,24 @@
   </div>
 
   <div>
-    <label for="nota">Notas de cata</label>
+    <label class="req" for="nota">Notas de cata</label>
     <input id="nota" type="text" placeholder="Escribe una nota y presiona Enter" (keydown)="addNote($event)" />
-    @for (note of notes(); track note) {
-      <span>{{ note }}</span>
-    }
+    <div class="chips">
+      @for (note of notes(); track note) {
+        <span class="chip">
+          {{ note }}
+          <button type="button" [attr.aria-label]="'Quitar ' + note" (click)="removeNote(note)">✕</button>
+        </span>
+      }
+    </div>
     @if (errors()['nota']; as text) {
       <p class="err">{{ text }}</p>
     }
   </div>
 
   <div>
-    <label for="altura">Altura (m.s.n.m.)</label>
-    <input id="altura" name="altura" type="text" inputmode="numeric" />
+    <label class="req" for="altura">Altura (m.s.n.m.)</label>
+    <input id="altura" name="altura" type="text" inputmode="numeric" placeholder="Ej: 1750" />
     @if (errors()['altura']; as text) {
       <p class="err">{{ text }}</p>
     }
@@ -83,7 +98,7 @@
         @if (file.url) {
           <img [src]="file.url" [alt]="file.name" />
         } @else {
-          <span>{{ file.name }}</span>
+          <span class="chip">📄 {{ file.name }}</span>
         }
       }
     </div>
@@ -92,10 +107,12 @@
     }
   </div>
 
-  @if (editing()) {
-    <button type="button" (click)="saveChanges($event)">Guardar cambios</button>
-  } @else {
-    <button type="button" (click)="saveDraft($event)">Guardar borrador</button>
-    <button type="button" (click)="publish($event)">Publicar registro</button>
-  }
+  <div class="actions">
+    @if (editing()) {
+      <button type="button" (click)="saveChanges($event)">Guardar cambios</button>
+    } @else {
+      <button class="ghost" type="button" (click)="saveDraft($event)">Guardar borrador</button>
+      <button type="button" (click)="publish($event)">Publicar registro</button>
+    }
+  </div>
 </form>

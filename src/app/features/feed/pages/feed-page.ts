@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { FeedPhoto } from '../data/feed-farm.repository';
+import { FeedPhoto, FeedFarm } from '../data/feed-farm.repository';
 import { FeedService } from '../services/feed.service';
 
 @Component({
@@ -14,6 +14,7 @@ export class FeedPage {
   private readonly router = inject(Router);
   readonly loading = signal(true);
   readonly novedadIndex = signal(0);
+  readonly originIndex = signal(0);
 
   constructor() {
     setTimeout(() => this.loading.set(false), 1000);
@@ -33,7 +34,20 @@ export class FeedPage {
     this.novedadIndex.update((index) => Math.max(index - 1, 0));
   }
 
+  nextOrigin(): void {
+    const last = this.feed.origins().length - 1;
+    this.originIndex.update((index) => Math.min(index + 1, Math.max(last, 0)));
+  }
+
+  previousOrigin(): void {
+    this.originIndex.update((index) => Math.max(index - 1, 0));
+  }
+
   visitProfile(id: string): void {
     void this.router.navigate(['/perfil', id], { queryParamsHandling: 'preserve' });
+  }
+
+  farmOf(farmId: string): FeedFarm | undefined {
+    return this.feed.items().find((farm) => farm.id === farmId);
   }
 }

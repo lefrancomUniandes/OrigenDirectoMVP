@@ -4,15 +4,17 @@
       <h1>Mis orígenes</h1>
       <p>Los publicados y activos se ven en tu perfil y en el inicio.</p>
     </div>
-    <a class="btn" href="/origenes/registrar">Registrar origen</a>
+    <a class="btn btn--primario" href="/origenes/registrar">Registrar origen</a>
   </header>
 
   @if (origins.drafts().length > 0) {
-    <p>{{ origins.drafts().length }} borrador{{ origins.drafts().length === 1 ? '' : 'es' }} sin publicar.</p>
+    <p class="muted">{{ origins.drafts().length }} borrador{{ origins.drafts().length === 1 ? '' : 'es' }} sin publicar.</p>
   }
   @if (origins.published().length === 0) {
-    <p>Aún no hay orígenes publicados en esta finca.</p>
-    <a href="/origenes/registrar">Registrar el primer origen</a>
+    <div class="empty">
+      <p class="muted">Aún no hay orígenes publicados en esta finca.</p>
+      <a class="btn btn--primario" href="/origenes/registrar">Registrar el primer origen</a>
+    </div>
   }
 
   <div class="origins__grid">

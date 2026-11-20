@@ -4,9 +4,11 @@ import { Entity } from '../../../core/data/repository.port';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
 
 export interface FeedOrigin extends Entity {
+  readonly farmId: string;
   readonly name: string;
   readonly status: string;
   readonly active: boolean;
+  readonly publishedOn: string;
   readonly variety?: string;
   readonly process?: string;
   readonly roast?: string;

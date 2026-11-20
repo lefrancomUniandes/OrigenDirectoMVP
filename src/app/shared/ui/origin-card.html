@@ -1,5 +1,18 @@
+@if (showSwitch() || editHref()) {
+  <div class="ctl">
+    @if (showSwitch()) {
+      <label class="sw">
+        <input type="checkbox" [checked]="active()" (change)="onActive($event)" />
+        {{ active() ? 'Activo' : 'Desactivado' }}
+      </label>
+    }
+    @if (editHref()) {
+      <a class="ghost" [href]="editHref()">✎ Editar</a>
+    }
+  </div>
+}
 <article [class.off]="inactive()">
-  <div class="media">
+  <div class="media" [class.media--photo]="!!photo()">
     @if (photo()) {
       <img [src]="photo()" [alt]="name()" />
     }
@@ -9,18 +22,9 @@
     }
   </div>
   <div class="body">
-    @if (showSwitch()) {
-      <label class="switch">
-        <input type="checkbox" [checked]="active()" (change)="onActive($event)" />
-        {{ active() ? 'Activo' : 'Desactivado' }}
-      </label>
-    }
-    @if (editHref()) {
-      <a [href]="editHref()">Editar</a>
-    }
     <h3>{{ name() }}</h3>
     @if (farmName()) {
-      <p>📍 {{ farmName() }} · {{ department() }}</p>
+      <p class="muted">📍 {{ farmName() }} · {{ department() }}</p>
     }
     <dl>
       @if (variety()) {

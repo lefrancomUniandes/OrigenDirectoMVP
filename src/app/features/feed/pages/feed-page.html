@@ -2,28 +2,66 @@
   <p class="feed__status" role="status">Cargando</p>
 } @else {
   <div class="feed">
-    @for (origin of feed.origins(); track origin.id) {
-      <article>
-        @if (origin.photo) {
-          <img [src]="origin.photo" [alt]="origin.name" />
-        }
-        <h3>{{ origin.name }}</h3>
-        @if (origin.variety) {
-          <p>{{ origin.variety }}</p>
-        }
-        @if (origin.process) {
-          <p>{{ origin.process }}</p>
-        }
-        @if (origin.roast) {
-          <p>{{ origin.roast }}</p>
-        }
-        @if (origin.altitude) {
-          <p>{{ origin.altitude }} m.s.n.m.</p>
-        }
-        @for (note of origin.notes ?? []; track note) {
-          <span>{{ note }}</span>
-        }
-      </article>
+    @if (feed.origins()[originIndex()]; as origin) {
+      <section class="novedades" aria-label="Orígenes">
+        <header class="feed__heading">
+          <h2>Orígenes</h2>
+        </header>
+        <div class="novedades__stage">
+          <button
+            type="button"
+            class="novedades__arrow"
+            aria-label="Anterior"
+            (click)="previousOrigin()"
+            [disabled]="originIndex() === 0"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18 9 12l6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <article class="novedad">
+            <div class="novedad__art">
+              @if (origin.photo) {
+                <img [src]="origin.photo" [alt]="origin.name" />
+              }
+            </div>
+            <div class="novedad__body">
+              <p class="novedad__badge">Nuevo</p>
+              <h3>{{ origin.name }}</h3>
+              @if (farmOf(origin.farmId); as farm) {
+                <p class="novedad__farm">{{ farm.farmName }}</p>
+                <p class="novedad__place">{{ farm.department }}</p>
+              }
+              @if (origin.variety || origin.process || origin.roast) {
+                <p class="novedad__place">
+                  {{ [origin.variety, origin.process, origin.roast].filter((item) => item).join(' · ') }}
+                </p>
+              }
+              @if (origin.altitude) {
+                <p class="novedad__place">{{ origin.altitude }} m.s.n.m.</p>
+              }
+              @if (origin.notes?.length) {
+                <div class="novedad__notes">
+                  @for (note of origin.notes; track note) {
+                    <span>{{ note }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </article>
+          <button
+            type="button"
+            class="novedades__arrow"
+            aria-label="Siguiente"
+            (click)="nextOrigin()"
+            [disabled]="originIndex() >= feed.origins().length - 1"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 18 6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </section>
     }
     @if (feed.novedades()[novedadIndex()]; as novedad) {
       <section class="novedades" aria-label="Novedades">
