@@ -12,6 +12,7 @@ export interface Lot extends Entity {
   readonly price: number;
   readonly status: LotStatus;
   readonly notes: string;
+  readonly originId?: string;
   readonly active: boolean;
   readonly publishedOn: string;
 }

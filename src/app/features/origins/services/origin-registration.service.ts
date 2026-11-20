@@ -31,10 +31,24 @@ export class OriginRegistrationService {
     });
   }
 
-  publish(name: string): Promise<string> {
+  publish(input: {
+    name: string;
+    variety: string;
+    process: string;
+    roast: string;
+    altitude: number;
+    notes: readonly string[];
+    photo: string;
+  }): Promise<string> {
     return this.repo.create({
       farmId: this.session.account()?.farmId ?? '',
-      name: name.trim(),
+      name: input.name.trim(),
+      variety: input.variety,
+      process: input.process,
+      roast: input.roast,
+      altitude: input.altitude,
+      notes: input.notes,
+      photo: input.photo,
       status: 'publicado',
       active: true,
       publishedOn: new Date().toISOString().slice(0, 10),

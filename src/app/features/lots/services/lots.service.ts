@@ -4,12 +4,14 @@ import { liveQuerySignal } from '../../../core/db/live-query';
 import { SessionService } from '../../../core/session/session';
 import { Lot } from '../data/lot';
 import { LotFarm, LotFarmRepository } from '../data/lot-farm.repository';
+import { LotOrigin, LotOriginRepository } from '../data/lot-origin.repository';
 import { LotRepository } from '../data/lot.repository';
 import { LotWrite } from './lot-form';
 
 @Injectable()
 export class LotsService {
   private readonly lotsRepo = inject(LotRepository);
+  private readonly originsRepo = inject(LotOriginRepository);
   private readonly farms = inject(LotFarmRepository);
   private readonly novedades = inject(NovedadRepository);
   private readonly farmId = inject(SessionService).account()?.farmId ?? '';
@@ -23,6 +25,11 @@ export class LotsService {
     const rows = await this.lotsRepo.getAll();
     return rows.filter((row) => row.farmId === this.farmId && row.active);
   }, [] as Lot[]);
+
+  readonly origins = liveQuerySignal(async () => {
+    const rows = await this.originsRepo.getAll();
+    return rows.filter((row) => row.farmId === this.farmId && row.status === 'publicado' && row.active);
+  }, [] as LotOrigin[]);
 
   async publish(input: LotWrite): Promise<string> {
     const publishedOn = new Date().toISOString();

@@ -133,7 +133,15 @@ export class OriginRegistrationPage {
     if (Object.keys(errors).length > 0) {
       return;
     }
-    await this.origins.publish(name);
+    await this.origins.publish({
+      name,
+      variety,
+      process,
+      roast,
+      altitude: Number(altitude),
+      notes: this.notes(),
+      photo: this.evidences().find((file) => file.url)?.url ?? '',
+    });
     await this.router.navigateByUrl('/origenes');
   }
 

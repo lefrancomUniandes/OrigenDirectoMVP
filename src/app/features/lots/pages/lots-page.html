@@ -1,7 +1,7 @@
 <section class="lots">
   <header class="lots__top">
     <div>
-      <h1>Mis Lotes</h1>
+      <h1>Mis productos</h1>
       <p>
         @if (service.farm(); as farm) {
           {{ farm.farmName }} ·
@@ -11,12 +11,12 @@
     </div>
     <div class="lots__actions">
       <a class="btn" href="/origenes/registrar">Registrar origen</a>
-      <button type="button" class="btn btn--primario" (click)="openCreate()">＋ Publicar nuevo lote</button>
+      <button type="button" class="btn btn--primario" (click)="openCreate()">＋ Publicar nuevo producto</button>
     </div>
   </header>
 
   @if (service.lots().length === 0) {
-    <div class="lots__empty">Aún no tienes lotes publicados. Usa “Publicar nuevo lote”.</div>
+    <div class="lots__empty">Aún no tienes productos publicados. Usa “Publicar nuevo producto”.</div>
   } @else {
     <div class="lots__grid">
       @for (lot of service.lots(); track lot.id) {
@@ -80,7 +80,7 @@
             <p class="lot__notes">{{ lot.notes }}</p>
           }
           <p class="lot__support">
-            Este lote ya tiene un código QR único asociado a su ficha digital pública. Mientras el lote esté activo,
+            Este producto ya tiene un código QR único asociado a su ficha digital pública. Mientras el producto esté activo,
             el QR siempre abrirá la versión más actualizada de la ficha.
           </p>
           <div class="lot__qr">
@@ -108,7 +108,7 @@
   <div class="overlay">
     <form class="modal" (submit)="submit($event)" novalidate>
       <header>
-        <h2>{{ editingId() ? 'Editar lote' : 'Publicar nuevo lote' }}</h2>
+        <h2>{{ editingId() ? 'Editar producto' : 'Publicar nuevo producto' }}</h2>
         <p>Los campos con <span class="req">*</span> son obligatorios.</p>
       </header>
       <div class="modal__body">
@@ -146,11 +146,11 @@
         </div>
 
         <div class="campo" [class.invalido]="message('variety')">
-          <label for="variedad">Variedad de café <span class="req">*</span></label>
-          <select id="variedad" (change)="onField('variety', $event)" (blur)="touch('variety')">
+          <label for="origen">Origen <span class="req">*</span></label>
+          <select id="origen" (change)="onField('variety', $event)" (blur)="touch('variety')">
             <option value="" [selected]="draft().variety === ''">Seleccione</option>
-            @for (variety of lotVarieties; track variety) {
-              <option value="{{ variety }}" [selected]="draft().variety === variety">{{ variety }}</option>
+            @for (origin of service.origins(); track origin.id) {
+              <option [value]="origin.name" [selected]="draft().variety === origin.name">{{ origin.name }}</option>
             }
           </select>
           @if (message('variety'); as text) {
@@ -158,27 +158,9 @@
           }
         </div>
 
-        @if (draft().variety === 'Otra') {
-          <div class="campo" [class.invalido]="message('other')">
-            <label for="otra">¿Cuál variedad? <span class="req">*</span></label>
-            <input
-              id="otra"
-              maxlength="50"
-              placeholder="Nombre de la variedad"
-              [value]="draft().other"
-              (input)="onField('other', $event)"
-              (blur)="touch('other')"
-            />
-            <p class="ayuda"><span>Máximo 50 caracteres</span><span>{{ draft().other.trim().length }}/50</span></p>
-            @if (message('other'); as text) {
-              <p class="err">{{ text }}</p>
-            }
-          </div>
-        }
-
         <div class="fila">
           <div class="campo" [class.invalido]="message('altitude')">
-            <label for="altitud">Altitud del lote (m.s.n.m.) <span class="req">*</span></label>
+            <label for="altitud">Altitud del producto (m.s.n.m.) <span class="req">*</span></label>
             <input
               id="altitud"
               inputmode="numeric"
@@ -237,7 +219,7 @@
       <footer>
         <button type="button" class="btn btn--secundario" (click)="closeForm()">Cancelar</button>
         <button type="submit" class="btn btn--primario" [disabled]="!canSave()">
-          {{ editingId() ? 'Guardar cambios' : 'Publicar lote' }}
+          {{ editingId() ? 'Guardar cambios' : 'Publicar producto' }}
         </button>
       </footer>
     </form>
@@ -248,12 +230,12 @@
   <div class="overlay">
     <div class="modal modal--confirm" role="alertdialog" aria-labelledby="delTit">
       <header>
-        <h2 id="delTit">Eliminar lote</h2>
+        <h2 id="delTit">Eliminar producto</h2>
       </header>
       <div class="modal__body">
         <p>
-          ¿Estás seguro de que deseas eliminar el lote <strong>{{ lotDeleteName(lot) }}</strong>? Esta acción no se
-          puede deshacer y el lote dejará de estar visible para compradores.
+          ¿Estás seguro de que deseas eliminar el producto <strong>{{ lotDeleteName(lot) }}</strong>? Esta acción no se
+          puede deshacer y el producto dejará de estar visible para compradores.
         </p>
       </div>
       <footer>

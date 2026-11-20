@@ -1,4 +1,3 @@
-import { lotVarieties } from '../../../core/catalogs/lot-varieties';
 import { LotStatus, LotUnit } from '../data/lot';
 
 export interface LotDraft {
@@ -20,6 +19,7 @@ export interface LotWrite {
   price: number;
   status: LotStatus;
   notes: string;
+  originId: string;
 }
 
 export const emptyLotDraft: LotDraft = {
@@ -64,11 +64,12 @@ export function lotWriteFromDraft(draft: LotDraft): LotWrite {
   return {
     quantity: Number(draft.quantity),
     unit: draft.unit as LotUnit,
-    variety: draft.variety === 'Otra' ? draft.other.trim() : draft.variety,
+    variety: draft.variety,
     altitude: Number(draft.altitude),
     price: Number(draft.price.trim().replace(/\./g, '')),
     status: draft.status,
     notes: draft.notes.trim(),
+    originId: '',
   };
 }
 
@@ -107,8 +108,8 @@ function unitError(value: string): string {
 }
 
 function varietyError(value: string): string {
-  if (!(lotVarieties as readonly string[]).includes(value)) {
-    return 'Selecciona una variedad.';
+  if (!value.trim()) {
+    return 'Selecciona un origen.';
   }
   return '';
 }

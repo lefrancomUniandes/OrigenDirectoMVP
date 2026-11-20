@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toString as qrSvg } from 'qrcode';
-import { lotVarieties } from '../../../core/catalogs/lot-varieties';
 import { qrPng } from '../services/qr-png';
 import { Lot } from '../data/lot';
 import {
@@ -24,7 +23,6 @@ import { LotsService } from '../services/lots.service';
 })
 export class LotsPage {
   readonly service = inject(LotsService);
-  readonly lotVarieties = lotVarieties;
   readonly unitLabel = unitLabel;
   readonly priceLabel = priceLabel;
   readonly altitudeLabel = altitudeLabel;
@@ -67,13 +65,12 @@ export class LotsPage {
 
   openEdit(lot: Lot): void {
     this.closeQr();
-    const known = (lotVarieties as readonly string[]).includes(lot.variety);
     this.editingId.set(lot.id);
     this.draft.set({
       quantity: String(lot.quantity),
       unit: lot.unit,
-      variety: known ? lot.variety : 'Otra',
-      other: known ? '' : lot.variety,
+      variety: lot.variety,
+      other: '',
       altitude: String(lot.altitude),
       price: lot.price.toLocaleString('es-CO'),
       status: lot.status,
@@ -167,16 +164,18 @@ export class LotsPage {
       return;
     }
     const write = lotWriteFromDraft(this.draft());
+    const chosen = this.service.origins().find((origin) => origin.name === write.variety);
+    const saved = { ...write, originId: chosen?.id ?? '' };
     const editingId = this.editingId();
     if (editingId) {
-      await this.service.save(editingId, write);
+      await this.service.save(editingId, saved);
       this.toast(
-        '¡Lote Actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
+        '¡Producto actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
       );
     } else {
-      const id = await this.service.publish(write);
+      const id = await this.service.publish(saved);
       this.toast(
-        '¡Lote Publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
+        '¡Producto publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
       );
       this.closeForm();
       await this.showQr(id);
@@ -192,7 +191,7 @@ export class LotsPage {
     }
     await this.service.deactivate(id);
     this.confirmId.set(null);
-    this.toast('El lote ha sido eliminado correctamente.');
+    this.toast('El producto ha sido eliminado correctamente.');
   }
 
   private toast(message: string): void {

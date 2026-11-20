@@ -9,6 +9,7 @@ export interface OriginLot extends Entity {
   readonly altitude: number;
   readonly status: string;
   readonly notes: string;
+  readonly originId?: string;
   readonly active: boolean;
 }
 

@@ -259,6 +259,85 @@ describe('Página de registro de origen', () => {
     expect(compiled.querySelector('a[href*="editar="]')?.textContent).toContain('Editar');
   });
 
+  it('Al publicar un origen, el feed muestra su tarjeta con la foto, el nombre, la variedad, el proceso, el tueste, la altura y las notas', async () => {
+    localStorage.removeItem('od.session');
+    await Dexie.delete('origen-directo');
+    await TestBed.configureTestingModule({
+      imports: [SpecHost],
+      providers: [
+        provideRouter([
+          {
+            path: 'origenes',
+            loadChildren: () => import('../routes').then((m) => m.routes),
+          },
+          { path: '', component: FeedPage },
+        ]),
+      ],
+    }).compileComponents();
+
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
+    await TestBed.inject(OrigenDirectoDb).table('fincas').add({
+      id: 'OD-2026-100001',
+      farmName: 'Finca La Esperanza',
+      ownerName: 'Ana',
+      department: 'Huila',
+      municipality: 'Pitalito',
+      village: '',
+      area: '',
+      areaUnit: '',
+      altitude: '',
+      varieties: [],
+      otherVariety: '',
+      email: '',
+      mobile: '',
+      phoneAreaCode: '',
+      landline: '',
+      bio: '',
+      experience: '',
+      photos: [],
+      pdf: null,
+    });
+
+    const router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(SpecHost);
+    compiled = fixture.nativeElement as HTMLElement;
+    await router.navigateByUrl('/origenes/registrar');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    setValue('nombre', 'Lote 4 · Bourbon Natural');
+    setValue('variedad', 'Bourbon');
+    setValue('proceso', 'Natural');
+    setValue('tueste', 'Medio');
+    addNote('panela');
+    setValue('altura', '1750');
+    await attach(new File([new Uint8Array([1, 2, 3])], 'grano.jpg', { type: 'image/jpeg' }));
+    button('Publicar registro')?.click();
+    await untilText('Lote 4 · Bourbon Natural');
+
+    await router.navigateByUrl('/');
+    fixture.detectChanges();
+    await untilText('Lote 4 · Bourbon Natural');
+
+    const card = [...compiled.querySelectorAll('article')].find((item) =>
+      item.textContent?.includes('Lote 4 · Bourbon Natural'),
+    ) as HTMLElement;
+    const photo = card.querySelector('img') as HTMLImageElement;
+
+    expect(photo.getAttribute('src')?.startsWith('data:image/jpeg')).toBe(true);
+    expect(photo.getAttribute('alt')).toBe('Lote 4 · Bourbon Natural');
+    expect(card.textContent).toContain('Bourbon');
+    expect(card.textContent).toContain('Natural');
+    expect(card.textContent).toContain('Medio');
+    expect(card.textContent).toContain('1750 m.s.n.m.');
+    expect(card.textContent).toContain('panela');
+  });
+
   function label(text: string): HTMLLabelElement | undefined {
     return [...compiled.querySelectorAll('label')].find((item) => item.textContent?.trim() === text);
   }

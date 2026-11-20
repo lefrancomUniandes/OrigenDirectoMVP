@@ -52,6 +52,7 @@ describe('Página de mis lotes', () => {
       ownerName: 'Ana',
       farmName: 'Finca La Esperanza',
     });
+    await seedOrigins();
     fixture = TestBed.createComponent(LotsPage);
     compiled = fixture.nativeElement as HTMLElement;
     view = compiled;
@@ -95,6 +96,25 @@ describe('Página de mis lotes', () => {
     });
   }
 
+  async function seedOrigins(): Promise<void> {
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.open();
+    for (const name of ['Caturra', 'Castillo', 'Geisha']) {
+      const id = `origen-${name.toLowerCase()}`;
+      if (await db.table('origenes').get(id)) {
+        continue;
+      }
+      await db.table('origenes').add({
+        id,
+        farmId: 'OD-2026-100001',
+        name,
+        status: 'publicado',
+        active: true,
+        publishedOn: '2026-11-28',
+      });
+    }
+  }
+
   async function addLot(overrides: Partial<Lot> & Pick<Lot, 'id' | 'farmId'>): Promise<void> {
     const db = TestBed.inject(OrigenDirectoDb);
     await db.open();
@@ -125,14 +145,18 @@ describe('Página de mis lotes', () => {
   }
 
   function openCreate(): void {
-    button('Publicar nuevo lote').click();
+    button('Publicar nuevo producto').click();
     fixture.detectChanges();
   }
 
-  function fillValid(): void {
+  async function fillValid(): Promise<void> {
+    for (let attempt = 0; attempt < 40 && !compiled.textContent?.includes('Caturra'); attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
     setControl('cantidad', '20');
     setControl('unidad', 'sacos');
-    setControl('variedad', 'Caturra');
+    setControl('origen', 'Caturra');
     setControl('altitud', '1750');
     setControl('precio', '85000');
   }
@@ -160,14 +184,14 @@ describe('Página de mis lotes', () => {
     expect(button('Eliminar')).toBeTruthy();
   });
 
-  it('sin lotes activos, muestra el vacío y «Publicar nuevo lote»', async () => {
+  it('sin lotes activos, muestra el vacío y «Publicar nuevo producto»', async () => {
     await addLot({ id: 'inactivo', farmId: 'OD-2026-100001', variety: 'Geisha', active: false });
     await render();
     await new Promise((resolve) => setTimeout(resolve, 100));
     fixture.detectChanges();
 
-    expect(compiled.textContent).toContain('Aún no tienes lotes publicados. Usa “Publicar nuevo lote”.');
-    expect(compiled.textContent).toContain('Publicar nuevo lote');
+    expect(compiled.textContent).toContain('Aún no tienes productos publicados. Usa “Publicar nuevo producto”.');
+    expect(compiled.textContent).toContain('Publicar nuevo producto');
     expect(compiled.querySelector('a[href="/origenes/registrar"]')?.textContent?.trim()).toBe(
       'Registrar origen',
     );
@@ -178,14 +202,14 @@ describe('Página de mis lotes', () => {
     await saveFarm();
     await render();
     openCreate();
-    fillValid();
+    await fillValid();
 
-    expect(button('Publicar lote').disabled).toBe(false);
-    button('Publicar lote').click();
-    await untilText('¡Lote Publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.');
+    expect(button('Publicar producto').disabled).toBe(false);
+    button('Publicar producto').click();
+    await untilText('¡Producto publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.');
 
     expect(compiled.textContent).toContain(
-      '¡Lote Publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
+      '¡Producto publicado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
     );
     expect(compiled.textContent).toContain('Caturra');
     expect(compiled.textContent).toContain('20 sacos (70kg)');
@@ -204,114 +228,139 @@ describe('Página de mis lotes', () => {
     ]);
   });
 
-  it('con cantidad vacía, cero o decimal, «Publicar lote» sigue deshabilitado y, al tocar el campo, se ve el error', async () => {
+  it('con cantidad vacía, cero o decimal, «Publicar producto» sigue deshabilitado y, al tocar el campo, se ve el error', async () => {
     await render();
     openCreate();
 
     setControl('cantidad', '');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('La cantidad es obligatoria.');
 
     setControl('cantidad', '0');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain(
       'Ingresa un número entero positivo, sin decimales, espacios ni caracteres especiales.',
     );
 
     setControl('cantidad', '1.5');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain(
       'Ingresa un número entero positivo, sin decimales, espacios ni caracteres especiales.',
     );
   });
 
-  it('sin unidad, «Publicar lote» sigue deshabilitado y se ve «Selecciona la unidad de medida.»', async () => {
+  it('sin unidad, «Publicar producto» sigue deshabilitado y se ve «Selecciona la unidad de medida.»', async () => {
     await render();
     openCreate();
-    fillValid();
+    await fillValid();
     setControl('unidad', '');
 
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('Selecciona la unidad de medida.');
   });
 
-  it('sin variedad no publica; «Otra» exige el nombre (máximo 50) y ese nombre queda como variedad', async () => {
+  it('al crear o editar un producto, se elige un origen de la finca y la pantalla habla de producto', async () => {
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.open();
+    await db.table('origenes').add({
+      id: 'origen-bourbon',
+      farmId: 'OD-2026-100001',
+      name: 'Lote 4 · Bourbon Natural',
+      status: 'publicado',
+      active: true,
+      publishedOn: '2026-11-28',
+    });
+    await db.table('origenes').add({
+      id: 'origen-borrador',
+      farmId: 'OD-2026-100001',
+      name: 'Lote Borrador del Alto',
+      status: 'borrador',
+      active: true,
+      publishedOn: '2026-11-20',
+    });
     await render();
     openCreate();
-    fillValid();
-    setControl('variedad', '');
+    await untilText('Lote 4 · Bourbon Natural');
 
-    expect(button('Publicar lote').disabled).toBe(true);
-    expect(compiled.textContent).toContain('Selecciona una variedad.');
+    expect(compiled.textContent).toContain('Publicar nuevo producto');
+    expect(compiled.textContent).not.toContain('Variedad de café');
+    const options = [...(compiled.querySelector('#origen') as HTMLSelectElement).options].map(
+      (option) => option.text,
+    );
+    expect(options).toContain('Lote 4 · Bourbon Natural');
+    expect(options).not.toContain('Lote Borrador del Alto');
 
-    setControl('variedad', 'Otra');
-    setControl('otra', '   ');
-    expect(button('Publicar lote').disabled).toBe(true);
-    expect(compiled.textContent).toContain('Escribe el nombre de la variedad.');
+    setControl('origen', '');
+    expect(button('Publicar producto').disabled).toBe(true);
+    expect(compiled.textContent).toContain('Selecciona un origen.');
 
-    setControl('otra', 'a'.repeat(51));
-    expect(button('Publicar lote').disabled).toBe(true);
-    expect(compiled.textContent).toContain('Máximo 50 caracteres.');
+    setControl('origen', 'Lote 4 · Bourbon Natural');
+    setControl('cantidad', '20');
+    setControl('unidad', 'sacos');
+    setControl('altitud', '1750');
+    setControl('precio', '85000');
+    button('Publicar producto').click();
+    await untilText('¡Producto publicado con éxito!');
 
-    setControl('otra', 'Pink Bourbon');
-    button('Publicar lote').click();
-    await untilText('Pink Bourbon');
-
-    expect(compiled.textContent).toContain('Pink Bourbon');
-    const rows = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
-    expect(rows).toEqual([expect.objectContaining({ variety: 'Pink Bourbon' })]);
+    const rows = await db.table('lotes').toArray();
+    expect(rows).toEqual([
+      expect.objectContaining({
+        variety: 'Lote 4 · Bourbon Natural',
+        originId: 'origen-bourbon',
+      }),
+    ]);
 
     button('Editar').click();
     fixture.detectChanges();
-    expect((compiled.querySelector('#variedad') as HTMLSelectElement).value).toBe('Otra');
-    expect((compiled.querySelector('#otra') as HTMLInputElement).value).toBe('Pink Bourbon');
+    expect(compiled.textContent).toContain('Editar producto');
+    expect((compiled.querySelector('#origen') as HTMLSelectElement).value).toBe('Lote 4 · Bourbon Natural');
   });
 
   it('altitud vacía, con letras o fuera de 500–2500 no publica y muestra el error bajo el campo', async () => {
     await render();
     openCreate();
-    fillValid();
+    await fillValid();
 
     setControl('altitud', '');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('La altitud es obligatoria.');
 
     setControl('altitud', '12a');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('Solo números enteros, sin decimales ni letras.');
 
     setControl('altitud', '499');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('La altitud debe estar entre 500 y 2500 m.s.n.m.');
 
     setControl('altitud', '2501');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('La altitud debe estar entre 500 y 2500 m.s.n.m.');
 
     setControl('altitud', '2500');
-    expect(button('Publicar lote').disabled).toBe(false);
+    expect(button('Publicar producto').disabled).toBe(false);
   });
 
   it('precio vacío, cero o con decimales no publica; un entero en COP sí', async () => {
     await render();
     openCreate();
-    fillValid();
+    await fillValid();
 
     setControl('precio', '');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('El precio es obligatorio.');
 
     setControl('precio', '0');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('El precio debe ser mayor a cero.');
 
     setControl('precio', '10.5');
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.textContent).toContain('Ingresa un valor en pesos (COP), sin decimales ni signos.');
 
     setControl('precio', '85000');
-    expect(button('Publicar lote').disabled).toBe(false);
-    button('Publicar lote').click();
+    expect(button('Publicar producto').disabled).toBe(false);
+    button('Publicar producto').click();
     await untilText('$85.000');
 
     expect(compiled.textContent).toContain('$85.000 COP / saco');
@@ -320,20 +369,20 @@ describe('Página de mis lotes', () => {
   it('las notas son opcionales, no pasan de 300 y el contador muestra lo escrito', async () => {
     await render();
     openCreate();
-    fillValid();
+    await fillValid();
 
-    expect(button('Publicar lote').disabled).toBe(false);
+    expect(button('Publicar producto').disabled).toBe(false);
     expect(compiled.querySelector('#cntNotas')?.textContent).toBe('0/300');
 
     setControl('notas', 'Lavado');
     expect(compiled.querySelector('#cntNotas')?.textContent).toBe('6/300');
 
     setControl('notas', 'a'.repeat(301));
-    expect(button('Publicar lote').disabled).toBe(true);
+    expect(button('Publicar producto').disabled).toBe(true);
     expect(compiled.querySelector('#cntNotas')?.textContent).toBe('301/300');
 
     setControl('notas', 'Lavado');
-    button('Publicar lote').click();
+    button('Publicar producto').click();
     await untilText('Lavado');
     expect(compiled.textContent).toContain('Lavado');
   });
@@ -341,7 +390,7 @@ describe('Página de mis lotes', () => {
   it('«Cancelar» cierra sin guardar', async () => {
     await render();
     openCreate();
-    fillValid();
+    await fillValid();
     button('Cancelar').click();
     fixture.detectChanges();
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -366,10 +415,10 @@ describe('Página de mis lotes', () => {
     button('Editar').click();
     fixture.detectChanges();
 
-    expect(compiled.textContent).toContain('Editar lote');
+    expect(compiled.textContent).toContain('Editar producto');
     expect((compiled.querySelector('#cantidad') as HTMLInputElement).value).toBe('25');
     expect((compiled.querySelector('#unidad') as HTMLSelectElement).value).toBe('sacos');
-    expect((compiled.querySelector('#variedad') as HTMLSelectElement).value).toBe('Castillo');
+    expect((compiled.querySelector('#origen') as HTMLSelectElement).value).toBe('Castillo');
     expect((compiled.querySelector('#altitud') as HTMLInputElement).value).toBe('1750');
     expect((compiled.querySelector('#precio') as HTMLInputElement).value).toBe('1.250.000');
     expect((compiled.querySelector('#estado') as HTMLSelectElement).value).toBe('Disponible');
@@ -378,10 +427,10 @@ describe('Página de mis lotes', () => {
 
     setControl('estado', 'Vendido');
     button('Guardar cambios').click();
-    await untilText('¡Lote Actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.');
+    await untilText('¡Producto actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.');
 
     expect(compiled.textContent).toContain(
-      '¡Lote Actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
+      '¡Producto actualizado con éxito! Ya se encuentra visible en el catálogo público de OrigenDirecto.',
     );
     expect(compiled.textContent).toContain('Vendido');
     const rows = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
@@ -396,7 +445,7 @@ describe('Página de mis lotes', () => {
     button('Eliminar').click();
     fixture.detectChanges();
     expect(compiled.textContent).toContain(
-      '¿Estás seguro de que deseas eliminar el lote Castillo - 25 sacos (70kg)? Esta acción no se puede deshacer y el lote dejará de estar visible para compradores.',
+      '¿Estás seguro de que deseas eliminar el producto Castillo - 25 sacos (70kg)? Esta acción no se puede deshacer y el producto dejará de estar visible para compradores.',
     );
 
     button('Cancelar').click();
@@ -407,9 +456,9 @@ describe('Página de mis lotes', () => {
     button('Eliminar').click();
     fixture.detectChanges();
     button('Confirmar eliminación').click();
-    await untilText('El lote ha sido eliminado correctamente.');
+    await untilText('El producto ha sido eliminado correctamente.');
 
-    expect(compiled.textContent).toContain('El lote ha sido eliminado correctamente.');
+    expect(compiled.textContent).toContain('El producto ha sido eliminado correctamente.');
     expect(compiled.textContent).not.toContain('Castillo');
     const rows = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
     expect(rows).toEqual([expect.objectContaining({ id: 'propio', active: false })]);
@@ -419,9 +468,9 @@ describe('Página de mis lotes', () => {
     await saveFarm();
     await render();
     openCreate();
-    fillValid();
-    button('Publicar lote').click();
-    await untilText('¡Lote Publicado con éxito!');
+    await fillValid();
+    button('Publicar producto').click();
+    await untilText('¡Producto publicado con éxito!');
 
     const [lot] = await TestBed.inject(OrigenDirectoDb).table('lotes').toArray();
     button('Ver QR').click();
@@ -546,7 +595,7 @@ describe('Página de mis lotes', () => {
     setControl('notas', 'Panela');
     setControl('estado', 'En pausa');
     button('Guardar cambios').click();
-    await untilText('¡Lote Actualizado con éxito!');
+    await untilText('¡Producto actualizado con éxito!');
     button('Ver QR').click();
     for (let attempt = 0; attempt < 10; attempt++) {
       await fixture.whenStable();
@@ -621,6 +670,21 @@ describe('Lote publicado en el carrusel', () => {
   });
 
   async function render(url: string): Promise<void> {
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.open();
+    for (const name of ['Caturra', 'Castillo', 'Geisha']) {
+      const id = `origen-${name.toLowerCase()}`;
+      if (!(await db.table('origenes').get(id))) {
+        await db.table('origenes').add({
+          id,
+          farmId: 'OD-2026-100001',
+          name,
+          status: 'publicado',
+          active: true,
+          publishedOn: '2026-11-28',
+        });
+      }
+    }
     await TestBed.inject(Router).navigateByUrl(url);
     fixture = TestBed.createComponent(Host);
     view = fixture.nativeElement as HTMLElement;
@@ -701,15 +765,16 @@ describe('Lote publicado en el carrusel', () => {
       publishedOn: '2020-01-01',
     });
     await render('/mis-lotes?login=OD-2026-100001');
-    button('Publicar nuevo lote').click();
+    button('Publicar nuevo producto').click();
     fixture.detectChanges();
+    await untilText('Caturra');
     setControl('cantidad', '20');
     setControl('unidad', 'sacos');
-    setControl('variedad', 'Caturra');
+    setControl('origen', 'Caturra');
     setControl('altitud', '1750');
     setControl('precio', '85000');
-    button('Publicar lote').click();
-    await untilText('¡Lote Publicado con éxito!');
+    button('Publicar producto').click();
+    await untilText('¡Producto publicado con éxito!');
 
     await go('/');
     await finishLoading();
@@ -729,21 +794,22 @@ describe('Lote publicado en el carrusel', () => {
   it('al guardar una variedad nueva, el carrusel la muestra; al confirmar la eliminación, desaparece', async () => {
     await saveFarm();
     await render('/mis-lotes?login=OD-2026-100001');
-    button('Publicar nuevo lote').click();
+    button('Publicar nuevo producto').click();
     fixture.detectChanges();
+    await untilText('Caturra');
     setControl('cantidad', '20');
     setControl('unidad', 'kg');
-    setControl('variedad', 'Castillo');
+    setControl('origen', 'Castillo');
     setControl('altitud', '1750');
     setControl('precio', '85000');
-    button('Publicar lote').click();
-    await untilText('¡Lote Publicado con éxito!');
+    button('Publicar producto').click();
+    await untilText('¡Producto publicado con éxito!');
 
     button('Editar').click();
     fixture.detectChanges();
-    setControl('variedad', 'Geisha');
+    setControl('origen', 'Geisha');
     button('Guardar cambios').click();
-    await untilText('¡Lote Actualizado con éxito!');
+    await untilText('¡Producto actualizado con éxito!');
 
     await go('/');
     await finishLoading();
@@ -756,11 +822,11 @@ describe('Lote publicado en el carrusel', () => {
     button('Eliminar').click();
     fixture.detectChanges();
     button('Confirmar eliminación').click();
-    await untilText('El lote ha sido eliminado correctamente.');
+    await untilText('El producto ha sido eliminado correctamente.');
 
     await go('/');
     await finishLoading();
-    expect(view.textContent).not.toContain('Geisha');
+    expect(view.querySelector('[aria-label="Novedades"]')?.textContent ?? '').not.toContain('Geisha');
   });
 });
 

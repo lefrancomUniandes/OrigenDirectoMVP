@@ -35,6 +35,14 @@
     <section class="origin__block" aria-label="Características del café">
       <h2>Características del café</h2>
       <p><strong>Variedad:</strong> {{ sheet.lot.variety }}</p>
+      @if (sheet.origin; as coffee) {
+        <p><strong>Nombre:</strong> {{ coffee.name }}</p>
+        <p><strong>Proceso:</strong> {{ coffee.process }}</p>
+        <p><strong>Tueste:</strong> {{ coffee.roast }}</p>
+        @if (coffee.notes?.length) {
+          <p><strong>Notas:</strong> {{ coffee.notes.join(', ') }}</p>
+        }
+      }
     </section>
 
     @if (sheet.lot.notes) {

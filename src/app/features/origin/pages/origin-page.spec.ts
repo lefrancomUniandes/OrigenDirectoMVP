@@ -239,4 +239,29 @@ describe('Página de la ficha pública', () => {
     expect(compiled.textContent).toContain('El lote puede estar inactivo o el código ya no es válido.');
     expect(compiled.textContent).not.toContain('Finca El Paraíso');
   });
+
+  it('la ficha pública del producto muestra el nombre, el proceso, el tueste y las notas de ese origen', async () => {
+    await saveOrigin();
+    await TestBed.inject(OrigenDirectoDb).table('lotes').update('LOD-2026-001', {
+      originId: 'origen-bourbon',
+    });
+    await TestBed.inject(OrigenDirectoDb).table('origenes').add({
+      id: 'origen-bourbon',
+      farmId: 'OD-2026-100001',
+      name: 'Lote 4 · Bourbon Natural',
+      process: 'Natural',
+      roast: 'Medio',
+      notes: ['panela', 'durazno'],
+      status: 'publicado',
+      active: true,
+      publishedOn: '2026-11-28',
+    });
+    await open('/origen/lote/LOD-2026-001');
+
+    expect(compiled.textContent).toContain('Lote 4 · Bourbon Natural');
+    expect(compiled.textContent).toContain('Natural');
+    expect(compiled.textContent).toContain('Medio');
+    expect(compiled.textContent).toContain('panela');
+    expect(compiled.textContent).toContain('durazno');
+  });
 });

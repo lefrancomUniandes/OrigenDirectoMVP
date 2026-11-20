@@ -3,7 +3,27 @@
 } @else {
   <div class="feed">
     @for (origin of feed.origins(); track origin.id) {
-      <p>{{ origin.name }}</p>
+      <article>
+        @if (origin.photo) {
+          <img [src]="origin.photo" [alt]="origin.name" />
+        }
+        <h3>{{ origin.name }}</h3>
+        @if (origin.variety) {
+          <p>{{ origin.variety }}</p>
+        }
+        @if (origin.process) {
+          <p>{{ origin.process }}</p>
+        }
+        @if (origin.roast) {
+          <p>{{ origin.roast }}</p>
+        }
+        @if (origin.altitude) {
+          <p>{{ origin.altitude }} m.s.n.m.</p>
+        }
+        @for (note of origin.notes ?? []; track note) {
+          <span>{{ note }}</span>
+        }
+      </article>
     }
     @if (feed.novedades()[novedadIndex()]; as novedad) {
       <section class="novedades" aria-label="Novedades">

@@ -7,6 +7,12 @@ export interface FeedOrigin extends Entity {
   readonly name: string;
   readonly status: string;
   readonly active: boolean;
+  readonly variety?: string;
+  readonly process?: string;
+  readonly roast?: string;
+  readonly altitude?: number;
+  readonly notes?: readonly string[];
+  readonly photo?: string;
 }
 
 @Injectable({ providedIn: 'root' })
