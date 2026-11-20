@@ -2,6 +2,9 @@
   <p class="feed__status" role="status">Cargando</p>
 } @else {
   <div class="feed">
+    @for (origin of feed.origins(); track origin.id) {
+      <p>{{ origin.name }}</p>
+    }
     @if (feed.novedades()[novedadIndex()]; as novedad) {
       <section class="novedades" aria-label="Novedades">
         <header class="feed__heading">

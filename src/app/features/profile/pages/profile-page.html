@@ -171,6 +171,10 @@
     </div>
   </section>
 
+  @for (origin of profile.origins(); track origin.id) {
+    <p>{{ origin.name }}</p>
+  }
+
   @if (openPost(); as post) {
     <div class="modal-backdrop" (click)="close()">
       <div

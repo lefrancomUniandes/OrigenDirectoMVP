@@ -6,5 +6,6 @@ export interface Origin extends Entity {
   readonly farmId: string;
   readonly name: string;
   readonly status: OriginStatus;
+  readonly active: boolean;
   readonly publishedOn: string;
 }

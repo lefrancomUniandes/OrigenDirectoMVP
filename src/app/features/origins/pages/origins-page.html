@@ -1,3 +1,17 @@
 @if (origins.drafts().length > 0) {
   <p>{{ origins.drafts().length }} borrador{{ origins.drafts().length === 1 ? '' : 'es' }} sin publicar.</p>
 }
+@if (origins.published().length === 0) {
+  <p>Aún no hay orígenes publicados en esta finca.</p>
+  <a href="/origenes/registrar">Registrar el primer origen</a>
+}
+@for (origin of origins.published(); track origin.id) {
+  <article>
+    <label>
+      <input type="checkbox" [checked]="origin.active" (change)="setActive(origin.id, $event)" />
+      {{ origin.active ? 'Activo' : 'Desactivado' }}
+    </label>
+    <a [href]="'/origenes/registrar?editar=' + origin.id">Editar</a>
+    <h3>{{ origin.name }}</h3>
+  </article>
+}

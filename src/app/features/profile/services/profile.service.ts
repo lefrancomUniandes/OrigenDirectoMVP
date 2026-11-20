@@ -6,11 +6,13 @@ import { seedDemoIfEmpty } from '../../../core/db/demo-seed';
 import { liveQuerySignal } from '../../../core/db/live-query';
 import { SessionService } from '../../../core/session/session';
 import { ProfileFarm, ProfileFarmRepository } from '../data/profile-farm.repository';
+import { ProfileOrigin, ProfileOriginRepository } from '../data/profile-origin.repository';
 
 @Injectable()
 export class ProfileService {
   private readonly route = inject(ActivatedRoute);
   private readonly farms = inject(ProfileFarmRepository);
+  private readonly originsRepo = inject(ProfileOriginRepository);
   private readonly publications = inject(PublicationRepository);
   private readonly farmId = this.route.snapshot.paramMap.get('id') ?? '';
   readonly canEdit = inject(SessionService).account()?.farmId === this.farmId;
@@ -26,6 +28,11 @@ export class ProfileService {
     const rows = await this.publications.getAll();
     return rows.filter((row) => row.farmId === this.farmId);
   }, [] as Publication[]);
+
+  readonly origins = liveQuerySignal(async () => {
+    const rows = await this.originsRepo.getAll();
+    return rows.filter((row) => row.farmId === this.farmId && row.status === 'publicado' && row.active);
+  }, [] as ProfileOrigin[]);
 
   async update(changes: Partial<Omit<ProfileFarm, 'id'>>): Promise<void> {
     const current = await this.farms.getById(this.farmId);

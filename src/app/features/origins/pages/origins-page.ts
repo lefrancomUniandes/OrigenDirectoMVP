@@ -7,4 +7,9 @@ import { OriginRegistrationService } from '../services/origin-registration.servi
 })
 export class OriginsPage {
   readonly origins = inject(OriginRegistrationService);
+
+  setActive(id: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    void this.origins.setActive(id, checked);
+  }
 }
