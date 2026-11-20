@@ -9,7 +9,10 @@
         gestiona tu oferta visible para compradores.
       </p>
     </div>
-    <button type="button" class="btn btn--primario" (click)="openCreate()">＋ Publicar nuevo lote</button>
+    <div class="lots__actions">
+      <a class="btn" href="/origenes/registrar">Registrar origen</a>
+      <button type="button" class="btn btn--primario" (click)="openCreate()">＋ Publicar nuevo lote</button>
+    </div>
   </header>
 
   @if (service.lots().length === 0) {

@@ -1,0 +1,50 @@
+<a class="back" href="/mis-lotes">Volver a mis lotes</a>
+<h1>Registro de Origen</h1>
+<p class="sub">Documenta la trazabilidad de tu lote de café</p>
+<form novalidate>
+  <label for="nombre">Nombre del lote</label>
+  <input id="nombre" type="text" maxlength="100" />
+
+  <label for="variedad">Variedad</label>
+  <select id="variedad">
+    <option value="">Selecciona…</option>
+    <option>Castillo</option>
+    <option>Caturra</option>
+    <option>Geisha</option>
+    <option>Bourbon</option>
+    <option>Tabi</option>
+    <option>Typica</option>
+    <option>Colombia</option>
+  </select>
+
+  <label for="proceso">Proceso / fermentación</label>
+  <select id="proceso">
+    <option value="">Selecciona…</option>
+    <option>Lavado</option>
+    <option>Honey</option>
+    <option>Natural</option>
+    <option>Anaeróbico</option>
+    <option>Láctico</option>
+  </select>
+  <textarea placeholder="Describe el proceso (opcional)" rows="2"></textarea>
+
+  <label for="tueste">Perfil de tueste</label>
+  <select id="tueste">
+    <option value="">Selecciona…</option>
+    <option>Claro / Ligero</option>
+    <option>Medio</option>
+    <option>Oscuro</option>
+  </select>
+
+  <label for="nota">Notas de cata</label>
+  <input id="nota" type="text" placeholder="Escribe una nota y presiona Enter" />
+
+  <label for="altura">Altura (m.s.n.m.)</label>
+  <input id="altura" type="text" inputmode="numeric" />
+
+  <label for="evidencias">Evidencias (JPG, PNG o PDF · máx. 5 MB)</label>
+  <input id="evidencias" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+
+  <button type="button">Guardar borrador</button>
+  <button type="button">Publicar registro</button>
+</form>

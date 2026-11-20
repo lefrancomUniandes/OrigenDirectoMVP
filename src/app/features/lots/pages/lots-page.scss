@@ -26,6 +26,17 @@
   color: var(--cafe-500);
 }
 
+.lots__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.lots__actions a {
+  text-decoration: none;
+}
+
 .lots__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

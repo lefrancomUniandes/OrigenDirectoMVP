@@ -25,6 +25,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/lots/routes').then((m) => m.routes),
       },
       {
+        path: 'origenes',
+        canActivate: [requireSession],
+        loadChildren: () => import('./features/origins/routes').then((m) => m.routes),
+      },
+      {
         path: 'iniciar-sesion',
         loadChildren: () => import('./features/login/routes').then((m) => m.routes),
       },
