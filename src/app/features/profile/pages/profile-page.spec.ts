@@ -1,5 +1,6 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router, RouterOutlet } from '@angular/router';
 import Dexie from 'dexie';
 import { IDBKeyRange, indexedDB } from 'fake-indexeddb';
 import { OrigenDirectoDb } from '../../../core/db/origen-directo.db';
@@ -10,9 +11,17 @@ import { ProfilePage } from './profile-page';
 Dexie.dependencies.indexedDB = indexedDB;
 Dexie.dependencies.IDBKeyRange = IDBKeyRange;
 
+@Component({
+  selector: 'app-profile-spec-host',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
+})
+class SpecHost {}
+
 describe('Página del perfil', () => {
   let fixture: ComponentFixture<ProfilePage>;
   let compiled: HTMLElement;
+  let current: ComponentFixture<unknown> | undefined;
   let login = '';
   let farmId = 'OD-2026-100001';
 
@@ -43,6 +52,8 @@ describe('Página del perfil', () => {
   });
 
   afterEach(() => {
+    current?.destroy();
+    current = undefined;
     TestBed.inject(OrigenDirectoDb).close();
   });
 
@@ -54,6 +65,7 @@ describe('Página del perfil', () => {
       session.end();
     }
     fixture = TestBed.createComponent(ProfilePage);
+    current = fixture;
     fixture.detectChanges();
     await new Promise((resolve) => setTimeout(resolve, 50));
     fixture.detectChanges();
@@ -472,4 +484,162 @@ describe('Página del perfil', () => {
     expect(carousel.textContent).toContain('panela');
     expect(carousel.textContent).toContain('durazno');
   });
+
+  it('un borrador o un origen desactivado no sale en el carrusel', async () => {
+    await saveFarm();
+    const db = TestBed.inject(OrigenDirectoDb);
+    await db.table('origenes').bulkAdd([
+      {
+        id: 'origen-activo',
+        farmId: 'OD-2026-100001',
+        name: 'Lote 4 · Bourbon Natural',
+        status: 'publicado',
+        active: true,
+        publishedOn: '2026-11-28',
+        variety: 'Bourbon',
+        process: 'Natural',
+        roast: 'Medio',
+        altitude: 1750,
+        notes: ['panela'],
+        photo: '',
+      },
+      {
+        id: 'origen-borrador',
+        farmId: 'OD-2026-100001',
+        name: 'Lote Borrador del Alto',
+        status: 'borrador',
+        active: true,
+        publishedOn: '2026-11-20',
+      },
+      {
+        id: 'origen-pausado',
+        farmId: 'OD-2026-100001',
+        name: 'Lote en pausa',
+        status: 'publicado',
+        active: false,
+        publishedOn: '2026-11-20',
+      },
+    ]);
+    await render();
+
+    for (
+      let attempt = 0;
+      attempt < 40 &&
+      !compiled.querySelector('[aria-label="Orígenes"]')?.textContent?.includes('Lote 4 · Bourbon Natural');
+      attempt++
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      fixture.detectChanges();
+    }
+
+    const carousel = compiled.querySelector('[aria-label="Orígenes"]') as HTMLElement;
+    expect(carousel.textContent).toContain('Lote 4 · Bourbon Natural');
+    expect(carousel.textContent).not.toContain('Lote Borrador del Alto');
+    expect(carousel.textContent).not.toContain('Lote en pausa');
+  });
+
+  it('sin esa sesión, las tarjetas no tienen Editar', async () => {
+    await saveFarm();
+    await TestBed.inject(OrigenDirectoDb).table('origenes').add(publishedOrigin());
+    await render();
+    await untilCarousel('Lote 4 · Bourbon Natural');
+
+    const carousel = compiled.querySelector('[aria-label="Orígenes"]') as HTMLElement;
+    const edit = [...carousel.querySelectorAll('a, button')].find((item) =>
+      item.textContent?.includes('Editar'),
+    );
+    expect(edit).toBeUndefined();
+  });
+
+  it('con la sesión de esa finca, Editar abre el formulario con los datos del origen', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [SpecHost],
+      providers: [
+        provideRouter([
+          {
+            path: 'perfil',
+            loadChildren: () => import('../routes').then((m) => m.routes),
+          },
+          {
+            path: 'origenes',
+            loadChildren: () => import('../../origins/routes').then((m) => m.routes),
+          },
+        ]),
+      ],
+    }).compileComponents();
+
+    TestBed.inject(SessionService).start({
+      farmId: 'OD-2026-100001',
+      ownerName: 'Ana',
+      farmName: 'Finca La Esperanza',
+    });
+    await saveFarm();
+    await TestBed.inject(OrigenDirectoDb).table('origenes').add(publishedOrigin());
+
+    const router = TestBed.inject(Router);
+    const host = TestBed.createComponent(SpecHost);
+    current = host;
+    compiled = host.nativeElement as HTMLElement;
+    await router.navigateByUrl('/perfil/OD-2026-100001');
+    host.detectChanges();
+    await untilCarousel('Lote 4 · Bourbon Natural', host);
+
+    const carousel = compiled.querySelector('[aria-label="Orígenes"]') as HTMLElement;
+    const edit = [...carousel.querySelectorAll('a')].find((item) => item.textContent?.includes('Editar'));
+    await router.navigateByUrl(edit?.getAttribute('href') ?? '');
+    host.detectChanges();
+
+    for (
+      let attempt = 0;
+      attempt < 40 &&
+      (compiled.querySelector('#nombre') as HTMLInputElement | null)?.value !== 'Lote 4 · Bourbon Natural';
+      attempt++
+    ) {
+      await host.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      host.detectChanges();
+    }
+
+    expect((compiled.querySelector('#nombre') as HTMLInputElement).value).toBe('Lote 4 · Bourbon Natural');
+    expect((compiled.querySelector('#variedad') as HTMLSelectElement).value).toBe('Bourbon');
+    expect((compiled.querySelector('#proceso') as HTMLSelectElement).value).toBe('Natural');
+    expect((compiled.querySelector('#tueste') as HTMLSelectElement).value).toBe('Medio');
+    expect((compiled.querySelector('#altura') as HTMLInputElement).value).toBe('1750');
+    expect(compiled.textContent).toContain('panela');
+    expect(compiled.textContent).toContain('durazno');
+    expect(compiled.querySelector('.thumbs img')?.getAttribute('src')).toBe('data:image/jpeg;base64,AQID');
+  });
+
+  function publishedOrigin() {
+    return {
+      id: 'origen-1',
+      farmId: 'OD-2026-100001',
+      name: 'Lote 4 · Bourbon Natural',
+      status: 'publicado',
+      active: true,
+      publishedOn: '2026-11-28',
+      variety: 'Bourbon',
+      process: 'Natural',
+      roast: 'Medio',
+      altitude: 1750,
+      notes: ['panela', 'durazno'],
+      photo: 'data:image/jpeg;base64,AQID',
+    };
+  }
+
+  async function untilCarousel(
+    text: string,
+    host: ComponentFixture<unknown> = fixture,
+  ): Promise<void> {
+    for (
+      let attempt = 0;
+      attempt < 40 && !compiled.querySelector('[aria-label="Orígenes"]')?.textContent?.includes(text);
+      attempt++
+    ) {
+      await host.whenStable();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      host.detectChanges();
+    }
+  }
 });

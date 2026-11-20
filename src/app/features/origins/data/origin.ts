@@ -8,4 +8,10 @@ export interface Origin extends Entity {
   readonly status: OriginStatus;
   readonly active: boolean;
   readonly publishedOn: string;
+  readonly variety?: string;
+  readonly process?: string;
+  readonly roast?: string;
+  readonly altitude?: number;
+  readonly notes?: readonly string[];
+  readonly photo?: string;
 }

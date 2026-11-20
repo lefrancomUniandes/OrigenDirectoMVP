@@ -171,29 +171,42 @@
     </div>
   </section>
 
-  <section aria-label="Orígenes">
+  <section class="origins-track" aria-label="Orígenes">
     @for (origin of profile.origins(); track origin.id) {
       <article>
         @if (origin.photo) {
           <img [src]="origin.photo" [alt]="origin.name" />
         }
-        <span>✦ Nuevo</span>
-        <span>{{ dateLabel(origin.publishedOn) }}</span>
+        <span class="origin-tag">✦ Nuevo</span>
+        <span class="origin-tag">{{ dateLabel(origin.publishedOn) }}</span>
+        @if (profile.canEdit) {
+          <a [href]="'/origenes/registrar?editar=' + origin.id">Editar</a>
+        }
         <h3>{{ origin.name }}</h3>
         <p>📍 {{ farm.farmName }} · {{ farm.department }}</p>
         <dl>
-          <dt>Variedad</dt>
-          <dd>{{ origin.variety }}</dd>
-          <dt>Proceso</dt>
-          <dd>{{ origin.process }}</dd>
-          <dt>Tueste</dt>
-          <dd>{{ origin.roast }}</dd>
-          <dt>Altura</dt>
-          <dd>{{ origin.altitude }} m.s.n.m.</dd>
+          @if (origin.variety) {
+            <dt>Variedad</dt>
+            <dd>{{ origin.variety }}</dd>
+          }
+          @if (origin.process) {
+            <dt>Proceso</dt>
+            <dd>{{ origin.process }}</dd>
+          }
+          @if (origin.roast) {
+            <dt>Tueste</dt>
+            <dd>{{ origin.roast }}</dd>
+          }
+          @if (origin.altitude) {
+            <dt>Altura</dt>
+            <dd>{{ origin.altitude }} m.s.n.m.</dd>
+          }
         </dl>
-        @for (note of origin.notes ?? []; track note) {
-          <span>{{ note }}</span>
-        }
+        <div class="chips">
+          @for (note of origin.notes ?? []; track note) {
+            <span class="chip">{{ note }}</span>
+          }
+        </div>
       </article>
     }
   </section>

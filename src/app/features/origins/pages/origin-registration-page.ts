@@ -1,5 +1,6 @@
 import { Component, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Origin } from '../data/origin';
 import { OriginRegistrationService } from '../services/origin-registration.service';
 
 @Component({
@@ -13,10 +14,10 @@ export class OriginRegistrationPage {
   readonly evidences = signal<{ name: string; url?: string }[]>([]);
   readonly notice = signal('');
   readonly editing = signal(false);
-  readonly initialName = signal('');
   private editingId = '';
-  private nameApplied = false;
-  private readonly nameInput = viewChild<ElementRef<HTMLInputElement>>('nombre');
+  private applied = false;
+  private readonly loaded = signal<Origin | null>(null);
+  private readonly formRef = viewChild<ElementRef<HTMLFormElement>>('form');
   private readonly origins = inject(OriginRegistrationService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -30,18 +31,31 @@ export class OriginRegistrationPage {
     this.editingId = id;
     void this.origins.find(id).then((origin) => {
       if (origin) {
-        this.initialName.set(origin.name);
+        this.loaded.set(origin);
       }
     });
 
     effect(() => {
-      const input = this.nameInput()?.nativeElement;
-      const name = this.initialName();
-      if (!this.nameApplied && input && name) {
-        input.value = name;
-        this.nameApplied = true;
+      const form = this.formRef()?.nativeElement;
+      const origin = this.loaded();
+      if (this.applied || !form || !origin) {
+        return;
       }
+      this.applied = true;
+      this.fill(form, origin);
     });
+  }
+
+  private fill(form: HTMLFormElement, origin: Origin): void {
+    (form.querySelector('#nombre') as HTMLInputElement).value = origin.name;
+    (form.querySelector('#variedad') as HTMLSelectElement).value = origin.variety ?? '';
+    (form.querySelector('#proceso') as HTMLSelectElement).value = origin.process ?? '';
+    (form.querySelector('#tueste') as HTMLSelectElement).value = origin.roast ?? '';
+    (form.querySelector('#altura') as HTMLInputElement).value = origin.altitude ? String(origin.altitude) : '';
+    this.notes.set([...(origin.notes ?? [])]);
+    if (origin.photo) {
+      this.evidences.set([{ name: origin.name, url: origin.photo }]);
+    }
   }
 
   addNote(event: KeyboardEvent): void {

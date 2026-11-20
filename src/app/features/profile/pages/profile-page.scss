@@ -467,3 +467,19 @@
     height: 240px;
   }
 }
+
+.origins-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.origins-track article {
+  flex: 0 0 280px;
+}
+
+.origin-tag {
+  display: inline-block;
+  margin: 0 8px 8px 0;
+}
