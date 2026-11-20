@@ -2,49 +2,93 @@
 <h1>Registro de Origen</h1>
 <p class="sub">Documenta la trazabilidad de tu lote de café</p>
 <form novalidate>
-  <label for="nombre">Nombre del lote</label>
-  <input id="nombre" type="text" maxlength="100" />
+  <div>
+    <label for="nombre">Nombre del lote</label>
+    <input id="nombre" name="nombre" type="text" maxlength="100" />
+    @if (errors()['nombre']; as text) {
+      <p class="err">{{ text }}</p>
+    }
+  </div>
 
-  <label for="variedad">Variedad</label>
-  <select id="variedad">
-    <option value="">Selecciona…</option>
-    <option>Castillo</option>
-    <option>Caturra</option>
-    <option>Geisha</option>
-    <option>Bourbon</option>
-    <option>Tabi</option>
-    <option>Typica</option>
-    <option>Colombia</option>
-  </select>
+  <div>
+    <label for="variedad">Variedad</label>
+    <select id="variedad" name="variedad">
+      <option value="">Selecciona…</option>
+      <option>Castillo</option>
+      <option>Caturra</option>
+      <option>Geisha</option>
+      <option>Bourbon</option>
+      <option>Tabi</option>
+      <option>Typica</option>
+      <option>Colombia</option>
+    </select>
+    @if (errors()['variedad']; as text) {
+      <p class="err">{{ text }}</p>
+    }
+  </div>
 
-  <label for="proceso">Proceso / fermentación</label>
-  <select id="proceso">
-    <option value="">Selecciona…</option>
-    <option>Lavado</option>
-    <option>Honey</option>
-    <option>Natural</option>
-    <option>Anaeróbico</option>
-    <option>Láctico</option>
-  </select>
-  <textarea placeholder="Describe el proceso (opcional)" rows="2"></textarea>
+  <div>
+    <label for="proceso">Proceso / fermentación</label>
+    <select id="proceso" name="proceso">
+      <option value="">Selecciona…</option>
+      <option>Lavado</option>
+      <option>Honey</option>
+      <option>Natural</option>
+      <option>Anaeróbico</option>
+      <option>Láctico</option>
+    </select>
+    <textarea name="procesoDescripcion" placeholder="Describe el proceso (opcional)" rows="2"></textarea>
+    @if (errors()['proceso']; as text) {
+      <p class="err">{{ text }}</p>
+    }
+  </div>
 
-  <label for="tueste">Perfil de tueste</label>
-  <select id="tueste">
-    <option value="">Selecciona…</option>
-    <option>Claro / Ligero</option>
-    <option>Medio</option>
-    <option>Oscuro</option>
-  </select>
+  <div>
+    <label for="tueste">Perfil de tueste</label>
+    <select id="tueste" name="tueste">
+      <option value="">Selecciona…</option>
+      <option>Claro / Ligero</option>
+      <option>Medio</option>
+      <option>Oscuro</option>
+    </select>
+    @if (errors()['tueste']; as text) {
+      <p class="err">{{ text }}</p>
+    }
+  </div>
 
-  <label for="nota">Notas de cata</label>
-  <input id="nota" type="text" placeholder="Escribe una nota y presiona Enter" />
+  <div>
+    <label for="nota">Notas de cata</label>
+    <input id="nota" type="text" placeholder="Escribe una nota y presiona Enter" (keydown)="addNote($event)" />
+    @if (errors()['nota']; as text) {
+      <p class="err">{{ text }}</p>
+    }
+  </div>
 
-  <label for="altura">Altura (m.s.n.m.)</label>
-  <input id="altura" type="text" inputmode="numeric" />
+  <div>
+    <label for="altura">Altura (m.s.n.m.)</label>
+    <input id="altura" name="altura" type="text" inputmode="numeric" />
+    @if (errors()['altura']; as text) {
+      <p class="err">{{ text }}</p>
+    }
+  </div>
 
-  <label for="evidencias">Evidencias (JPG, PNG o PDF · máx. 5 MB)</label>
-  <input id="evidencias" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+  <div>
+    <label for="evidencias">Evidencias (JPG, PNG o PDF · máx. 5 MB)</label>
+    <input id="evidencias" type="file" accept=".jpg,.jpeg,.png,.pdf" multiple (change)="addEvidence($event)" />
+    <div class="thumbs">
+      @for (file of evidences(); track file.name) {
+        @if (file.url) {
+          <img [src]="file.url" [alt]="file.name" />
+        } @else {
+          <span>{{ file.name }}</span>
+        }
+      }
+    </div>
+    @if (notice(); as text) {
+      <p class="err" role="status">{{ text }}</p>
+    }
+  </div>
 
-  <button type="button">Guardar borrador</button>
-  <button type="button">Publicar registro</button>
+  <button type="button" (click)="saveDraft($event)">Guardar borrador</button>
+  <button type="button" (click)="publish($event)">Publicar registro</button>
 </form>

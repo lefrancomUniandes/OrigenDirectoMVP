@@ -67,3 +67,24 @@ form > button:nth-last-child(2) {
   background: var(--blanco);
   border: 1px solid var(--linea);
 }
+
+.err {
+  margin: 6px 0 0;
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.thumbs img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+}
