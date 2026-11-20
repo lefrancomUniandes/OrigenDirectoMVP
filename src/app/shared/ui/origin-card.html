@@ -1,0 +1,49 @@
+<article [class.off]="inactive()">
+  <div class="media">
+    @if (photo()) {
+      <img [src]="photo()" [alt]="name()" />
+    }
+    <span class="tag tag--badge">{{ badge() }}</span>
+    @if (dateLabel()) {
+      <span class="tag tag--date">{{ dateLabel() }}</span>
+    }
+  </div>
+  <div class="body">
+    @if (showSwitch()) {
+      <label class="switch">
+        <input type="checkbox" [checked]="active()" (change)="onActive($event)" />
+        {{ active() ? 'Activo' : 'Desactivado' }}
+      </label>
+    }
+    @if (editHref()) {
+      <a [href]="editHref()">Editar</a>
+    }
+    <h3>{{ name() }}</h3>
+    @if (farmName()) {
+      <p>📍 {{ farmName() }} · {{ department() }}</p>
+    }
+    <dl>
+      @if (variety()) {
+        <dt>Variedad</dt>
+        <dd>{{ variety() }}</dd>
+      }
+      @if (process()) {
+        <dt>Proceso</dt>
+        <dd>{{ process() }}</dd>
+      }
+      @if (roast()) {
+        <dt>Tueste</dt>
+        <dd>{{ roast() }}</dd>
+      }
+      @if (altitude()) {
+        <dt>Altura</dt>
+        <dd>{{ altitude() }} m.s.n.m.</dd>
+      }
+    </dl>
+    <div class="chips">
+      @for (note of notes(); track note) {
+        <span class="chip">{{ note }}</span>
+      }
+    </div>
+  </div>
+</article>

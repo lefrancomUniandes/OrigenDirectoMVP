@@ -1,18 +1,55 @@
-@if (origins.drafts().length > 0) {
-  <p>{{ origins.drafts().length }} borrador{{ origins.drafts().length === 1 ? '' : 'es' }} sin publicar.</p>
-}
-@if (origins.published().length === 0) {
-  <p>Aún no hay orígenes publicados en esta finca.</p>
-  <a href="/origenes/registrar">Registrar el primer origen</a>
-}
-@for (origin of origins.published(); track origin.id) {
-  <article>
-    <label>
-      <input type="checkbox" [checked]="origin.active" (change)="setActive(origin.id, $event)" />
-      {{ origin.active ? 'Activo' : 'Desactivado' }}
-    </label>
-    <a [href]="'/origenes/registrar?editar=' + origin.id">Editar</a>
-    <p>{{ dateLabel(origin.publishedOn) }}</p>
-    <h3>{{ origin.name }}</h3>
-  </article>
-}
+<section class="origins">
+  <header class="origins__top">
+    <div>
+      <h1>Mis orígenes</h1>
+      <p>Los publicados y activos se ven en tu perfil y en el inicio.</p>
+    </div>
+    <a class="btn" href="/origenes/registrar">Registrar origen</a>
+  </header>
+
+  @if (origins.drafts().length > 0) {
+    <p>{{ origins.drafts().length }} borrador{{ origins.drafts().length === 1 ? '' : 'es' }} sin publicar.</p>
+  }
+  @if (origins.published().length === 0) {
+    <p>Aún no hay orígenes publicados en esta finca.</p>
+    <a href="/origenes/registrar">Registrar el primer origen</a>
+  }
+
+  <div class="origins__grid">
+    @for (origin of origins.drafts(); track origin.id) {
+      <app-origin-card
+        badge="Borrador"
+        [name]="origin.name"
+        [photo]="origin.photo ?? ''"
+        [publishedOn]="origin.publishedOn"
+        [farmName]="origins.farm()?.farmName ?? ''"
+        [department]="origins.farm()?.department ?? ''"
+        [variety]="origin.variety ?? ''"
+        [process]="origin.process ?? ''"
+        [roast]="origin.roast ?? ''"
+        [altitude]="origin.altitude"
+        [notes]="origin.notes ?? []"
+        [editHref]="'/origenes/registrar?editar=' + origin.id"
+      />
+    }
+    @for (origin of origins.published(); track origin.id) {
+      <app-origin-card
+        [showSwitch]="true"
+        [active]="origin.active"
+        (activeChange)="setActive(origin.id, $event)"
+        [name]="origin.name"
+        [photo]="origin.photo ?? ''"
+        [publishedOn]="origin.publishedOn"
+        [farmName]="origins.farm()?.farmName ?? ''"
+        [department]="origins.farm()?.department ?? ''"
+        [variety]="origin.variety ?? ''"
+        [process]="origin.process ?? ''"
+        [roast]="origin.roast ?? ''"
+        [altitude]="origin.altitude"
+        [notes]="origin.notes ?? []"
+        [editHref]="'/origenes/registrar?editar=' + origin.id"
+        [inactive]="!origin.active"
+      />
+    }
+  </div>
+</section>

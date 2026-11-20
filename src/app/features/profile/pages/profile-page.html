@@ -173,41 +173,19 @@
 
   <section class="origins-track" aria-label="Orígenes">
     @for (origin of profile.origins(); track origin.id) {
-      <article>
-        @if (origin.photo) {
-          <img [src]="origin.photo" [alt]="origin.name" />
-        }
-        <span class="origin-tag">✦ Nuevo</span>
-        <span class="origin-tag">{{ dateLabel(origin.publishedOn) }}</span>
-        @if (profile.canEdit) {
-          <a [href]="'/origenes/registrar?editar=' + origin.id">Editar</a>
-        }
-        <h3>{{ origin.name }}</h3>
-        <p>📍 {{ farm.farmName }} · {{ farm.department }}</p>
-        <dl>
-          @if (origin.variety) {
-            <dt>Variedad</dt>
-            <dd>{{ origin.variety }}</dd>
-          }
-          @if (origin.process) {
-            <dt>Proceso</dt>
-            <dd>{{ origin.process }}</dd>
-          }
-          @if (origin.roast) {
-            <dt>Tueste</dt>
-            <dd>{{ origin.roast }}</dd>
-          }
-          @if (origin.altitude) {
-            <dt>Altura</dt>
-            <dd>{{ origin.altitude }} m.s.n.m.</dd>
-          }
-        </dl>
-        <div class="chips">
-          @for (note of origin.notes ?? []; track note) {
-            <span class="chip">{{ note }}</span>
-          }
-        </div>
-      </article>
+      <app-origin-card
+        [name]="origin.name"
+        [photo]="origin.photo"
+        [publishedOn]="origin.publishedOn"
+        [farmName]="farm.farmName"
+        [department]="farm.department"
+        [variety]="origin.variety"
+        [process]="origin.process"
+        [roast]="origin.roast"
+        [altitude]="origin.altitude"
+        [notes]="origin.notes ?? []"
+        [editHref]="profile.canEdit ? '/origenes/registrar?editar=' + origin.id : ''"
+      />
     }
   </section>
 

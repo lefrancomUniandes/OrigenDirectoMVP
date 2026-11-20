@@ -2,12 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { liveQuerySignal } from '../../../core/db/live-query';
 import { SessionService } from '../../../core/session/session';
 import { Origin } from '../data/origin';
+import { OriginFarm, OriginFarmRepository } from '../data/origin-farm.repository';
 import { OriginRepository } from '../data/origin.repository';
 
 @Injectable({ providedIn: 'root' })
 export class OriginRegistrationService {
+
   private readonly repo = inject(OriginRepository);
+  private readonly farms = inject(OriginFarmRepository);
   private readonly session = inject(SessionService);
+
+  readonly farm = liveQuerySignal(async () => {
+    const farmId = this.session.account()?.farmId ?? '';
+    return farmId ? this.farms.getById(farmId) : undefined;
+  }, undefined as OriginFarm | undefined);
 
   readonly drafts = liveQuerySignal(async () => {
     const farmId = this.session.account()?.farmId ?? '';

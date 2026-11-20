@@ -192,9 +192,6 @@ describe('Página de mis lotes', () => {
 
     expect(compiled.textContent).toContain('Aún no tienes productos publicados. Usa “Publicar nuevo producto”.');
     expect(compiled.textContent).toContain('Publicar nuevo producto');
-    expect(compiled.querySelector('a[href="/origenes/registrar"]')?.textContent?.trim()).toBe(
-      'Registrar origen',
-    );
     expect(compiled.textContent).not.toContain('Geisha');
   });
 

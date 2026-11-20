@@ -20,6 +20,9 @@ class PerfilPage {}
 @Component({ template: '' })
 class MisLotesPage {}
 
+@Component({ template: '' })
+class OrigenesPage {}
+
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
   let compiled: HTMLElement;
@@ -49,6 +52,7 @@ describe('Shell', () => {
           { path: 'perfil/:id/editar', canActivate: [requireOwnFarm], component: PerfilPage },
           { path: 'perfil/:id', component: PerfilPage },
           { path: 'mis-lotes', canActivate: [requireSession], component: MisLotesPage },
+          { path: 'origenes', canActivate: [requireSession], component: OrigenesPage },
           { path: 'iniciar-sesion', component: LoginPage },
         ]),
         { provide: FarmRegistrationService, useValue: { register: registerFarm } },
@@ -402,13 +406,14 @@ describe('Shell', () => {
     expect(TestBed.inject(Router).url).toBe('/iniciar-sesion');
   });
 
-  it('con la sesión de Ana, la cabecera muestra "Ana Morales" y el menú "Mi perfil", "Mis lotes" y "Cerrar sesión"', () => {
+  it('con la sesión de Ana, la cabecera muestra "Ana Morales" y el menú "Mi perfil", "Mis orígenes", "Mis lotes" y "Cerrar sesión"', () => {
     anaSession();
     button('Ana Morales').click();
     fixture.detectChanges();
 
     expect(compiled.textContent).toContain('Ana Morales');
     expect(compiled.textContent).toContain('Mi perfil');
+    expect(compiled.textContent).toContain('Mis orígenes');
     expect(compiled.textContent).toContain('Mis lotes');
     expect(compiled.textContent).toContain('Cerrar sesión');
     expect(compiled.textContent).not.toContain('Iniciar sesión');
@@ -435,7 +440,7 @@ describe('Shell', () => {
     expect([...shown]).toEqual([4, 5, 6]);
   });
 
-  it('"Mi perfil" abre /perfil/demo-paraiso y "Mis lotes" abre /mis-lotes', async () => {
+  it('"Mi perfil" abre /perfil/demo-paraiso, "Mis orígenes" abre /origenes y "Mis lotes" abre /mis-lotes', async () => {
     anaSession();
     const router = TestBed.inject(Router);
 
@@ -445,6 +450,13 @@ describe('Shell', () => {
     await fixture.whenStable();
 
     expect(router.url).toBe('/perfil/demo-paraiso');
+
+    button('Ana Morales').click();
+    fixture.detectChanges();
+    link('Mis orígenes').click();
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/origenes');
 
     button('Ana Morales').click();
     fixture.detectChanges();

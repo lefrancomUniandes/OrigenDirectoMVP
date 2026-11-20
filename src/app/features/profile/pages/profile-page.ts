@@ -1,11 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Publication } from '../../../core/data/publication.repository';
+import { OriginCard } from '../../../shared/ui/origin-card';
 import { ProfileFarm, ProfilePhoto } from '../data/profile-farm.repository';
 import { ProfileService } from '../services/profile.service';
 
 @Component({
   selector: 'app-profile-page',
+  imports: [OriginCard],
   providers: [ProfileService],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
@@ -36,15 +38,6 @@ export class ProfilePage {
 
   startEdit(): void {
     this.editing.set(true);
-  }
-
-  dateLabel(iso: string): string {
-    if (!iso) {
-      return '';
-    }
-    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    const [, month, day] = iso.split('-');
-    return `${Number(day)} ${months[Number(month) - 1]}`;
   }
 
   cancelEdit(): void {

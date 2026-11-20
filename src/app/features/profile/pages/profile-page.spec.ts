@@ -51,9 +51,10 @@ describe('Página del perfil', () => {
     }).compileComponents();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     current?.destroy();
     current = undefined;
+    await new Promise((resolve) => setTimeout(resolve, 50));
     TestBed.inject(OrigenDirectoDb).close();
   });
 
